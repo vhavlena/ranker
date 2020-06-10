@@ -5,6 +5,7 @@
 #include <map>
 #include <string>
 #include <iostream>
+#include "ComplementBA.h"
 
 template <typename State, typename Symbol>
 struct Transition {
@@ -31,6 +32,15 @@ private:
 protected:
   std::string toStringWith(std::function<std::string(State)>& stateStr,  std::function<std::string(Symbol)>& symStr);
 
+  template <typename T>
+  std::set<int> mapSet(std::map<T, int> mp, std::set<T> st)
+  {
+    std::set<int> ret;
+    for(auto p : st)
+      ret.insert(mp[p]);
+    return ret;
+  }
+
 public:
   BuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans)
   {
@@ -41,9 +51,22 @@ public:
     this->alph = getAlph();
   }
 
+  BuchiAutomaton() : BuchiAutomaton({}, {}, {}, {}) {};
+
+  BuchiAutomaton(BuchiAutomaton<State, Symbol>& other)
+  {
+    this->states = other.states;
+    this->finals = other.finals;
+    this->trans = other.trans;
+    this->initials = other.initials;
+    this->alph = other.alph;
+  }
+
   std::set<Symbol> getAlph();
   std::string toString();
+  BuchiAutomaton<int, int> renameAut();
 
+  BuchiAutomaton<StateKV<State>, Symbol> complementKV() const;
 };
 
 #endif
