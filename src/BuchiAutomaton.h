@@ -4,7 +4,10 @@
 #include <set>
 #include <map>
 #include <string>
+#include <vector>
 #include <iostream>
+#include <algorithm>
+
 #include "ComplementBA.h"
 
 template <typename State, typename Symbol>
@@ -51,6 +54,15 @@ public:
     this->alph = getAlph();
   }
 
+  BuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans, SetSymbols alp)
+  {
+    this->states = st;
+    this->finals = fin;
+    this->trans = trans;
+    this->initials = ini;
+    this->alph = alp;
+  }
+
   BuchiAutomaton() : BuchiAutomaton({}, {}, {}, {}) {};
 
   BuchiAutomaton(BuchiAutomaton<State, Symbol>& other)
@@ -66,7 +78,30 @@ public:
   std::string toString();
   BuchiAutomaton<int, int> renameAut();
 
-  BuchiAutomaton<StateKV<State>, Symbol> complementKV() const;
+  SetStates getStates() const
+  {
+    return this->states;
+  }
+
+  SetStates getFinals() const
+  {
+    return this->finals;
+  }
+
+  SetStates getInitials() const
+  {
+    return this->initials;
+  }
+
+  Transitions getTransitions() const
+  {
+    return this->trans;
+  }
+
+  SetSymbols getAlphabet() const
+  {
+    return this->alph;
+  }
 };
 
 #endif

@@ -19,6 +19,8 @@ BuchiAutomaton<string, string> BuchiAutomataParser::parseBaFormat(ifstream & os)
     {
       Transition<string, string> tr = parseBATransition(line);
       state = 1;
+      states.insert(tr.from);
+      states.insert(tr.to);
       pair<string, string> pr = make_pair(tr.from, tr.symbol);
       if(trans.find(pr) == trans.end())
         trans.insert({pr, set<string>({tr.to})});
@@ -31,6 +33,7 @@ BuchiAutomaton<string, string> BuchiAutomataParser::parseBaFormat(ifstream & os)
         ini.insert(line);
       else
         fins.insert(line);
+      states.insert(line);
     }
   }
   return BuchiAutomaton<string, string>(states, fins, ini, trans);

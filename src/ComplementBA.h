@@ -14,7 +14,21 @@ struct StateKV {
 
   bool operator <(const StateKV<State>& rhs) const
   {
-    return S < rhs.S && O < rhs.O && f < rhs.f;
+    if(S == rhs.S)
+    {
+      if(O == rhs.O)
+      {
+        return f < rhs.f;
+      }
+      return O < rhs.O;
+    }
+    else
+    return S < rhs.S;
+  }
+
+  bool operator ==(const StateKV<State>& rhs) const
+  {
+    return S == rhs.S && O == rhs.O && f == rhs.f;
   }
 
   std::string toString()

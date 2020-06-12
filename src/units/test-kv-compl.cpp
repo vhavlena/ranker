@@ -4,6 +4,7 @@
 #include <map>
 #include <fstream>
 #include "../BuchiAutomaton.h"
+#include "../BuchiAutomatonSpec.h"
 #include "../BuchiAutomataParser.h"
 
 using namespace std;
@@ -12,14 +13,15 @@ int main()
 {
   BuchiAutomataParser parser;
   ifstream os;
-  os.open("../../examples/A3.ba");
-  cout << "../../examples/A3.ba" << endl;
+  os.open("../../examples/A02.ba");
+  cout << "../../examples/A02.ba" << endl;
 
   if(os)
   {
     BuchiAutomaton<string, string> ba = parser.parseBaFormat(os);
     BuchiAutomaton<int, int> ren = ba.renameAut();
-    BuchiAutomaton<StateKV<int>, int> comp = ren.complementKV();
+    BuchiAutomatonSpec sp(ren);
+    BuchiAutomaton<StateKV<int>, int> comp = sp.complementKV();
     cout << comp.toString() << endl;
   }
   os.close();

@@ -26,7 +26,7 @@ BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAut()
   for(auto st : this->states)
   {
     auto it = mpstate.find(st);
-    if(it != mpstate.end())
+    if(it == mpstate.end())
     {
       mpstate[st] = stcnt++;
     }
@@ -39,7 +39,7 @@ BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAut()
   {
     auto it = mpsymbol.find(p.first.second);
     int val;
-    if(it != mpsymbol.end())
+    if(it == mpsymbol.end())
     {
       val = symcnt;
       mpsymbol[p.first.second] = symcnt++;
