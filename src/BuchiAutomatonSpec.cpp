@@ -49,7 +49,6 @@ std::vector<std::map<int, int> > BuchiAutomatonSpec::getKVRanks(std::vector<int>
     {
       singleConst.insert(std::vector<std::pair<int, int> >({std::make_pair(st, i)}));
     }
-
     constr.push_back(singleConst);
   }
 
@@ -66,7 +65,12 @@ BuchiAutomaton<StateKV<int>, int> BuchiAutomatonSpec::complementKV() const
 {
   std::stack<StateKV<int> > stack;
   std::set<StateKV<int> > comst;
+  std::set<StateKV<int> > initials;
+  std::set<StateKV<int> > finals;
   std::set<int> alph = getAlphabet();
+  std::map<std::pair<StateKV<int>, int>, std::set< StateKV<int> > > mp;
+  std::map<std::pair<StateKV<int>, int>, std::set< StateKV<int> > >::iterator it;
+
   std::vector<int> maxRank(getStates().size(), 2*getStates().size());
   std::vector<std::map<int, int> > ranks = getKVRanks(maxRank, getInitials());
   for (auto r : ranks)
@@ -74,32 +78,33 @@ BuchiAutomaton<StateKV<int>, int> BuchiAutomatonSpec::complementKV() const
     StateKV<int> tmp = {getInitials(), std::set<int>(), r};
     stack.push(tmp);
     comst.insert(tmp);
+    initials.insert(tmp);
   }
 
   while(stack.size() > 0)
   {
     auto st = stack.top();
     stack.pop();
+    if(isKVFinal(st))
+      finals.insert(st);
 
     for(int sym : alph)
     {
+      auto pr = std::make_pair(st, sym);
+      std::set<StateKV<int>> dst;
       for (auto s : succSetKV(st, sym))
       {
+        dst.insert(s);
         if(comst.find(s) == comst.end())
         {
           stack.push(s);
           comst.insert(s);
         }
       }
+      mp[pr] = dst;
     }
-    std::cout << "::" << comst.size() << std::endl;
   }
 
-
-  std::set< StateKV<int> > empty;
-  std::map<std::pair<StateKV<int>, int>, std::set< StateKV<int> > > mp;
-  StateKV<int> tmp = {{2,3,4}, {4,3}, {{2,0}}};
-  comst.insert(tmp);
-
-  return BuchiAutomaton<StateKV<int>, int>(comst, empty, empty, mp, alph);
+  return BuchiAutomaton<StateKV<int>, int>(comst, initials,
+      finals, mp, alph);
 }

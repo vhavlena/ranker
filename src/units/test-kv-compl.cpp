@@ -13,8 +13,8 @@ int main()
 {
   BuchiAutomataParser parser;
   ifstream os;
-  os.open("../../examples/A02.ba");
-  cout << "../../examples/A02.ba" << endl;
+  os.open("../../examples/A11.ba");
+  cout << "../../examples/A11.ba" << endl;
 
   if(os)
   {
