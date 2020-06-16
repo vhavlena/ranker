@@ -7,14 +7,14 @@
 #include <vector>
 #include <stack>
 
-#include <boost/dynamic_bitset.hpp>
-
 #include <iostream>
 #include <algorithm>
 
+#include "RankFunc.h"
 #include "AuxFunctions.h"
 #include "BuchiAutomaton.h"
 #include "StateKV.h"
+#include "StateSch.h"
 
 using std::vector;
 using std::set;
@@ -23,24 +23,22 @@ using std::map;
 class BuchiAutomatonSpec : public BuchiAutomaton<int, int>
 {
 private:
-  typedef vector<set<vector<std::pair<int, int> > > > RankConstr;
-  typedef map<int, int> Rank;
+  //typedef map<int, int> Rank;
 
 protected:
   RankConstr rankConstr(vector<int>& max, set<int>& states) const;
 
-  vector<Rank> getKVRanks(vector<int>& max, set<int>& states) const;
-  set<StateKV<int> > succSetKV(StateKV<int> state, int symbol) const;
-  bool isKVFinal(StateKV<int> state) const { return state.O.size() == 0; }
+  vector<RankFunc> getKVRanks(vector<int>& max, set<int>& states) const;
+  set<StateKV> succSetKV(StateKV state, int symbol) const;
+  bool isKVFinal(StateKV state) const { return state.O.size() == 0; }
 
-  bool isTightRank(Rank & r, int maxRank) const;
-  vector<Rank> getSchRanks(vector<int> max, std::set<int> states, StateSch<int> macrostate) const;
-  set<StateSch<int> > succSetSch(StateSch<int> state, int symbol) const;
+  vector<RankFunc> getSchRanks(vector<int> max, std::set<int> states, StateSch macrostate) const;
+  set<StateSch> succSetSch(StateSch state, int symbol) const;
 
 public:
   BuchiAutomatonSpec(BuchiAutomaton<int, int> &t) : BuchiAutomaton<int, int>(t) {}
 
-  BuchiAutomaton<StateKV<int>, int> complementKV() const;
+  BuchiAutomaton<StateKV, int> complementKV() const;
 };
 
 #endif

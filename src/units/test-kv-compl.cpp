@@ -21,7 +21,7 @@ int main()
     BuchiAutomaton<string, string> ba = parser.parseBaFormat(os);
     BuchiAutomaton<int, int> ren = ba.renameAut();
     BuchiAutomatonSpec sp(ren);
-    BuchiAutomaton<StateKV<int>, int> comp = sp.complementKV();
+    BuchiAutomaton<StateKV, int> comp = sp.complementKV();
     cout << comp.toString() << endl;
   }
   os.close();

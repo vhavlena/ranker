@@ -6,13 +6,14 @@
 #include <map>
 #include <string>
 
-template <typename State>
-struct StateKV {
-  std::set<State> S;
-  std::set<State> O;
-  std::map<State, int> f;
+#include "RankFunc.h"
 
-  bool operator <(const StateKV<State>& rhs) const
+struct StateKV {
+  std::set<int> S;
+  std::set<int> O;
+  RankFunc f;
+
+  bool operator <(const StateKV& rhs) const
   {
     if(S == rhs.S)
     {
@@ -26,7 +27,7 @@ struct StateKV {
     return S < rhs.S;
   }
 
-  bool operator ==(const StateKV<State>& rhs) const
+  bool operator ==(const StateKV& rhs) const
   {
     return S == rhs.S && O == rhs.O && f == rhs.f;
   }
@@ -34,16 +35,13 @@ struct StateKV {
   std::string toString()
   {
     std::string ret = "({" + printSet(S) + "}, {";
-    ret += printSet(O) + "}, {";
-    for (auto p : f)
-      ret += std::to_string(p.first) + ":" + std::to_string(p.second) + " ";
-    if(ret.back() == ' ')
-      ret.pop_back();
-    ret += "})";
+    ret += printSet(O) + "}, ";
+    ret += f.toString();
+    ret += ")";
     return ret;
   }
 
-  std::string printSet(std::set<State> st)
+  std::string printSet(std::set<int> st)
   {
     std::string ret;
     for (auto s : st)

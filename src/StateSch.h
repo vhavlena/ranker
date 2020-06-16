@@ -6,16 +6,16 @@
 #include <map>
 #include <string>
 
-template <typename State>
+#include "RankFunc.h"
+
 struct StateSch {
-  std::set<State> S;
-  std::set<State> O;
-  std::map<State, int> f;
+  std::set<int> S;
+  std::set<int> O;
+  RankFunc f;
   int i;
-  int maxRank;
   bool tight;
 
-  bool operator <(const StateSch<State>& rhs) const
+  bool operator <(const StateSch& rhs) const
   {
     if(tight == rhs.tight && tight)
     {
@@ -41,7 +41,7 @@ struct StateSch {
     return tight < rhs.tight;
   }
 
-  bool operator ==(const StateSch<State>& rhs) const
+  bool operator ==(const StateSch& rhs) const
   {
     return S == rhs.S && O == rhs.O && f == rhs.f && i == rhs.i;
   }
@@ -49,16 +49,13 @@ struct StateSch {
   std::string toString()
   {
     std::string ret = "({" + printSet(S) + "}, {";
-    ret += printSet(O) + "}, {";
-    for (auto p : f)
-      ret += std::to_string(p.first) + ":" + std::to_string(p.second) + " ";
-    if(ret.back() == ' ')
-      ret.pop_back();
-    ret += "}" + std::to_string(i) + ")";
+    ret += printSet(O) + "}, ";
+    ret += f.toString();
+    ret += "," + std::to_string(i) + ")";
     return ret;
   }
 
-  std::string printSet(std::set<State> st)
+  std::string printSet(std::set<int> st)
   {
     std::string ret;
     for (auto s : st)

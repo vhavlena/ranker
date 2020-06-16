@@ -1,9 +1,9 @@
 
 #include "BuchiAutomatonSpec.h"
 
-set<StateKV<int> > BuchiAutomatonSpec::succSetKV(StateKV<int> state, int symbol) const
+set<StateKV> BuchiAutomatonSpec::succSetKV(StateKV state, int symbol) const
 {
-  set<StateKV<int> > ret;
+  set<StateKV> ret;
   set<int> sprime;
   set<int> oprime;
   vector<int> maxRank(getStates().size(), 2*getStates().size());
@@ -22,29 +22,38 @@ set<StateKV<int> > BuchiAutomatonSpec::succSetKV(StateKV<int> state, int symbol)
     if(getFinals().find(i) != getFinals().end() && maxRank[i] % 2 != 0)
       maxRank[i] -= 1;
   }
+  if(state.O.size() == 0)
+  {
+    oprime = sprime;
+  }
   for(int st : state.O)
   {
     set<int> dst = getTransitions()[std::make_pair(st, symbol)];
     std::set_union(dst.begin(), dst.end(), oprime.begin(), oprime.end(),
       std::inserter(oprime, oprime.begin()));
   }
-  vector<map<int, int> > ranks = getKVRanks(maxRank, sprime);
+  vector<RankFunc> ranks = getKVRanks(maxRank, sprime);
+
   for (auto r : ranks)
   {
-    ret.insert({sprime, oprime, r});
+    set<int> oprime_tmp;
+    auto odd = r.getOddStates();
+    std::set_difference(oprime.begin(), oprime.end(), odd.begin(), odd.end(),
+      std::inserter(oprime_tmp, oprime_tmp.begin()));
+    ret.insert({sprime, oprime_tmp, r});
   }
   return ret;
 }
 
-BuchiAutomatonSpec::RankConstr BuchiAutomatonSpec::rankConstr(vector<int>& max, set<int>& states) const
+RankConstr BuchiAutomatonSpec::rankConstr(vector<int>& max, set<int>& states) const
 {
   RankConstr constr;
   for(int st : states)
   {
-    set< vector<std::pair<int, int> > > singleConst;
+    vector<std::pair<int, int> > singleConst;
     for(int i = 0; i <= max[st]; i++)
     {
-      singleConst.insert(vector<std::pair<int, int> >({std::make_pair(st, i)}));
+      singleConst.push_back(std::make_pair(st, i));
     }
     constr.push_back(singleConst);
   }
@@ -52,36 +61,29 @@ BuchiAutomatonSpec::RankConstr BuchiAutomatonSpec::rankConstr(vector<int>& max, 
 }
 
 
-vector<BuchiAutomatonSpec::Rank> BuchiAutomatonSpec::getKVRanks(vector<int>& max, set<int>& states) const
+vector<RankFunc> BuchiAutomatonSpec::getKVRanks(vector<int>& max, set<int>& states) const
 {
   RankConstr constr = rankConstr(max, states);
-  vector<Rank > ret;
-
-  set< vector<std::pair<int, int> > > prod = Aux::cartProductList<std::pair<int, int> >(constr);
-  for(auto item : prod)
-  {
-    ret.push_back(map<int, int>(item.begin(), item.end()));
-  }
-  return ret;
+  return RankFunc::fromRankConstr(constr);
 }
 
 
-BuchiAutomaton<StateKV<int>, int> BuchiAutomatonSpec::complementKV() const
+BuchiAutomaton<StateKV, int> BuchiAutomatonSpec::complementKV() const
 {
-  std::stack<StateKV<int> > stack;
-  set<StateKV<int> > comst;
-  set<StateKV<int> > initials;
-  set<StateKV<int> > finals;
+  std::stack<StateKV> stack;
+  set<StateKV> comst;
+  set<StateKV> initials;
+  set<StateKV> finals;
   set<int> alph = getAlphabet();
-  map<std::pair<StateKV<int>, int>, set<StateKV<int> > > mp;
-  map<std::pair<StateKV<int>, int>, set<StateKV<int> > >::iterator it;
+  map<std::pair<StateKV, int>, set<StateKV> > mp;
+  map<std::pair<StateKV, int>, set<StateKV> >::iterator it;
 
   set<int> init = getInitials();
   vector<int> maxRank(getStates().size(), 2*getStates().size());
-  vector<map<int, int> > ranks = getKVRanks(maxRank, init);
+  vector<RankFunc> ranks = getKVRanks(maxRank, init);
   for (auto r : ranks)
   {
-    StateKV<int> tmp = {getInitials(), set<int>(), r};
+    StateKV tmp = {getInitials(), set<int>(), r};
     stack.push(tmp);
     comst.insert(tmp);
     initials.insert(tmp);
@@ -97,7 +99,7 @@ BuchiAutomaton<StateKV<int>, int> BuchiAutomatonSpec::complementKV() const
     for(int sym : alph)
     {
       auto pr = std::make_pair(st, sym);
-      set<StateKV<int>> dst;
+      set<StateKV> dst;
       for (auto s : succSetKV(st, sym))
       {
         dst.insert(s);
@@ -111,46 +113,31 @@ BuchiAutomaton<StateKV<int>, int> BuchiAutomatonSpec::complementKV() const
     }
   }
 
-  return BuchiAutomaton<StateKV<int>, int>(comst, initials,
+  return BuchiAutomaton<StateKV, int>(comst, initials,
       finals, mp, alph);
 }
 
 
-bool BuchiAutomatonSpec::isTightRank(BuchiAutomatonSpec::Rank & r, int maxRank) const
-{
-  boost::dynamic_bitset<> rnk((maxRank+1)/2);
-  for(auto v : r)
-  {
-    if(v.second > maxRank)
-      return false;
-    rnk[(v.second+1)/2 - 1] = 1;
-  }
-  return rnk.all();
-}
-
-vector<BuchiAutomatonSpec::Rank> BuchiAutomatonSpec::getSchRanks(vector<int> max,
-    set<int> states, StateSch<int> macrostate) const
+vector<RankFunc> BuchiAutomatonSpec::getSchRanks(vector<int> max,
+    set<int> states, StateSch macrostate) const
 {
   RankConstr constr = rankConstr(max, states);
-  vector<Rank > ret;
+  vector<RankFunc> ret;
 
-  set< vector<std::pair<int, int> > > prod = Aux::cartProductList<std::pair<int, int> >(constr);
-  Rank tmp;
-  for(auto item : prod)
+  for(RankFunc item : RankFunc::fromRankConstr(constr))
   {
-    tmp = Rank(item.begin(), item.end());
-    if (isTightRank(tmp, macrostate.maxRank))
-      ret.push_back(tmp);
+    if(item.getMaxRank() == macrostate.f.getMaxRank() && item.isTightRank())
+      ret.push_back(item);
   }
   return ret;
 }
 
-set<StateSch<int> > BuchiAutomatonSpec::succSetSch(StateSch<int> state, int symbol) const
+set<StateSch> BuchiAutomatonSpec::succSetSch(StateSch state, int symbol) const
 {
-  set<StateSch<int> > ret;
+  set<StateSch> ret;
   // set<int> sprime;
   // set<int> oprime;
-  // vector<int> maxRank(getStates().size(), 2*getStates().size());
+  // vector<int> maxRank(getStates().size(), state.maxRank);
   // for(int st : state.S)
   // {
   //   set<int> dst = getTransitions()[std::make_pair(st, symbol)];
@@ -172,7 +159,7 @@ set<StateSch<int> > BuchiAutomatonSpec::succSetSch(StateSch<int> state, int symb
   //   std::set_union(dst.begin(), dst.end(), oprime.begin(), oprime.end(),
   //     std::inserter(oprime, oprime.begin()));
   // }
-  // vector<map<int, int> > ranks = getKVRanks(maxRank, sprime);
+  // vector<Rank> ranks = getSchRanks(maxRank, sprime, state);
   // for (auto r : ranks)
   // {
   //   ret.insert({sprime, oprime, r});

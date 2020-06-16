@@ -96,9 +96,9 @@ std::string BuchiAutomaton<std::string, std::string>::toString()
 
 
 template <>
-std::string BuchiAutomaton<StateKV<int>, int>::toString()
+std::string BuchiAutomaton<StateKV, int>::toString()
 {
-  std::function<std::string(StateKV<int>)> f1 = [&] (StateKV<int> x) {return x.toString();};
+  std::function<std::string(StateKV)> f1 = [&] (StateKV x) {return x.toString();};
   std::function<std::string(int)> f2 = [=] (int x) {return std::to_string(x);};
   return toStringWith(f1, f2);
 }
@@ -106,5 +106,5 @@ std::string BuchiAutomaton<StateKV<int>, int>::toString()
 
 template class BuchiAutomaton<int, int>;
 template class BuchiAutomaton<std::string, std::string>;
-template class BuchiAutomaton<StateKV<int>, int>;
-template class BuchiAutomaton<StateSch<int>, int>;
+template class BuchiAutomaton<StateKV, int>;
+template class BuchiAutomaton<StateSch, int>;
