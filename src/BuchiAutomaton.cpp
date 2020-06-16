@@ -107,3 +107,4 @@ std::string BuchiAutomaton<StateKV<int>, int>::toString()
 template class BuchiAutomaton<int, int>;
 template class BuchiAutomaton<std::string, std::string>;
 template class BuchiAutomaton<StateKV<int>, int>;
+template class BuchiAutomaton<StateSch<int>, int>;

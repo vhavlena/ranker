@@ -8,7 +8,8 @@
 #include <iostream>
 #include <algorithm>
 
-#include "ComplementBA.h"
+#include "StateKV.h"
+#include "StateSch.h"
 
 template <typename State, typename Symbol>
 struct Transition {

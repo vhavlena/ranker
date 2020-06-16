@@ -1,34 +1,49 @@
 
-#ifndef _COMPLEMENT_BA_H_
-#define _COMPLEMENT_BA_H_
+#ifndef _STATE_SCH_H_
+#define _STATE_SCH_H_
 
 #include <set>
 #include <map>
 #include <string>
 
 template <typename State>
-struct StateKV {
+struct StateSch {
   std::set<State> S;
   std::set<State> O;
   std::map<State, int> f;
+  int i;
+  int maxRank;
+  bool tight;
 
-  bool operator <(const StateKV<State>& rhs) const
+  bool operator <(const StateSch<State>& rhs) const
   {
-    if(S == rhs.S)
+    if(tight == rhs.tight && tight)
     {
-      if(O == rhs.O)
+      if(S == rhs.S)
       {
-        return f < rhs.f;
+        if(O == rhs.O)
+        {
+          if(f == rhs.f)
+          {
+            return i < rhs.i;
+          }
+          return f < rhs.f;
+        }
+        return O < rhs.O;
       }
-      return O < rhs.O;
+      else
+      return S < rhs.S;
     }
-    else
-    return S < rhs.S;
+    else if(tight == rhs.tight)
+    {
+      return S < rhs.S;
+    }
+    return tight < rhs.tight;
   }
 
-  bool operator ==(const StateKV<State>& rhs) const
+  bool operator ==(const StateSch<State>& rhs) const
   {
-    return S == rhs.S && O == rhs.O && f == rhs.f;
+    return S == rhs.S && O == rhs.O && f == rhs.f && i == rhs.i;
   }
 
   std::string toString()
@@ -39,7 +54,7 @@ struct StateKV {
       ret += std::to_string(p.first) + ":" + std::to_string(p.second) + " ";
     if(ret.back() == ' ')
       ret.pop_back();
-    ret += "})";
+    ret += "}" + std::to_string(i) + ")";
     return ret;
   }
 
@@ -53,7 +68,6 @@ struct StateKV {
     return ret;
   }
 };
-
 
 
 #endif

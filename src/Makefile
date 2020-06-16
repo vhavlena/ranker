@@ -15,7 +15,7 @@ BuchiAutomataParser.o: BuchiAutomataParser.cpp BuchiAutomataParser.h
 BuchiAutomaton.o: BuchiAutomaton.cpp BuchiAutomaton.h
 	g++ $(CPPFLAGS) -c BuchiAutomaton.cpp  -o $@
 
-BuchiAutomatonSpec.o: BuchiAutomaton.o BuchiAutomatonSpec.cpp BuchiAutomaton.h ComplementBA.h BuchiAutomatonSpec.h
+BuchiAutomatonSpec.o: BuchiAutomaton.o BuchiAutomatonSpec.cpp BuchiAutomaton.h StateKV.h StateSch.h BuchiAutomatonSpec.h
 	g++ $(CPPFLAGS) -c BuchiAutomatonSpec.cpp -o $@
 
 clean:
