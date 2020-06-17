@@ -79,27 +79,27 @@ public:
   std::string toString();
   BuchiAutomaton<int, int> renameAut();
 
-  SetStates getStates() const
+  SetStates& getStates()
   {
     return this->states;
   }
 
-  SetStates getFinals() const
+  SetStates& getFinals()
   {
     return this->finals;
   }
 
-  SetStates getInitials() const
+  SetStates& getInitials()
   {
     return this->initials;
   }
 
-  Transitions getTransitions() const
+  Transitions& getTransitions()
   {
     return this->trans;
   }
 
-  SetSymbols getAlphabet() const
+  SetSymbols& getAlphabet()
   {
     return this->alph;
   }

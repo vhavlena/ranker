@@ -48,8 +48,9 @@ struct StateSch {
 
   std::string toString()
   {
-    std::string ret = "({" + printSet(S) + "}, {";
-    ret += printSet(O) + "}, ";
+    if(!tight)
+      return "{" + printSet(S) + "}";
+    std::string ret = "({" + printSet(S) + "},{" + printSet(O) + "},";
     ret += f.toString();
     ret += "," + std::to_string(i) + ")";
     return ret;

@@ -34,8 +34,8 @@ struct StateKV {
 
   std::string toString()
   {
-    std::string ret = "({" + printSet(S) + "}, {";
-    ret += printSet(O) + "}, ";
+    std::string ret = "({" + printSet(S) + "},{";
+    ret += printSet(O) + "},";
     ret += f.toString();
     ret += ")";
     return ret;

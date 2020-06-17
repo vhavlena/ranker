@@ -103,6 +103,14 @@ std::string BuchiAutomaton<StateKV, int>::toString()
   return toStringWith(f1, f2);
 }
 
+template <>
+std::string BuchiAutomaton<StateSch, int>::toString()
+{
+  std::function<std::string(StateSch)> f1 = [&] (StateSch x) {return x.toString();};
+  std::function<std::string(int)> f2 = [=] (int x) {return std::to_string(x);};
+  return toStringWith(f1, f2);
+}
+
 
 template class BuchiAutomaton<int, int>;
 template class BuchiAutomaton<std::string, std::string>;

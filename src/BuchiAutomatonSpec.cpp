@@ -1,7 +1,19 @@
 
 #include "BuchiAutomatonSpec.h"
 
-set<StateKV> BuchiAutomatonSpec::succSetKV(StateKV state, int symbol) const
+set<int> BuchiAutomatonSpec::succSet(set<int>& states, int symbol)
+{
+  set<int> ret;
+  for(int st : states)
+  {
+    set<int> dst = getTransitions()[std::make_pair(st, symbol)];
+    ret.insert(dst.begin(), dst.end());
+  }
+  return ret;
+}
+
+
+set<StateKV> BuchiAutomatonSpec::succSetKV(StateKV& state, int symbol)
 {
   set<StateKV> ret;
   set<int> sprime;
@@ -14,24 +26,22 @@ set<StateKV> BuchiAutomatonSpec::succSetKV(StateKV state, int symbol) const
     {
       maxRank[d] = std::min(maxRank[d], state.f[st]);
     }
-    std::set_union(dst.begin(), dst.end(), sprime.begin(), sprime.end(),
-      std::inserter(sprime, sprime.begin()));
+    sprime.insert(dst.begin(), dst.end());
   }
-  for(int i = 0; i < maxRank.size(); i++)
+  for(int st : sprime)
   {
-    if(getFinals().find(i) != getFinals().end() && maxRank[i] % 2 != 0)
-      maxRank[i] -= 1;
+    if(getFinals().find(st) != getFinals().end() && maxRank[st] % 2 != 0)
+      maxRank[st] -= 1;
   }
   if(state.O.size() == 0)
   {
     oprime = sprime;
   }
-  for(int st : state.O)
+  else
   {
-    set<int> dst = getTransitions()[std::make_pair(st, symbol)];
-    std::set_union(dst.begin(), dst.end(), oprime.begin(), oprime.end(),
-      std::inserter(oprime, oprime.begin()));
+    oprime = succSet(state.O, symbol);
   }
+
   vector<RankFunc> ranks = getKVRanks(maxRank, sprime);
 
   for (auto r : ranks)
@@ -45,13 +55,18 @@ set<StateKV> BuchiAutomatonSpec::succSetKV(StateKV state, int symbol) const
   return ret;
 }
 
-RankConstr BuchiAutomatonSpec::rankConstr(vector<int>& max, set<int>& states) const
+RankConstr BuchiAutomatonSpec::rankConstr(vector<int>& max, set<int>& states)
 {
   RankConstr constr;
+  set<int> fin = getFinals();
+  char inc = 1;
   for(int st : states)
   {
+    inc = 1;
     vector<std::pair<int, int> > singleConst;
-    for(int i = 0; i <= max[st]; i++)
+    if(fin.find(st) != fin.end())
+      inc = 2;
+    for(int i = 0; i <= max[st]; i += inc)
     {
       singleConst.push_back(std::make_pair(st, i));
     }
@@ -61,14 +76,14 @@ RankConstr BuchiAutomatonSpec::rankConstr(vector<int>& max, set<int>& states) co
 }
 
 
-vector<RankFunc> BuchiAutomatonSpec::getKVRanks(vector<int>& max, set<int>& states) const
+vector<RankFunc> BuchiAutomatonSpec::getKVRanks(vector<int>& max, set<int>& states)
 {
   RankConstr constr = rankConstr(max, states);
   return RankFunc::fromRankConstr(constr);
 }
 
 
-BuchiAutomaton<StateKV, int> BuchiAutomatonSpec::complementKV() const
+BuchiAutomaton<StateKV, int> BuchiAutomatonSpec::complementKV()
 {
   std::stack<StateKV> stack;
   set<StateKV> comst;
@@ -113,13 +128,13 @@ BuchiAutomaton<StateKV, int> BuchiAutomatonSpec::complementKV() const
     }
   }
 
-  return BuchiAutomaton<StateKV, int>(comst, initials,
-      finals, mp, alph);
+  return BuchiAutomaton<StateKV, int>(comst, finals,
+    initials, mp, alph);
 }
 
 
-vector<RankFunc> BuchiAutomatonSpec::getSchRanks(vector<int> max,
-    set<int> states, StateSch macrostate) const
+vector<RankFunc> BuchiAutomatonSpec::getSchRanks(vector<int>& max,
+    set<int>& states, StateSch& macrostate)
 {
   RankConstr constr = rankConstr(max, states);
   vector<RankFunc> ret;
@@ -132,37 +147,132 @@ vector<RankFunc> BuchiAutomatonSpec::getSchRanks(vector<int> max,
   return ret;
 }
 
-set<StateSch> BuchiAutomatonSpec::succSetSch(StateSch state, int symbol) const
+set<StateSch> BuchiAutomatonSpec::succSetSchStart(set<int>& state, int symbol)
 {
   set<StateSch> ret;
-  // set<int> sprime;
-  // set<int> oprime;
-  // vector<int> maxRank(getStates().size(), state.maxRank);
-  // for(int st : state.S)
-  // {
-  //   set<int> dst = getTransitions()[std::make_pair(st, symbol)];
-  //   for(int d : dst)
-  //   {
-  //     maxRank[d] = std::min(maxRank[d], state.f[st]);
-  //   }
-  //   std::set_union(dst.begin(), dst.end(), sprime.begin(), sprime.end(),
-  //     std::inserter(sprime, sprime.begin()));
-  // }
-  // for(int i = 0; i < maxRank.size(); i++)
-  // {
-  //   if(getFinals().find(i) != getFinals().end() && maxRank[i] % 2 != 0)
-  //     maxRank[i] -= 1;
-  // }
-  // for(int st : state.O)
-  // {
-  //   set<int> dst = getTransitions()[std::make_pair(st, symbol)];
-  //   std::set_union(dst.begin(), dst.end(), oprime.begin(), oprime.end(),
-  //     std::inserter(oprime, oprime.begin()));
-  // }
-  // vector<Rank> ranks = getSchRanks(maxRank, sprime, state);
-  // for (auto r : ranks)
-  // {
-  //   ret.insert({sprime, oprime, r});
-  // }
+  set<int> sprime = succSet(state, symbol);
+  vector<int> maxRank(getStates().size(), 2*sprime.size() - 1);
+  set<int> fin = getFinals();
+
+  for(int st : sprime)
+  {
+    if(fin.find(st) != fin.end() && maxRank[st] % 2 != 0)
+      maxRank[st] -= 1;
+  }
+  RankConstr constr = rankConstr(maxRank, sprime);
+  for(RankFunc item : RankFunc::fromRankConstr(constr))
+  {
+    if(item.isTightRank())
+    {
+      ret.insert({sprime, set<int>(), item, 0, true});
+    }
+  }
   return ret;
+}
+
+set<StateSch> BuchiAutomatonSpec::succSetSchTight(StateSch& state, int symbol)
+{
+  set<StateSch> ret;
+  set<int> sprime;
+  set<int> oprime;
+  int iprime;
+  vector<int> maxRank(getStates().size(), state.f.getMaxRank());
+  for(int st : state.S)
+  {
+    set<int> dst = getTransitions()[std::make_pair(st, symbol)];
+    for(int d : dst)
+    {
+      maxRank[d] = std::min(maxRank[d], state.f[st]);
+    }
+    sprime.insert(dst.begin(), dst.end());
+  }
+  auto fin = getFinals();
+  for(int st : sprime)
+  {
+    if(fin.find(st) != fin.end() && maxRank[st] % 2 != 0)
+      maxRank[st] -= 1;
+  }
+  if(state.O.size() == 0)
+  {
+    iprime = (state.i + 2) % (state.f.getMaxRank() + 1);
+  }
+  else
+  {
+    iprime = state.i;
+    oprime = succSet(state.O, symbol);
+  }
+
+  vector<RankFunc> ranks = getSchRanks(maxRank, sprime, state);
+  set<int> inverseRank;
+  for (auto r : ranks)
+  {
+    set<int> oprime_tmp;
+    inverseRank = r.inverseRank(iprime);
+    if (state.O.size() == 0)
+      oprime_tmp = inverseRank;
+    else
+      std::set_intersection(oprime.begin(),oprime.end(),inverseRank.begin(),
+        inverseRank.end(), std::inserter(oprime_tmp, oprime_tmp.begin()));
+    ret.insert({sprime, oprime_tmp, r, iprime, true});
+  }
+  return ret;
+}
+
+BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSch()
+{
+  std::stack<StateSch> stack;
+  set<StateSch> comst;
+  set<StateSch> initials;
+  set<StateSch> finals;
+  set<StateSch> succ;
+  set<int> alph = getAlphabet();
+  map<std::pair<StateSch, int>, set<StateSch> > mp;
+  map<std::pair<StateSch, int>, set<StateSch> >::iterator it;
+
+  StateSch init = {getInitials(), set<int>(), RankFunc(), 0, false};
+  stack.push(init);
+  comst.insert(init);
+  initials.insert(init);
+
+  while(stack.size() > 0)
+  {
+    StateSch st = stack.top();
+    stack.pop();
+    if(isSchFinal(st))
+      finals.insert(st);
+
+    for(int sym : alph)
+    {
+      auto pr = std::make_pair(st, sym);
+      set<StateSch> dst;
+      if(st.tight)
+      {
+        succ = succSetSchTight(st, sym);
+      }
+      else
+      {
+        StateSch nt = {succSet(st.S, sym), set<int>(), RankFunc(), false};
+        dst.insert(nt);
+        if(comst.find(nt) == comst.end())
+        {
+          stack.push(nt);
+          comst.insert(nt);
+        }
+        succ = succSetSchStart(st.S, sym);
+      }
+      for (auto s : succ)
+      {
+        dst.insert(s);
+        if(comst.find(s) == comst.end())
+        {
+          stack.push(s);
+          comst.insert(s);
+        }
+      }
+      mp[pr] = dst;
+    }
+  }
+
+  return BuchiAutomaton<StateSch, int>(comst, finals,
+    initials, mp, alph);
 }

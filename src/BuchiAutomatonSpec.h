@@ -26,19 +26,23 @@ private:
   //typedef map<int, int> Rank;
 
 protected:
-  RankConstr rankConstr(vector<int>& max, set<int>& states) const;
+  RankConstr rankConstr(vector<int>& max, set<int>& states);
+  set<int> succSet(set<int>& state, int symbol);
 
-  vector<RankFunc> getKVRanks(vector<int>& max, set<int>& states) const;
-  set<StateKV> succSetKV(StateKV state, int symbol) const;
-  bool isKVFinal(StateKV state) const { return state.O.size() == 0; }
+  vector<RankFunc> getKVRanks(vector<int>& max, set<int>& states);
+  set<StateKV> succSetKV(StateKV& state, int symbol);
+  bool isKVFinal(StateKV& state) const { return state.O.size() == 0; }
 
-  vector<RankFunc> getSchRanks(vector<int> max, std::set<int> states, StateSch macrostate) const;
-  set<StateSch> succSetSch(StateSch state, int symbol) const;
+  vector<RankFunc> getSchRanks(vector<int>& max, std::set<int>& states, StateSch& macrostate);
+  set<StateSch> succSetSchStart(set<int>& state, int symbol);
+  set<StateSch> succSetSchTight(StateSch& state, int symbol);
+  bool isSchFinal(StateSch& state) const { return state.tight ? state.O.size() == 0 : state.S.size() == 0; }
 
 public:
   BuchiAutomatonSpec(BuchiAutomaton<int, int> &t) : BuchiAutomaton<int, int>(t) {}
 
-  BuchiAutomaton<StateKV, int> complementKV() const;
+  BuchiAutomaton<StateKV, int> complementKV();
+  BuchiAutomaton<StateSch, int> complementSch();
 };
 
 #endif

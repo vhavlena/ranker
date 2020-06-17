@@ -1,7 +1,7 @@
 
 CPPFLAGS=-std=c++17
 
-test: test-parser test-kv-compl
+test: test-parser test-kv-compl test-sch-compl
 
 test-parser: units/test-parser.cpp BuchiAutomataParser.o BuchiAutomaton.o BuchiAutomatonSpec.o RankFunc.o
 	g++ $(CPPFLAGS) -o units/$@ $?
@@ -9,10 +9,13 @@ test-parser: units/test-parser.cpp BuchiAutomataParser.o BuchiAutomaton.o BuchiA
 test-kv-compl: units/test-kv-compl.cpp BuchiAutomataParser.o BuchiAutomaton.o BuchiAutomatonSpec.o RankFunc.o
 	g++ $(CPPFLAGS) -o units/$@ $?
 
+test-sch-compl: units/test-sch-compl.cpp BuchiAutomataParser.o BuchiAutomaton.o BuchiAutomatonSpec.o RankFunc.o
+	g++ $(CPPFLAGS) -o units/$@ $?
+
 BuchiAutomataParser.o: BuchiAutomataParser.cpp BuchiAutomataParser.h
 	g++ $(CPPFLAGS) -c -o $@ $<
 
-BuchiAutomaton.o: BuchiAutomaton.cpp BuchiAutomaton.h
+BuchiAutomaton.o: BuchiAutomaton.cpp BuchiAutomaton.h RankFunc.h
 	g++ $(CPPFLAGS) -c BuchiAutomaton.cpp  -o $@
 
 RankFunc.o: RankFunc.cpp RankFunc.h
