@@ -1,24 +1,30 @@
 
 CPPFLAGS=-std=c++17
 
-test: test-parser test-kv-compl test-sch-compl
+test: test-parser test-kv-compl test-sch-compl test-process
 
-test-parser: units/test-parser.cpp BuchiAutomataParser.o BuchiAutomaton.o BuchiAutomatonSpec.o RankFunc.o
+test-parser: units/test-parser.cpp BuchiAutomataParser.o BuchiAutomaton.o BuchiAutomatonSpec.o RankFunc.o AutGraph.o
 	g++ $(CPPFLAGS) -o units/$@ $?
 
-test-kv-compl: units/test-kv-compl.cpp BuchiAutomataParser.o BuchiAutomaton.o BuchiAutomatonSpec.o RankFunc.o
+test-kv-compl: units/test-kv-compl.cpp BuchiAutomataParser.o BuchiAutomaton.o BuchiAutomatonSpec.o RankFunc.o AutGraph.o
 	g++ $(CPPFLAGS) -o units/$@ $?
 
-test-sch-compl: units/test-sch-compl.cpp BuchiAutomataParser.o BuchiAutomaton.o BuchiAutomatonSpec.o RankFunc.o
+test-sch-compl: units/test-sch-compl.cpp BuchiAutomataParser.o BuchiAutomaton.o BuchiAutomatonSpec.o RankFunc.o AutGraph.o
 	g++ $(CPPFLAGS) -o units/$@ $?
 
-BuchiAutomataParser.o: BuchiAutomataParser.cpp BuchiAutomataParser.h
+test-process: units/test-process.cpp BuchiAutomataParser.o BuchiAutomaton.o BuchiAutomatonSpec.o RankFunc.o AutGraph.o
+	g++ $(CPPFLAGS) -o units/$@ $?
+
+BuchiAutomataParser.o: BuchiAutomataParser.cpp BuchiAutomataParser.h AutGraph.o
 	g++ $(CPPFLAGS) -c -o $@ $<
 
-BuchiAutomaton.o: BuchiAutomaton.cpp BuchiAutomaton.h RankFunc.h
-	g++ $(CPPFLAGS) -c BuchiAutomaton.cpp  -o $@
+BuchiAutomaton.o: BuchiAutomaton.cpp BuchiAutomaton.h RankFunc.h AutGraph.h AutGraph.o
+	g++ $(CPPFLAGS) -c BuchiAutomaton.cpp -o $@
 
 RankFunc.o: RankFunc.cpp RankFunc.h
+	g++ $(CPPFLAGS) -c -o $@ $<
+
+AutGraph.o: AutGraph.cpp AutGraph.h
 	g++ $(CPPFLAGS) -c -o $@ $<
 
 BuchiAutomatonSpec.o: BuchiAutomaton.o RankFunc.o BuchiAutomatonSpec.cpp BuchiAutomaton.h StateKV.h StateSch.h BuchiAutomatonSpec.h

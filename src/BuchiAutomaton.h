@@ -8,8 +8,11 @@
 #include <iostream>
 #include <algorithm>
 
+#include "AutGraph.h"
 #include "StateKV.h"
 #include "StateSch.h"
+
+class AutGraph;
 
 template <typename State, typename Symbol>
 struct Transition {
@@ -103,6 +106,10 @@ public:
   {
     return this->alph;
   }
+
+  void complete(State trap);
+  void removeUseless();
+  void restriction(set<State>& st);
 };
 
 #endif
