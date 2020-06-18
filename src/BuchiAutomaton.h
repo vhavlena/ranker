@@ -107,6 +107,7 @@ public:
     return this->alph;
   }
 
+  vector<set<State> > reachableVector();
   void complete(State trap);
   void removeUseless();
   void restriction(set<State>& st);

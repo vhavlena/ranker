@@ -25,6 +25,7 @@ int main(int argc, char *argv[])
   if(os)
   {
     BuchiAutomaton<string, string> ba = parser.parseBaFormat(os);
+    //ba.complete("-1");
     BuchiAutomaton<int, int> ren = ba.renameAut();
     BuchiAutomatonSpec sp(ren);
     BuchiAutomaton<StateSch, int> comp = sp.complementSch();

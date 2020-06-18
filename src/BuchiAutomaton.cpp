@@ -209,6 +209,35 @@ void BuchiAutomaton<State, Symbol>::complete(State trap)
 }
 
 
+template <>
+vector<set<int> > BuchiAutomaton<int, int>::reachableVector()
+{
+  vector<set<int> > adjListSet(this->states.size());
+  vector<vector<int> > adjList(this->states.size());
+  vector<set<int> > ret(this->states.size());
+  for(auto st : this->states)
+  {
+    adjListSet[st] = set<int>();
+  }
+  for(auto tr : this->trans)
+  {
+    adjListSet[tr.first.first].insert(tr.second.begin(), tr.second.end());
+  }
+  for(auto st : this->states)
+  {
+    adjList[st] = vector<int>(adjListSet[st].begin(), adjListSet[st].end());
+  }
+
+  for(auto st : this->states)
+  {
+    set<int> tmp({st});
+    ret[st] = AutGraph::reachableVertices(adjList, tmp);
+  }
+  return ret;
+}
+
+
+
 template class BuchiAutomaton<int, int>;
 template class BuchiAutomaton<std::string, std::string>;
 template class BuchiAutomaton<StateKV, int>;

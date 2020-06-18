@@ -53,7 +53,7 @@ public:
 
   void computeFinalSCCs();
   set<int> reachableVertices(set<int>& from);
-  set<int> reachableVertices(AdjList &lst, set<int>& from);
+  static set<int> reachableVertices(AdjList &lst, set<int>& from);
 
   vector<SCC>& getFinalComponents()
   {

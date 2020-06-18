@@ -28,7 +28,17 @@ int main(int argc, char *argv[])
     BuchiAutomaton<int, int> ren = ba.renameAut();
     ren.removeUseless();
     ren.complete(-1);
+    ren = ren.renameAut();
     cout << ren.toString() << endl;
+
+    auto vec = ren.reachableVector();
+    for(int i = 0; i < vec.size(); i++)
+    {
+      cout << i << ": ";
+      for(auto s : vec[i])
+        cout << s << ", ";
+      cout << endl;
+    }
   }
   os.close();
   return 0;
