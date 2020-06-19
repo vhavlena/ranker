@@ -39,6 +39,31 @@ vector<RankFunc> RankFunc::fromRankConstr(RankConstr constr)
 }
 
 
+bool RankFunc::isSuccValid(RankFunc& prev, map<int, set<int> >& succ) const
+{
+  bool val = true;
+  int fnc = 0;
+  for(auto s : succ)
+  {
+    val = false;
+    fnc = prev.find(s.first)->second;
+    if(fnc % 2 == 0)
+      continue;
+    for(int dst : s.second)
+    {
+      if((this->find(dst)->second) == fnc)
+      {
+        val = true;
+        break;
+      }
+    }
+    if (!val)
+      return false;
+  }
+  return true;
+}
+
+
 std::string RankFunc::toString() const
 {
   std::string ret = "{";

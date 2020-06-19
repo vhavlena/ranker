@@ -77,6 +77,46 @@ std::string BuchiAutomaton<State, Symbol>::toStringWith(std::function<std::strin
 }
 
 
+template <typename State, typename Symbol>
+std::string BuchiAutomaton<State, Symbol>::toGraphwizWith(std::function<std::string(State)>& stateStr,
+  std::function<std::string(Symbol)>& symStr)
+{
+  std::string str = "digraph \" Automaton \" { rankdir=LR;\n { rank = LR }\n";
+  str += "node [shape = doublecircle];\n";
+  for(auto p : this->finals)
+    str += "\"" + stateStr(p) + "\"\n";
+  str += "node [shape = circle];";
+  for(auto st : this->states)
+    str += "\"" + stateStr(st) + "\"\n";
+  str += "\"init0\";\n";
+  for (auto p : this->initials)
+    str += "\"init0\" -> \"" + stateStr(p) + "\"\n";
+  for (auto p : this->trans)
+  {
+    for(auto d : p.second)
+      str +=  "\"" + stateStr(p.first.first) + "\" -> \"" + stateStr(d) +
+        + "\" [label = \"" + symStr(p.first.second) + "\"];\n";
+  }
+  str += "}\n";
+  return str;
+}
+
+template <>
+std::string BuchiAutomaton<int, int>::toGraphwiz()
+{
+  std::function<std::string(int)> f1 = [=] (int x) {return std::to_string(x);};
+  std::function<std::string(int)> f2 = [=] (int x) {return std::to_string(x);};
+  return toGraphwizWith(f1, f2);
+}
+
+template <>
+std::string BuchiAutomaton<StateSch, int>::toGraphwiz()
+{
+  std::function<std::string(StateSch)> f1 = [&] (StateSch x) {return x.toString();};
+  std::function<std::string(int)> f2 = [=] (int x) {return std::to_string(x);};
+  return toGraphwizWith(f1, f2);
+}
+
 template <>
 std::string BuchiAutomaton<int, int>::toString()
 {

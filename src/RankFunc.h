@@ -84,6 +84,8 @@ public:
     return this->maxRank;
   }
 
+  bool isSuccValid(RankFunc& prev, map<int, set<int> >& succ) const;
+
   std::string toString() const;
   bool isTightRank() const;
 

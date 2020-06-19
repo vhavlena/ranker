@@ -34,6 +34,8 @@ protected:
   bool isKVFinal(StateKV& state) const { return state.O.size() == 0; }
 
   vector<RankFunc> getSchRanks(vector<int>& max, std::set<int>& states, StateSch& macrostate);
+  vector<RankFunc> getSchRanksTight(vector<int>& max, set<int>& states,
+      StateSch& macrostate, map<int, set<int> >& succ);
   set<StateSch> succSetSchStart(set<int>& state, int symbol);
   set<StateSch> succSetSchTight(StateSch& state, int symbol);
   bool isSchFinal(StateSch& state) const { return state.tight ? state.O.size() == 0 : state.S.size() == 0; }

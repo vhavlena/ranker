@@ -30,6 +30,8 @@ int main(int argc, char *argv[])
     BuchiAutomatonSpec sp(ren);
     BuchiAutomaton<StateSch, int> comp = sp.complementSch();
     cout << comp.toString() << endl;
+    cout << comp.toGraphwiz() << endl;
+    cout << comp.getStates().size() << endl;
   }
   os.close();
   return 0;

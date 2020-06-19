@@ -38,6 +38,7 @@ private:
 
 protected:
   std::string toStringWith(std::function<std::string(State)>& stateStr,  std::function<std::string(Symbol)>& symStr);
+  std::string toGraphwizWith(std::function<std::string(State)>& stateStr,  std::function<std::string(Symbol)>& symStr);
 
   template <typename T>
   std::set<int> mapSet(std::map<T, int> mp, std::set<T> st)
@@ -80,6 +81,7 @@ public:
 
   std::set<Symbol> getAlph();
   std::string toString();
+  std::string toGraphwiz();
   BuchiAutomaton<int, int> renameAut();
 
   SetStates& getStates()

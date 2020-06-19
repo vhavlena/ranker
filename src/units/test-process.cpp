@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
     BuchiAutomaton<string, string> ba = parser.parseBaFormat(os);
     BuchiAutomaton<int, int> ren = ba.renameAut();
     ren.removeUseless();
-    ren.complete(-1);
+    //ren.complete(-1);
     ren = ren.renameAut();
     cout << ren.toString() << endl;
 
@@ -39,6 +39,8 @@ int main(int argc, char *argv[])
         cout << s << ", ";
       cout << endl;
     }
+
+    cout << ren.toGraphwiz() << endl;
   }
   os.close();
   return 0;
