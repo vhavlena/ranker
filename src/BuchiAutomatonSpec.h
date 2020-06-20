@@ -40,11 +40,17 @@ protected:
   set<StateSch> succSetSchTight(StateSch& state, int symbol);
   bool isSchFinal(StateSch& state) const { return state.tight ? state.O.size() == 0 : state.S.size() == 0; }
 
+
+  set<StateSch> succSetSchTightMin(StateSch& state, int symbol);
+  vector<RankFunc> getSchRanksMin(vector<int>& max, set<int>& states, StateSch& macrostate, map<int, set<int> >& succ);
+  set<StateSch> succSetSchStartMin(set<int>& state, int symbol);
+
 public:
   BuchiAutomatonSpec(BuchiAutomaton<int, int> &t) : BuchiAutomaton<int, int>(t) {}
 
   BuchiAutomaton<StateKV, int> complementKV();
   BuchiAutomaton<StateSch, int> complementSch();
+  BuchiAutomaton<StateSch, int> complementSchMin();
 };
 
 #endif

@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
     //ba.complete("-1");
     BuchiAutomaton<int, int> ren = ba.renameAut();
     BuchiAutomatonSpec sp(ren);
-    BuchiAutomaton<StateSch, int> comp = sp.complementSch();
+    BuchiAutomaton<StateSch, int> comp = sp.complementSchMin();
     cout << comp.toString() << endl;
     cout << comp.toGraphwiz() << endl;
     cout << comp.getStates().size() << endl;

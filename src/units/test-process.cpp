@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
     ren.removeUseless();
     //ren.complete(-1);
     ren = ren.renameAut();
-    cout << ren.toString() << endl;
+    cout << ren.toGraphwiz() << endl;
 
     auto vec = ren.reachableVector();
     for(int i = 0; i < vec.size(); i++)
