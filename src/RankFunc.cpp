@@ -91,3 +91,14 @@ bool RankFunc::isTightRank() const
   }
   return rnk.all();
 }
+
+
+bool RankFunc::eqEven() const
+{
+  for(auto v : *this)
+  {
+    if(v.second % 2 == 0 && v.second != this->maxRank - 1)
+      return false;
+  }
+  return true;
+}

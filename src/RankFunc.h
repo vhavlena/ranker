@@ -59,7 +59,7 @@ public:
   void addPair(std::pair<int, int> val)
   {
     if(val.second % 2 != 0)
-      this->oddStates.insert(val.second);
+      this->oddStates.insert(val.first);
     this->maxRank = std::max(this->maxRank, val.second);
     this->insert(val);
     RankInverse::iterator it = this->inverse.find(val.second);
@@ -83,6 +83,8 @@ public:
   {
     return this->maxRank;
   }
+
+  bool eqEven() const;
 
   bool isSuccValid(RankFunc& prev, map<int, set<int> >& succ) const;
 

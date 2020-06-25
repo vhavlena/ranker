@@ -51,7 +51,10 @@ BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAut()
     std::set<int> to = mapSet(mpstate, p.second);
     rtrans.insert({std::make_pair(mpstate[p.first.first], val), to});
   }
-  return BuchiAutomaton<int, int>(rstate, rfin, rini, rtrans);
+
+  auto ret = BuchiAutomaton<int, int>(rstate, rfin, rini, rtrans);
+  this->renameStateMap = mpstate;
+  return ret;
 }
 
 
@@ -114,6 +117,14 @@ std::string BuchiAutomaton<StateSch, int>::toGraphwiz()
 {
   std::function<std::string(StateSch)> f1 = [&] (StateSch x) {return x.toString();};
   std::function<std::string(int)> f2 = [=] (int x) {return std::to_string(x);};
+  return toGraphwizWith(f1, f2);
+}
+
+template <>
+std::string BuchiAutomaton<std::string, std::string>::toGraphwiz()
+{
+  std::function<std::string(std::string)> f1 = [&] (std::string x) {return x;};
+  std::function<std::string(std::string)> f2 = [&] (std::string x) {return x;};
   return toGraphwizWith(f1, f2);
 }
 
@@ -274,6 +285,129 @@ vector<set<int> > BuchiAutomaton<int, int>::reachableVector()
     ret[st] = AutGraph::reachableVertices(adjList, tmp);
   }
   return ret;
+}
+
+
+template <typename State, typename Symbol>
+void BuchiAutomaton<State, Symbol>::computeRankSim()
+{
+  StateRelation rel = this->directSim;
+  bool add = false;
+
+  do {
+    add = false;
+    transitiveClosure(rel);
+    for(State st1 : this->states)
+    {
+      if(this->finals.find(st1) != this->finals.end())
+        continue;
+      for(State st2 : this->states)
+      {
+        if(this->finals.find(st2) != this->finals.end())
+          continue;
+        bool der = deriveRankConstr(st1, st2, rel);
+        if(der)
+          add = true;
+      }
+    }
+  } while(add);
+  this->oddRankSim = rel;
+}
+
+
+template <typename State, typename Symbol>
+void BuchiAutomaton<State, Symbol>::transitiveClosure(
+    BuchiAutomaton<State, Symbol>::StateRelation& rel)
+{
+  int s = rel.size();
+  do
+  {
+    s = rel.size();
+    for(auto p1 : rel)
+    {
+      for(auto p2 : rel)
+      {
+        if(p1.second == p2.first)
+          rel.insert({p1.first, p2.second});
+      }
+    }
+  } while(s != rel.size());
+}
+
+
+template <typename State, typename Symbol>
+bool BuchiAutomaton<State, Symbol>::deriveRankConstr(State& st1, State& st2,
+    BuchiAutomaton<State, Symbol>::StateRelation& rel)
+{
+  bool leq = true;
+  bool geq = true;
+  bool ret = false;
+  bool fwdlq = false;
+  bool fwdgq = false;
+  StateRelation nw;
+
+  for(Symbol sym : this->alph)
+  {
+    set<State> dst1 = this->trans[{st1, sym}];
+    set<State> dst2 = this->trans[{st2, sym}];
+    if(!isRankLeq(dst1, dst2, rel))
+      leq = false;
+    if(!isRankLeq(dst2, dst1, rel))
+      geq = false;
+    propagateFwd(st1, st2, dst1, dst2, rel, nw);
+  }
+
+  if(leq) nw.insert({st1, st2});
+  if(geq) nw.insert({st2, st1});
+
+  for(auto it : nw)
+  {
+    if(rel.find(it) == rel.end())
+      ret = true;
+    rel.insert(it);
+  }
+  return ret;
+}
+
+
+template <typename State, typename Symbol>
+void BuchiAutomaton<State, Symbol>::propagateFwd(State& st1, State& st2,
+    std::set<State>& set1, std::set<State>& set2,
+    BuchiAutomaton<State, Symbol>::StateRelation& rel,
+    BuchiAutomaton<State, Symbol>::StateRelation& nw)
+{
+  State fw1, fw2;
+  std::set<State> fset1, fset2;
+  std::set_difference(set1.begin(), set1.end(), this->finals.begin(), this->finals.end(),
+    std::inserter(fset1, fset1.begin()));
+  std::set_difference(set2.begin(), set2.end(), this->finals.begin(), this->finals.end(),
+    std::inserter(fset2, fset2.begin()));
+
+  if(fset1.size() == 1 && fset2.size() == 1 && rel.find({st1, st2}) != rel.end())
+    nw.insert({*(fset1.begin()), *(fset2.begin())});
+  if(fset1.size() == 1 && fset2.size() == 1 && rel.find({st2, st1}) != rel.end())
+    nw.insert({*(fset2.begin()), *(fset1.begin())});
+}
+
+
+
+template <typename State, typename Symbol>
+bool BuchiAutomaton<State, Symbol>::isRankLeq(std::set<State>& set1, std::set<State>& set2,
+    BuchiAutomaton<State, Symbol>::StateRelation& rel)
+{
+  for(State st1 : set1)
+  {
+    if(this->finals.find(st1) != this->finals.end())
+      continue;
+    for(State st2 : set2)
+    {
+      if(this->finals.find(st2) != this->finals.end())
+        continue;
+      if(rel.find({st1, st2}) == rel.end())
+        return false;
+    }
+  }
+  return true;
 }
 
 

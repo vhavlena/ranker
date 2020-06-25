@@ -28,6 +28,7 @@ public:
   typedef std::set<State> SetStates;
   typedef std::set<Symbol> SetSymbols;
   typedef std::map<std::pair<State, Symbol>, SetStates> Transitions;
+  typedef std::set<std::pair<State, State> > StateRelation;
 
 private:
   SetStates states;
@@ -35,6 +36,11 @@ private:
   SetStates initials;
   SetSymbols alph;
   Transitions trans;
+
+  StateRelation directSim;
+  StateRelation oddRankSim;
+
+  std::map<State, int> renameStateMap;
 
 protected:
   std::string toStringWith(std::function<std::string(State)>& stateStr,  std::function<std::string(Symbol)>& symStr);
@@ -48,6 +54,12 @@ protected:
       ret.insert(mp[p]);
     return ret;
   }
+
+  bool isRankLeq(std::set<State>& set1, std::set<State>& set2, StateRelation& rel);
+  bool deriveRankConstr(State& st1, State& st2, StateRelation& rel);
+  void propagateFwd(State& st1, State& st2, SetStates& set1, SetStates& set2,
+    StateRelation& rel,StateRelation& nw);
+  void transitiveClosure(StateRelation& rel);
 
 public:
   BuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans)
@@ -109,10 +121,32 @@ public:
     return this->alph;
   }
 
+  StateRelation& getOddRankSim()
+  {
+    return this->oddRankSim;
+  }
+
+  void setDirectSim(StateRelation rl)
+  {
+    this->directSim = rl;
+  }
+
+  std::map<State, int>& getRenameStateMap()
+  {
+    return this->renameStateMap;
+  }
+
+  void setRenameStateMap(std::map<State, int> mp)
+  {
+    this->renameStateMap = mp;
+  }
+
   vector<set<State> > reachableVector();
   void complete(State trap);
   void removeUseless();
   void restriction(set<State>& st);
+
+  void computeRankSim();
 };
 
 #endif

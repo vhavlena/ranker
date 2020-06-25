@@ -1,5 +1,5 @@
 
-CPPFLAGS=-std=c++17
+CPPFLAGS=-std=c++17 -O2
 
 test: test-parser test-kv-compl test-sch-compl test-process
 
