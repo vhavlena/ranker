@@ -85,7 +85,8 @@ public:
   }
 
   bool eqEven() const;
-
+  bool relConsistent(set<std::pair<int, int> >& rel) const;
+  bool relOddConsistent(set<std::pair<int, int> >& rel) const;
   bool isSuccValid(RankFunc& prev, map<int, set<int> >& succ) const;
 
   std::string toString() const;

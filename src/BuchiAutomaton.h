@@ -56,10 +56,10 @@ protected:
   }
 
   bool isRankLeq(std::set<State>& set1, std::set<State>& set2, StateRelation& rel);
-  bool deriveRankConstr(State& st1, State& st2, StateRelation& rel);
+  bool deriveRankConstr(State& st1, State& st2, StateRelation& rel, std::map<Symbol, bool>& ignore);
   void propagateFwd(State& st1, State& st2, SetStates& set1, SetStates& set2,
     StateRelation& rel,StateRelation& nw);
-  void transitiveClosure(StateRelation& rel);
+  void transitiveClosure(StateRelation& rel, SetStates& cl);
 
 public:
   BuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans)
@@ -89,6 +89,9 @@ public:
     this->trans = other.trans;
     this->initials = other.initials;
     this->alph = other.alph;
+    this->directSim = other.directSim;
+    this->oddRankSim = other.oddRankSim;
+    this->renameStateMap = other.renameStateMap;
   }
 
   std::set<Symbol> getAlph();
@@ -125,10 +128,18 @@ public:
   {
     return this->oddRankSim;
   }
+  void setOddRankSim(StateRelation rl)
+  {
+    this->oddRankSim = rl;
+  }
 
   void setDirectSim(StateRelation rl)
   {
     this->directSim = rl;
+  }
+  StateRelation& getDirectSim()
+  {
+    return this->directSim;
   }
 
   std::map<State, int>& getRenameStateMap()
@@ -146,7 +157,7 @@ public:
   void removeUseless();
   void restriction(set<State>& st);
 
-  void computeRankSim();
+  void computeRankSim(SetStates& cl);
 };
 
 #endif

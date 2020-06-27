@@ -54,6 +54,18 @@ BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAut()
 
   auto ret = BuchiAutomaton<int, int>(rstate, rfin, rini, rtrans);
   this->renameStateMap = mpstate;
+
+  std::set<std::pair<int, int> > rdirSim, roddSim;
+  for(auto item : this->directSim)
+  {
+    rdirSim.insert({mpstate[item.first], mpstate[item.second]});
+  }
+  for(auto item : this->oddRankSim)
+  {
+    roddSim.insert({mpstate[item.first], mpstate[item.second]});
+  }
+  ret.setDirectSim(rdirSim);
+  ret.setOddRankSim(roddSim);
   return ret;
 }
 
@@ -289,14 +301,26 @@ vector<set<int> > BuchiAutomaton<int, int>::reachableVector()
 
 
 template <typename State, typename Symbol>
-void BuchiAutomaton<State, Symbol>::computeRankSim()
+void BuchiAutomaton<State, Symbol>::computeRankSim(std::set<State>& cl)
 {
   StateRelation rel = this->directSim;
   bool add = false;
+  std::map<Symbol, bool> ignore;
+
+  for(Symbol s : this->alph)
+  {
+    ignore[s] = false;
+    for(State st : cl)
+    {
+      if(this->trans[{st, s}].size() == 0)
+        ignore[s] = true;
+    }
+
+  }
 
   do {
     add = false;
-    transitiveClosure(rel);
+    transitiveClosure(rel, cl);
     for(State st1 : this->states)
     {
       if(this->finals.find(st1) != this->finals.end())
@@ -305,7 +329,7 @@ void BuchiAutomaton<State, Symbol>::computeRankSim()
       {
         if(this->finals.find(st2) != this->finals.end())
           continue;
-        bool der = deriveRankConstr(st1, st2, rel);
+        bool der = deriveRankConstr(st1, st2, rel, ignore);
         if(der)
           add = true;
       }
@@ -317,7 +341,7 @@ void BuchiAutomaton<State, Symbol>::computeRankSim()
 
 template <typename State, typename Symbol>
 void BuchiAutomaton<State, Symbol>::transitiveClosure(
-    BuchiAutomaton<State, Symbol>::StateRelation& rel)
+    BuchiAutomaton<State, Symbol>::StateRelation& rel, std::set<State>& cl)
 {
   int s = rel.size();
   do
@@ -325,8 +349,12 @@ void BuchiAutomaton<State, Symbol>::transitiveClosure(
     s = rel.size();
     for(auto p1 : rel)
     {
+      if(cl.find(p1.first) == cl.end() || cl.find(p1.second) == cl.end())
+        continue;
       for(auto p2 : rel)
       {
+        if(cl.find(p2.first) == cl.end() || cl.find(p2.second) == cl.end())
+          continue;
         if(p1.second == p2.first)
           rel.insert({p1.first, p2.second});
       }
@@ -337,7 +365,8 @@ void BuchiAutomaton<State, Symbol>::transitiveClosure(
 
 template <typename State, typename Symbol>
 bool BuchiAutomaton<State, Symbol>::deriveRankConstr(State& st1, State& st2,
-    BuchiAutomaton<State, Symbol>::StateRelation& rel)
+    BuchiAutomaton<State, Symbol>::StateRelation& rel,
+    std::map<Symbol, bool>& ignore)
 {
   bool leq = true;
   bool geq = true;
@@ -350,11 +379,11 @@ bool BuchiAutomaton<State, Symbol>::deriveRankConstr(State& st1, State& st2,
   {
     set<State> dst1 = this->trans[{st1, sym}];
     set<State> dst2 = this->trans[{st2, sym}];
-    if(!isRankLeq(dst1, dst2, rel))
+    if(!isRankLeq(dst1, dst2, rel) && !ignore[sym])
       leq = false;
-    if(!isRankLeq(dst2, dst1, rel))
+    if(!isRankLeq(dst2, dst1, rel) && !ignore[sym])
       geq = false;
-    propagateFwd(st1, st2, dst1, dst2, rel, nw);
+    //propagateFwd(st1, st2, dst1, dst2, rel, nw);
   }
 
   if(leq) nw.insert({st1, st2});

@@ -102,3 +102,29 @@ bool RankFunc::eqEven() const
   }
   return true;
 }
+
+
+bool RankFunc::relConsistent(set<std::pair<int, int> >& rel) const
+{
+  for(auto item : rel)
+  {
+    auto it1 = this->find(item.first);
+    auto it2 = this->find(item.second);
+    if(it1 != this->end() && it2 != this->end() && it1->second > it2->second)
+      return false;
+  }
+  return true;
+}
+
+
+bool RankFunc::relOddConsistent(set<std::pair<int, int> >& rel) const
+{
+  for(auto item : rel)
+  {
+    auto it1 = this->find(item.first);
+    auto it2 = this->find(item.second);
+    if(it1 != this->end() && it2 != this->end() && it1->second % 2 != 0 && it2->second % 2 != 0 && it1->second > it2->second)
+      return false;
+  }
+  return true;
+}
