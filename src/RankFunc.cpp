@@ -1,15 +1,37 @@
 
 #include "RankFunc.h"
 
-vector<RankFunc> RankFunc::cartProductMap(vector<RankFunc> s1, vector<std::pair<int, int> > s2)
+vector<RankFunc> RankFunc::cartTightProductMap(vector<RankFunc> s1, vector<std::pair<int, int> > s2, int rem, vector<vector<std::pair<int,bool> > >& rel)
 {
   vector<RankFunc> ret;
+  bool cnt = false;
   for(auto v1 : s1)
   {
     for(auto v2 : s2)
     {
       RankFunc tmp(v1);
       tmp.addPair(v2);
+      if(rem < tmp.remTightCount())
+        continue;
+      cnt = false;
+      for(auto st : rel[v2.first])
+      {
+        auto it = tmp.find(st.first);
+        if(it != tmp.end())
+        {
+          if(st.second && it->second < v2.second)
+          {
+            cnt = true;
+            break;
+          }
+          if(!st.second && it->second > v2.second)
+          {
+            cnt = true;
+            break;
+          }
+        }
+      }
+      if(cnt) continue;
       ret.push_back(tmp);
     }
   }
@@ -17,7 +39,7 @@ vector<RankFunc> RankFunc::cartProductMap(vector<RankFunc> s1, vector<std::pair<
 }
 
 
-vector<RankFunc> RankFunc::cartProductMapList(RankConstr slist)
+vector<RankFunc> RankFunc::cartTightProductMapList(RankConstr slist, vector<vector<std::pair<int,bool> > >& rel)
 {
   vector<RankFunc> ret;
   if(slist.size() == 0)
@@ -27,7 +49,7 @@ vector<RankFunc> RankFunc::cartProductMapList(RankConstr slist)
     ret.push_back(RankFunc(map<int, int>({p})));
   for(int i = 1; i < slist.size(); i++)
   {
-    ret = RankFunc::cartProductMap(ret, slist[i]);
+    ret = RankFunc::cartTightProductMap(ret, slist[i], slist.size() - i - 1, rel);
   }
   return ret;
 }
@@ -35,7 +57,14 @@ vector<RankFunc> RankFunc::cartProductMapList(RankConstr slist)
 
 vector<RankFunc> RankFunc::fromRankConstr(RankConstr constr)
 {
-  return RankFunc::cartProductMapList(constr);
+  vector<vector<std::pair<int,bool> > > emp;
+  return RankFunc::cartTightProductMapList(constr, emp);
+}
+
+
+vector<RankFunc> RankFunc::tightFromRankConstr(RankConstr constr, vector<vector<std::pair<int,bool> > >& rel)
+{
+  return RankFunc::cartTightProductMapList(constr, rel);
 }
 
 

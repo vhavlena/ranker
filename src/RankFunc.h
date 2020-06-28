@@ -27,8 +27,8 @@ private:
   int maxRank;
   RankInverse inverse;
 
-  static vector<RankFunc> cartProductMap(vector<RankFunc> s1, vector<std::pair<int, int> > s2);
-  static vector<RankFunc> cartProductMapList(RankConstr slist);
+  static vector<RankFunc> cartTightProductMap(vector<RankFunc> s1, vector<std::pair<int, int> > s2, int rem, vector<vector<std::pair<int,bool> > >& rel);
+  static vector<RankFunc> cartTightProductMapList(RankConstr slist, vector<vector<std::pair<int,bool> > >& rel);
 
 public:
   RankFunc() : map<int,int>(), oddStates(), inverse(), tight(0)
@@ -106,10 +106,16 @@ public:
   bool relOddConsistent(set<std::pair<int, int> >& rel) const;
   bool isSuccValid(RankFunc& prev, map<int, set<int> >& succ) const;
 
+  int remTightCount() const
+  {
+    return this->tight.size() - this->tight.count();
+  }
+
   std::string toString() const;
   bool isTightRank() const;
 
   static vector<RankFunc> fromRankConstr(RankConstr constr);
+  static vector<RankFunc> tightFromRankConstr(RankConstr constr, vector<vector<std::pair<int,bool> > >& rel);
 };
 
 #endif
