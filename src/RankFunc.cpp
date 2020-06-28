@@ -78,18 +78,19 @@ std::string RankFunc::toString() const
 
 bool RankFunc::isTightRank() const
 {
-  boost::dynamic_bitset<> rnk((this->maxRank+1)/2);
-  if(this->maxRank % 2 == 0)
-    return false;
-  for(auto v : *this)
-  {
-    if(v.second > this->maxRank)
-      return false;
-    if(v.second % 2 == 0)
-      continue;
-    rnk[(v.second+1)/2 - 1] = 1;
-  }
-  return rnk.all();
+  return this->tight.all();
+  // boost::dynamic_bitset<> rnk((this->maxRank+1)/2);
+  // if(this->maxRank % 2 == 0)
+  //   return false;
+  // for(auto v : *this)
+  // {
+  //   if(v.second > this->maxRank)
+  //     return false;
+  //   if(v.second % 2 == 0)
+  //     continue;
+  //   rnk[(v.second+1)/2 - 1] = 1;
+  // }
+  // return rnk.all();
 }
 
 

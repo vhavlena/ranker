@@ -19,20 +19,16 @@ struct StateSch {
   {
     if(tight == rhs.tight && tight)
     {
-      if(S == rhs.S)
+      if(i == rhs.i)
       {
         if(O == rhs.O)
         {
-          if(f == rhs.f)
-          {
-            return i < rhs.i;
-          }
           return f < rhs.f;
         }
         return O < rhs.O;
       }
       else
-      return S < rhs.S;
+      return i < rhs.i;
     }
     else if(tight == rhs.tight)
     {

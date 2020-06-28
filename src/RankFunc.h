@@ -22,6 +22,7 @@ typedef map<int, set<int> > RankInverse;
 class RankFunc : public map<int,int>
 {
 private:
+  boost::dynamic_bitset<> tight;
   set<int> oddStates;
   int maxRank;
   RankInverse inverse;
@@ -30,7 +31,7 @@ private:
   static vector<RankFunc> cartProductMapList(RankConstr slist);
 
 public:
-  RankFunc() : map<int,int>(), oddStates(), inverse()
+  RankFunc() : map<int,int>(), oddStates(), inverse(), tight(0)
   {
     this->maxRank = 0;
   }
@@ -40,9 +41,17 @@ public:
     RankInverse::iterator it;
     for(auto k : mp)
     {
-      if(k.second % 2 != 0)
-        this->oddStates.insert(k.first);
       this->maxRank = std::max(this->maxRank, k.second);
+      int tmp = this->maxRank;
+      if(tmp % 2 == 0) tmp++;
+      if(this->tight.size() < (tmp-1)/2 + 1)
+        this->tight.resize((tmp-1)/2 + 1);
+      if(k.second % 2 != 0)
+      {
+        this->oddStates.insert(k.first);
+        this->tight.set((k.second - 1) / 2);
+      }
+
       it = this->inverse.find(k.second);
       if(it != this->inverse.end())
         it->second.insert(k.first);
@@ -58,9 +67,17 @@ public:
 
   void addPair(std::pair<int, int> val)
   {
-    if(val.second % 2 != 0)
-      this->oddStates.insert(val.first);
     this->maxRank = std::max(this->maxRank, val.second);
+    int tmp = this->maxRank;
+    if(tmp % 2 == 0) tmp++;
+    if(this->tight.size() < (tmp-1)/2 + 1)
+      this->tight.resize((tmp-1)/2 + 1);
+    if(val.second % 2 != 0)
+    {
+      this->oddStates.insert(val.first);
+      this->tight.set((val.second - 1) / 2);
+    }
+
     this->insert(val);
     RankInverse::iterator it = this->inverse.find(val.second);
     if(it != this->inverse.end())
