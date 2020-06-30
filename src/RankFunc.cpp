@@ -1,7 +1,56 @@
 
 #include "RankFunc.h"
 
-vector<RankFunc> RankFunc::cartTightProductMap(vector<RankFunc> s1, vector<std::pair<int, int> > s2, int rem, vector<vector<std::pair<int,bool> > >& rel)
+
+RankFunc::RankFunc(const map<int,int> mp) : map<int,int>(mp)
+{
+  RankInverse::iterator it;
+  for(auto k : mp)
+  {
+    this->maxRank = std::max(this->maxRank, k.second);
+    int tmp = this->maxRank;
+    if(tmp % 2 == 0) tmp++;
+    if(this->tight.size() < (tmp-1)/2 + 1)
+      this->tight.resize((tmp-1)/2 + 1);
+    if(k.second % 2 != 0)
+    {
+      this->oddStates.insert(k.first);
+      this->tight.set((k.second - 1) / 2);
+    }
+
+    it = this->inverse.find(k.second);
+    if(it != this->inverse.end())
+      it->second.insert(k.first);
+    else
+      this->inverse[k.second] = set<int>({k.first});
+  }
+}
+
+
+void RankFunc::addPair(std::pair<int, int> val)
+{
+  this->maxRank = std::max(this->maxRank, val.second);
+  int tmp = this->maxRank;
+  if(tmp % 2 == 0) tmp++;
+  if(this->tight.size() < (tmp-1)/2 + 1)
+    this->tight.resize((tmp-1)/2 + 1);
+  if(val.second % 2 != 0)
+  {
+    this->oddStates.insert(val.first);
+    this->tight.set((val.second - 1) / 2);
+  }
+
+  this->insert(val);
+  RankInverse::iterator it = this->inverse.find(val.second);
+  if(it != this->inverse.end())
+    it->second.insert(val.first);
+  else
+    this->inverse[val.second] = set<int>({val.first});
+}
+
+
+vector<RankFunc> RankFunc::cartTightProductMap(vector<RankFunc> s1, vector<std::pair<int, int> > s2,
+    int rem, BackRel& rel, BackRel& oddRel, int max)
 {
   vector<RankFunc> ret;
   bool cnt = false;
@@ -13,25 +62,13 @@ vector<RankFunc> RankFunc::cartTightProductMap(vector<RankFunc> s1, vector<std::
       tmp.addPair(v2);
       if(rem < tmp.remTightCount())
         continue;
-      cnt = false;
-      for(auto st : rel[v2.first])
-      {
-        auto it = tmp.find(st.first);
-        if(it != tmp.end())
-        {
-          if(st.second && it->second < v2.second)
-          {
-            cnt = true;
-            break;
-          }
-          if(!st.second && it->second > v2.second)
-          {
-            cnt = true;
-            break;
-          }
-        }
-      }
-      if(cnt) continue;
+      if(max != -1 && rem == 0 && tmp.getMaxRank() != max)
+        continue;
+
+      if(!RankFunc::checkDirectBackRel(v2, tmp, rel))
+        continue;
+      if(!RankFunc::checkOddBackRel(v2, tmp, oddRel))
+        continue;
       ret.push_back(tmp);
     }
   }
@@ -39,7 +76,54 @@ vector<RankFunc> RankFunc::cartTightProductMap(vector<RankFunc> s1, vector<std::
 }
 
 
-vector<RankFunc> RankFunc::cartTightProductMapList(RankConstr slist, vector<vector<std::pair<int,bool> > >& rel)
+bool RankFunc::checkDirectBackRel(std::pair<int, int>& act, RankFunc& tmp, BackRel& rel)
+{
+  for(auto st : rel[act.first])
+  {
+    auto it = tmp.find(st.first);
+    if(it != tmp.end())
+    {
+      if(st.second && it->second < act.second)
+      {
+        return false;
+      }
+      if(!st.second && it->second > act.second)
+      {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+
+bool RankFunc::checkOddBackRel(std::pair<int, int>& act, RankFunc& tmp, BackRel& oddRel)
+{
+  if(act.second % 2 != 0)
+  {
+    for(auto st : oddRel[act.first])
+    {
+      auto it = tmp.find(st.first);
+      if(it != tmp.end())
+      {
+        if(it->second % 2 == 0)
+          continue;
+        if(st.second && it->second < act.second)
+        {
+          return false;
+        }
+        if(!st.second && it->second > act.second)
+        {
+          return false;
+        }
+      }
+    }
+  }
+  return true;
+}
+
+
+vector<RankFunc> RankFunc::cartTightProductMapList(RankConstr slist, BackRel& rel, BackRel& oddRel, int max)
 {
   vector<RankFunc> ret;
   if(slist.size() == 0)
@@ -49,7 +133,7 @@ vector<RankFunc> RankFunc::cartTightProductMapList(RankConstr slist, vector<vect
     ret.push_back(RankFunc(map<int, int>({p})));
   for(int i = 1; i < slist.size(); i++)
   {
-    ret = RankFunc::cartTightProductMap(ret, slist[i], slist.size() - i - 1, rel);
+    ret = RankFunc::cartTightProductMap(ret, slist[i], slist.size() - i - 1, rel, oddRel, max);
   }
   return ret;
 }
@@ -58,13 +142,19 @@ vector<RankFunc> RankFunc::cartTightProductMapList(RankConstr slist, vector<vect
 vector<RankFunc> RankFunc::fromRankConstr(RankConstr constr)
 {
   vector<vector<std::pair<int,bool> > > emp;
-  return RankFunc::cartTightProductMapList(constr, emp);
+  return RankFunc::cartTightProductMapList(constr, emp, emp);
 }
 
 
-vector<RankFunc> RankFunc::tightFromRankConstr(RankConstr constr, vector<vector<std::pair<int,bool> > >& rel)
+vector<RankFunc> RankFunc::tightFromRankConstr(RankConstr constr, BackRel& rel, BackRel& oddRel)
 {
-  return RankFunc::cartTightProductMapList(constr, rel);
+  return RankFunc::cartTightProductMapList(constr, rel, oddRel);
+}
+
+
+vector<RankFunc> RankFunc::tightSuccFromRankConstr(RankConstr constr, BackRel& rel, BackRel& oddRel, int max)
+{
+  return RankFunc::cartTightProductMapList(constr, rel, oddRel, max);
 }
 
 
@@ -108,18 +198,6 @@ std::string RankFunc::toString() const
 bool RankFunc::isTightRank() const
 {
   return this->tight.all();
-  // boost::dynamic_bitset<> rnk((this->maxRank+1)/2);
-  // if(this->maxRank % 2 == 0)
-  //   return false;
-  // for(auto v : *this)
-  // {
-  //   if(v.second > this->maxRank)
-  //     return false;
-  //   if(v.second % 2 == 0)
-  //     continue;
-  //   rnk[(v.second+1)/2 - 1] = 1;
-  // }
-  // return rnk.all();
 }
 
 
@@ -154,6 +232,18 @@ bool RankFunc::relOddConsistent(set<std::pair<int, int> >& rel) const
     auto it1 = this->find(item.first);
     auto it2 = this->find(item.second);
     if(it1 != this->end() && it2 != this->end() && it1->second % 2 != 0 && it2->second % 2 != 0 && it1->second > it2->second)
+      return false;
+  }
+  return true;
+}
+
+
+bool RankFunc::zeroConsistent() const
+{
+  auto it = this->find(0);
+  if(it != this->end())
+  {
+    if(it->second != this->getMaxRank() - 1)
       return false;
   }
   return true;

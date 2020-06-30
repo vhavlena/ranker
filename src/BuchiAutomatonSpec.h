@@ -23,7 +23,7 @@ using std::map;
 class BuchiAutomatonSpec : public BuchiAutomaton<int, int>
 {
 private:
-  //typedef map<int, int> Rank;
+  BackRel createBackRel(BuchiAutomaton<int, int>::StateRelation& rel);
 
 protected:
   RankConstr rankConstr(vector<int>& max, set<int>& states);
@@ -35,9 +35,9 @@ protected:
 
   vector<RankFunc> getSchRanks(vector<int>& max, std::set<int>& states, StateSch& macrostate);
   vector<RankFunc> getSchRanksTight(vector<int>& max, set<int>& states,
-      StateSch& macrostate, map<int, set<int> >& succ);
-  set<StateSch> succSetSchStart(set<int>& state, int symbol);
-  set<StateSch> succSetSchTight(StateSch& state, int symbol);
+      StateSch& macrostate, map<int, set<int> >& succ, BackRel& dirRel, BackRel& oddRel);
+  set<StateSch> succSetSchStart(set<int>& state, int symbol, BackRel& dirRel, BackRel& oddRel);
+  set<StateSch> succSetSchTight(StateSch& state, int symbol, BackRel& dirRel, BackRel& oddRel);
   bool isSchFinal(StateSch& state) const { return state.tight ? state.O.size() == 0 : state.S.size() == 0; }
 
 
