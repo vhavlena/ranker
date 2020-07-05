@@ -21,11 +21,20 @@ struct Transition {
   Symbol symbol;
 };
 
+template <typename State>
+struct LabelState {
+  State state;
+  int label;
+};
+
 template <typename State, typename Symbol>
 class BuchiAutomaton {
 
 public:
   typedef std::set<State> SetStates;
+  typedef std::set<LabelState<State> > SetLabelStates;
+  typedef std::set<LabelState<State>* > SetLabelStatesPtr;
+  typedef std::vector<LabelState<State>> VecLabelStates;
   typedef std::set<Symbol> SetSymbols;
   typedef std::map<std::pair<State, Symbol>, SetStates> Transitions;
   typedef std::set<std::pair<State, State> > StateRelation;
@@ -158,6 +167,10 @@ public:
   void restriction(set<State>& st);
 
   void computeRankSim(SetStates& cl);
+
+
+  VecLabelStates propagateGraphValues(const std::function<int(LabelState<State>&,SetLabelStatesPtr&)>& updFnc,
+    const std::function<int(const State&)>& initFnc);
 };
 
 #endif

@@ -221,7 +221,8 @@ set<StateSch> BuchiAutomatonSpec::succSetSchTight(StateSch& state, int symbol,
       maxRank[d] = std::min(maxRank[d], state.f[st]);
     }
     sprime.insert(dst.begin(), dst.end());
-    succ[st] = dst;
+    if(state.f.find(st)->second % 2 != 0)
+      succ[st] = dst;
 
     // BEWARE
     // if(state.f.find(st)->second == 0)
@@ -318,7 +319,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSch()
       else
       {
         StateSch nt = {succSet(st.S, sym), set<int>(), RankFunc(), false};
-        // dst.insert(nt);
+        dst.insert(nt);
         if(comst.find(nt) == comst.end())
         {
           stack.push(nt);
@@ -329,21 +330,21 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSch()
         //   succ = succSetSchStart(st.S, sym);
         // else
           // succ = set<StateSch>();
-        if(st.S == set<int>({0,2,5,6,7,9,10}) || st.S == set<int>({0,5,6,7,9,10}) || st.S == set<int>({0,1,4,6,10,11}) )
-          succ = succSetSchStart(st.S, sym, dirRel, oddRel);
-        else
+        // if(st.S == set<int>({0,2,5,6,7,9,10}) || st.S == set<int>({0,5,6,7,9,10}) || st.S == set<int>({0,1,4,6,10,11}) )
+        //   succ = succSetSchStart(st.S, sym, dirRel, oddRel);
+        // else
           succ = set<StateSch>();
       }
       for (auto s : succ)
       {
-        // dst.insert(s);
+        //dst.insert(s);
         if(comst.find(s) == comst.end())
         {
           stack.push(s);
           comst.insert(s);
         }
       }
-      // mp[pr] = dst;
+      mp[pr] = dst;
     }
     //std::cout << comst.size() << std::endl;
   }
@@ -552,6 +553,53 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchMin()
       mp[pr] = dst;
     }
     std::cout << comst.size() << std::endl;
+  }
+
+  return BuchiAutomaton<StateSch, int>(comst, finals,
+    initials, mp, alph);
+}
+
+
+BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchNFA(set<int>& start)
+{
+  std::stack<StateSch> stack;
+  set<StateSch> comst;
+  set<StateSch> initials;
+  set<StateSch> finals;
+  //set<StateSch> succ;
+  set<int> alph = getAlphabet();
+  map<std::pair<StateSch, int>, set<StateSch> > mp;
+  map<std::pair<StateSch, int>, set<StateSch> >::iterator it;
+
+  StateSch init = {start, set<int>(), RankFunc(), 0, false};
+  stack.push(init);
+  comst.insert(init);
+  initials.insert(init);
+
+
+  while(stack.size() > 0)
+  {
+    StateSch st = stack.top();
+    stack.pop();
+    if(isSchFinal(st))
+      finals.insert(st);
+
+    for(int sym : alph)
+    {
+      auto pr = std::make_pair(st, sym);
+      set<StateSch> dst;
+      if(!st.tight)
+      {
+        StateSch nt = {succSet(st.S, sym), set<int>(), RankFunc(), false};
+        dst.insert(nt);
+        if(comst.find(nt) == comst.end())
+        {
+          stack.push(nt);
+          comst.insert(nt);
+        }
+      }
+      mp[pr] = dst;
+    }
   }
 
   return BuchiAutomaton<StateSch, int>(comst, finals,

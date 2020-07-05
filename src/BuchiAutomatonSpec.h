@@ -51,6 +51,7 @@ public:
   BuchiAutomaton<StateKV, int> complementKV();
   BuchiAutomaton<StateSch, int> complementSch();
   BuchiAutomaton<StateSch, int> complementSchMin();
+  BuchiAutomaton<StateSch, int> complementSchNFA(set<int>& start);
 };
 
 #endif

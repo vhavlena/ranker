@@ -439,6 +439,45 @@ bool BuchiAutomaton<State, Symbol>::isRankLeq(std::set<State>& set1, std::set<St
   return true;
 }
 
+template <typename State, typename Symbol>
+std::vector<LabelState<State>> BuchiAutomaton<State, Symbol>::propagateGraphValues(
+    const std::function<int(LabelState<State>&,SetLabelStatesPtr&)>& updFnc, const std::function<int(const State&)>& initFnc)
+{
+  std::map<State, LabelState<State>*> lst;
+  VecLabelStates active;
+  std::map<State, std::set<LabelState<State>*>> tr;
+  for(const State& st : this->states)
+  {
+    LabelState<State> nst = {st, initFnc(st)};
+    auto it = active.insert(active.end(), nst);
+    lst.insert({st, &(*it)});
+    tr[st] = std::set<LabelState<State>*>();
+  }
+  for(const auto& t : this->trans)
+  {
+    for(const auto& d : t.second)
+    {
+      auto it = lst.find(d);
+      LabelState<State>* val = it->second;
+
+      tr[t.first.first].insert(val);
+    }
+  }
+
+  bool change = false;
+  do {
+    change = false;
+    for(LabelState<State>& ls : active)
+    {
+      int nval = updFnc(ls, tr[ls.state]);
+      if(nval != ls.label)
+        change = true;
+      ls.label = nval;
+    }
+  } while(change);
+  return active;
+}
+
 
 
 template class BuchiAutomaton<int, int>;

@@ -1,7 +1,7 @@
 
 CPPFLAGS=-std=c++17 -O2
 
-test: test-parser test-kv-compl test-sch-compl test-process
+test: test-parser test-kv-compl test-sch-compl test-process test-nfa-prop
 
 test-parser: units/test-parser.cpp BuchiAutomataParser.o BuchiAutomaton.o BuchiAutomatonSpec.o RankFunc.o AutGraph.o
 	g++ $(CPPFLAGS) -o units/$@ $?
@@ -10,6 +10,9 @@ test-kv-compl: units/test-kv-compl.cpp BuchiAutomataParser.o BuchiAutomaton.o Bu
 	g++ $(CPPFLAGS) -o units/$@ $?
 
 test-sch-compl: units/test-sch-compl.cpp BuchiAutomataParser.o BuchiAutomaton.o BuchiAutomatonSpec.o RankFunc.o AutGraph.o
+	g++ $(CPPFLAGS) -o units/$@ $?
+
+test-nfa-prop: units/test-nfa-prop.cpp BuchiAutomataParser.o BuchiAutomaton.o BuchiAutomatonSpec.o RankFunc.o AutGraph.o
 	g++ $(CPPFLAGS) -o units/$@ $?
 
 test-process: units/test-process.cpp BuchiAutomataParser.o BuchiAutomaton.o BuchiAutomatonSpec.o RankFunc.o AutGraph.o
