@@ -605,3 +605,75 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchNFA(set<int>& sta
   return BuchiAutomaton<StateSch, int>(comst, finals,
     initials, mp, alph);
 }
+
+
+bool BuchiAutomatonSpec::acceptSl(StateSch& state, vector<int>& alp)
+{
+  set<int> rel;
+  bool all = true;
+  set<int> symAcc;
+  set<int> fin = getFinals();
+  std::stack<set<int>> stack;
+  std::set<set<int>> comst;
+
+  if(state.S.size() == 0)
+    return false;
+
+  for(int st : state.S)
+  {
+    if(fin.find(st) != fin.end())
+      rel.insert(st);
+  }
+  if(rel.size() == 0)
+    return false;
+  for(const int& a : alp)
+  {
+    for(int st : rel)
+    {
+      set<int> sng = {st};
+      stack = std::stack<set<int>>();
+      comst.clear();
+      stack.push(succSet(sng, a));
+      comst.insert(sng);
+      comst.insert(succSet(sng, a));
+
+      while(stack.size() > 0)
+      {
+        set<int> pst = stack.top();
+        stack.pop();
+        if(pst.find(st) != pst.end())
+        {
+          symAcc.insert(a);
+          all = true;
+          break;
+        }
+        set<int> dst = succSet(pst, a);
+        if(comst.find(dst) == comst.end())
+        {
+          stack.push(dst);
+          comst.insert(dst);
+        }
+      }
+      if(all) break;
+    }
+  }
+  return symAcc.size() == alp.size();
+}
+
+
+set<StateSch> BuchiAutomatonSpec::nfaSlAccept(BuchiAutomaton<StateSch, int>& nfaSchewe)
+{
+  vector<int> alph;
+  set<StateSch> slAccept;
+  for(StateSch st : nfaSchewe.getStates())
+  {
+    if(st.tight)  continue;
+    alph = nfaSchewe.containsSelfLoop(st);
+    if(alph.size() > 0)
+    {
+      if(acceptSl(st, alph))
+        slAccept.insert(st);
+    }
+  }
+  return slAccept;
+}

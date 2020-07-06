@@ -45,6 +45,8 @@ protected:
   vector<RankFunc> getSchRanksMin(vector<int>& max, set<int>& states, StateSch& macrostate, map<int, set<int> >& succ);
   set<StateSch> succSetSchStartMin(set<int>& state, int symbol);
 
+  bool acceptSl(StateSch& state, vector<int>& alp);
+
 public:
   BuchiAutomatonSpec(BuchiAutomaton<int, int> &t) : BuchiAutomaton<int, int>(t) {}
 
@@ -52,6 +54,8 @@ public:
   BuchiAutomaton<StateSch, int> complementSch();
   BuchiAutomaton<StateSch, int> complementSchMin();
   BuchiAutomaton<StateSch, int> complementSchNFA(set<int>& start);
+
+  set<StateSch> nfaSlAccept(BuchiAutomaton<StateSch, int>& nfaSchewe);
 };
 
 #endif

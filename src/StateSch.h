@@ -42,7 +42,7 @@ struct StateSch {
     return S == rhs.S && O == rhs.O && f == rhs.f && i == rhs.i;
   }
 
-  std::string toString()
+  std::string toString() const
   {
     if(!tight)
       return "{" + printSet(S) + "}";
@@ -52,7 +52,7 @@ struct StateSch {
     return ret;
   }
 
-  std::string printSet(std::set<int> st)
+  std::string printSet(std::set<int> st) const
   {
     std::string ret;
     for (auto s : st)

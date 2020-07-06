@@ -34,6 +34,7 @@ public:
   typedef std::set<State> SetStates;
   typedef std::set<LabelState<State> > SetLabelStates;
   typedef std::set<LabelState<State>* > SetLabelStatesPtr;
+  typedef std::vector<LabelState<State>* > VecLabelStatesPtr;
   typedef std::vector<LabelState<State>> VecLabelStates;
   typedef std::set<Symbol> SetSymbols;
   typedef std::map<std::pair<State, Symbol>, SetStates> Transitions;
@@ -167,9 +168,9 @@ public:
   void restriction(set<State>& st);
 
   void computeRankSim(SetStates& cl);
+  vector<Symbol> containsSelfLoop(State& state);
 
-
-  VecLabelStates propagateGraphValues(const std::function<int(LabelState<State>&,SetLabelStatesPtr&)>& updFnc,
+  VecLabelStates propagateGraphValues(const std::function<int(LabelState<State>*,VecLabelStatesPtr)>& updFnc,
     const std::function<int(const State&)>& initFnc);
 };
 

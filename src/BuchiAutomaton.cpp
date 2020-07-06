@@ -439,45 +439,70 @@ bool BuchiAutomaton<State, Symbol>::isRankLeq(std::set<State>& set1, std::set<St
   return true;
 }
 
+
 template <typename State, typename Symbol>
 std::vector<LabelState<State>> BuchiAutomaton<State, Symbol>::propagateGraphValues(
-    const std::function<int(LabelState<State>&,SetLabelStatesPtr&)>& updFnc, const std::function<int(const State&)>& initFnc)
+    const std::function<int(LabelState<State>*,VecLabelStatesPtr)>& updFnc, const std::function<int(const State&)>& initFnc)
 {
   std::map<State, LabelState<State>*> lst;
-  VecLabelStates active;
-  std::map<State, std::set<LabelState<State>*>> tr;
-  for(const State& st : this->states)
+  VecLabelStatesPtr active;
+  std::map<State, std::vector<LabelState<State>*>> tr;
+  for(State st : this->states)
   {
-    LabelState<State> nst = {st, initFnc(st)};
-    auto it = active.insert(active.end(), nst);
-    lst.insert({st, &(*it)});
-    tr[st] = std::set<LabelState<State>*>();
-  }
-  for(const auto& t : this->trans)
-  {
-    for(const auto& d : t.second)
-    {
-      auto it = lst.find(d);
-      LabelState<State>* val = it->second;
+    LabelState<State>* nst = new LabelState<State>;
+    nst->label = initFnc(st);
+    nst->state = st;
 
-      tr[t.first.first].insert(val);
+    active.push_back(nst);
+    lst[st] = nst;
+    tr[st] = std::vector<LabelState<State>*>();
+  }
+
+  for(auto t : this->trans)
+  {
+    for(auto d : t.second)
+    {
+      tr[t.first.first].push_back(lst[d]);
     }
   }
 
   bool change = false;
   do {
     change = false;
-    for(LabelState<State>& ls : active)
+    for(LabelState<State>* ls : active)
     {
-      int nval = updFnc(ls, tr[ls.state]);
-      if(nval != ls.label)
+      int nval = updFnc(ls, tr[ls->state]);
+      if(nval != ls->label)
         change = true;
-      ls.label = nval;
+      ls->label = nval;
     }
   } while(change);
-  return active;
+
+  VecLabelStates activeVal;
+  for(int i = 0; i < active.size(); i++)
+  {
+    activeVal.push_back(*(active[i]));
+    delete active[i];
+  }
+
+  return activeVal;
 }
 
+
+template <typename State, typename Symbol>
+std::vector<Symbol> BuchiAutomaton<State, Symbol>::containsSelfLoop(State& state)
+{
+  vector<Symbol> ret;
+  auto trans = this->getTransitions();
+  for(const auto& a : this->getAlphabet())
+  {
+    set<State> dst = trans[std::make_pair(state, a)];
+    auto it = dst.find(state);
+    if(it != dst.end())
+      ret.push_back(a);
+  }
+  return ret;
+}
 
 
 template class BuchiAutomaton<int, int>;

@@ -9,18 +9,20 @@
 
 using namespace std;
 
-int updMaxFnc(LabelState<StateSch>& a, std::set<LabelState<StateSch>*>& sts)
+set<StateSch> slIgnore;
+
+int updMaxFnc(LabelState<StateSch>* a, const std::vector<LabelState<StateSch>*> sts)
 {
-  int m = a.label;
-  //std::cout << a.state.toString() << endl;
-  for(LabelState<StateSch>* tmp : sts)
+  int m = 0;
+  //std::cout << a->state.toString() << endl;
+  for(const LabelState<StateSch>* tmp : sts)
   {
-    cout << tmp->state.toString() << std::endl;
-    // if(tmp->state.S == a.state.S)
-    //   continue;
+    //cout << ": " << tmp->state.toString() << std::endl;
+    if(tmp->state.S == a->state.S && slIgnore.find(a->state) != slIgnore.end())
+      continue;
     m = std::max(m, tmp->label);
   }
-  return std::min(a.label, m);
+  return std::min(a->label, m);
 }
 
 
@@ -49,6 +51,9 @@ int main(int argc, char *argv[])
     BuchiAutomaton<int, int> ren = ba.renameAut();
     BuchiAutomatonSpec sp(ren);
     BuchiAutomaton<StateSch, int> comp = sp.complementSchNFA(sp.getInitials());
+
+    //cout << comp.toGraphwiz() << endl;
+    slIgnore = sp.nfaSlAccept(comp);
 
     auto prval = comp.propagateGraphValues(updMaxFnc, initMaxFnc);
     for(auto& tmp : prval)
