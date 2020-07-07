@@ -1,2 +1,11 @@
 .DS_Store
 *.o
+
+src/units/test-kv-compl
+src/units/test-nfa-prop
+src/units/test-parser
+src/units/test-process
+src/units/test-sch-compl
+
+src/img
+src/obj
