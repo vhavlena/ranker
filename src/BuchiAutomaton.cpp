@@ -22,10 +22,12 @@ BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAut()
   std::map< std::pair<int, int>, std::set<int> > rtrans;
   std::set<int> rfin;
   std::set<int> rini;
+  this->invRenameMap = std::vector<State>(this->states.size());
 
   for(auto st : this->states)
   {
     auto it = mpstate.find(st);
+    this->invRenameMap[stcnt] = st;
     if(it == mpstate.end())
     {
       mpstate[st] = stcnt++;
@@ -174,13 +176,11 @@ std::string BuchiAutomaton<StateSch, int>::toString()
   return toStringWith(f1, f2);
 }
 
+
 template <>
-void BuchiAutomaton<int, int>::removeUseless()
+void BuchiAutomaton<int, int>::getAutGraphComponents(AdjList& adjList, Vertices& vrt)
 {
   vector<set<int> > adjListSet(this->states.size());
-  vector<vector<int> > adjList(this->states.size());
-  vector<vector<int> > revList(this->states.size());
-  vector<VertItem> vrt;
   for(auto st : this->states)
   {
     vrt.push_back({st, -1, -1, false});
@@ -192,13 +192,27 @@ void BuchiAutomaton<int, int>::removeUseless()
   }
   for(int i = 0; i < adjListSet.size(); i++)
   {
-    for(auto dst : adjListSet[i])
-      revList[dst].push_back(i);
     adjList[i] = vector<int>(adjListSet[i].begin(), adjListSet[i].end());
+  }
+}
+
+
+template <>
+void BuchiAutomaton<int, int>::removeUseless()
+{
+  vector<vector<int> > adjList(this->states.size());
+  vector<vector<int> > revList(this->states.size());
+  vector<VertItem> vrt;
+
+  getAutGraphComponents(adjList, vrt);
+  for(int i = 0; i < adjList.size(); i++)
+  {
+    for(auto dst : adjList[i])
+      revList[dst].push_back(i);
   }
 
   AutGraph gr(adjList, vrt, this->finals);
-  gr.computeFinalSCCs();
+  gr.computeSCCs();
   set<int> fin;
   for(auto s : gr.getFinalComponents())
   {
@@ -500,6 +514,94 @@ std::vector<Symbol> BuchiAutomaton<State, Symbol>::containsSelfLoop(State& state
     auto it = dst.find(state);
     if(it != dst.end())
       ret.push_back(a);
+  }
+  return ret;
+}
+
+
+template <typename State, typename Symbol>
+set<State> BuchiAutomaton<State, Symbol>::getSelfLoops()
+{
+  set<State> sl;
+  for(const State& st : this->getStates())
+  {
+    for(const auto& a : this->getAlphabet())
+    {
+      set<State> dst = trans[std::make_pair(st, a)];
+      auto it = dst.find(st);
+      if(it != dst.end())
+      {
+        sl.insert(st);
+        break;
+      }
+    }
+  }
+  return sl;
+}
+
+
+template <typename State, typename Symbol>
+vector<set<State>> BuchiAutomaton<State, Symbol>::getAutGraphSCCs()
+{
+  BuchiAutomaton<int, int> renAut = this->renameAut();
+  vector<vector<int>> adjList(this->states.size());
+  vector<VertItem> vrt;
+  vector<set<State>> sccs;
+
+  renAut.getAutGraphComponents(adjList, vrt);
+  AutGraph gr(adjList, vrt, renAut.getFinals());
+  gr.computeSCCs();
+
+  for(auto& scc : gr.getAllComponents())
+  {
+    set<State> singleScc;
+    for(auto &st : scc)
+    {
+      singleScc.insert(this->invRenameMap[st]);
+    }
+    sccs.push_back(singleScc);
+  }
+  return sccs;
+}
+
+
+template <typename State, typename Symbol>
+set<State> BuchiAutomaton<State, Symbol>::getEventReachable(set<State>& sls)
+{
+  BuchiAutomaton<int, int> renAut = this->renameAut();
+  vector<vector<int>> adjList(this->states.size());
+  std::set<int> ini = renAut.getInitials();
+  vector<VertItem> vrt;
+  std::stack<int> stack;
+  std::set<int> done;
+  std::set<State> ret;
+  std::vector<int> sccSizeMp(this->states.size());
+
+  for(int i : ini)
+    stack.push(i);
+
+  renAut.getAutGraphComponents(adjList, vrt);
+  AutGraph gr(adjList, vrt, renAut.getFinals());
+  gr.computeSCCs();
+
+  for(auto& scc : gr.getAllComponents())
+  {
+    for(auto &st : scc)
+    {
+      if(scc.size() == 1 && sls.find(this->invRenameMap[st]) == sls.end())
+        sccSizeMp[st] = 0;
+      else
+      {
+        sccSizeMp[st] = scc.size();
+        done.insert(st);
+      }
+    }
+  }
+
+  done = gr.reachableVertices(done);
+  for(int st : done)
+  {
+    ret.insert(this->invRenameMap[st]);
   }
   return ret;
 }

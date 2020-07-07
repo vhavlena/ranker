@@ -5,6 +5,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <stack>
 #include <iostream>
 #include <algorithm>
 
@@ -51,15 +52,16 @@ private:
   StateRelation oddRankSim;
 
   std::map<State, int> renameStateMap;
+  std::vector<State> invRenameMap;
 
 protected:
   std::string toStringWith(std::function<std::string(State)>& stateStr,  std::function<std::string(Symbol)>& symStr);
   std::string toGraphwizWith(std::function<std::string(State)>& stateStr,  std::function<std::string(Symbol)>& symStr);
 
-  template <typename T>
-  std::set<int> mapSet(std::map<T, int> mp, std::set<T> st)
+  template <typename T, typename S>
+  std::set<S> mapSet(std::map<T, S> mp, std::set<T> st)
   {
-    std::set<int> ret;
+    std::set<S> ret;
     for(auto p : st)
       ret.insert(mp[p]);
     return ret;
@@ -102,6 +104,7 @@ public:
     this->directSim = other.directSim;
     this->oddRankSim = other.oddRankSim;
     this->renameStateMap = other.renameStateMap;
+    this->invRenameMap = other.invRenameMap;
   }
 
   std::set<Symbol> getAlph();
@@ -169,6 +172,11 @@ public:
 
   void computeRankSim(SetStates& cl);
   vector<Symbol> containsSelfLoop(State& state);
+
+  void getAutGraphComponents(AdjList& adjList, Vertices& vrt);
+  vector<set<State>> getAutGraphSCCs();
+  set<State> getEventReachable(set<State>& sls);
+  set<State> getSelfLoops();
 
   VecLabelStates propagateGraphValues(const std::function<int(LabelState<State>*,VecLabelStatesPtr)>& updFnc,
     const std::function<int(const State&)>& initFnc);

@@ -23,19 +23,20 @@ struct VertItem {
   bool onStack;
 };
 
+typedef set<int> SCC;
+typedef vector<SCC> SCCs;
+typedef vector<vector<int> > AdjList;
+typedef vector<VertItem> Vertices;
 
 class AutGraph
 {
-public:
-  typedef set<int> SCC;
-  typedef vector<vector<int> > AdjList;
-  typedef vector<VertItem> Vertices;
 
 private:
   AdjList adjList;
   set<int> finals;
   Vertices vertices;
-  vector<SCC> finalComponents;
+  SCCs finalComponents;
+  SCCs allComponents;
 
   int index;
   stack<int> S;
@@ -51,13 +52,18 @@ public:
     this->finals = finals;
   }
 
-  void computeFinalSCCs();
+  void computeSCCs();
   set<int> reachableVertices(set<int>& from);
   static set<int> reachableVertices(AdjList &lst, set<int>& from);
 
-  vector<SCC>& getFinalComponents()
+  SCCs& getFinalComponents()
   {
     return this->finalComponents;
+  }
+
+  SCCs& getAllComponents()
+  {
+    return this->allComponents;
   }
 };
 

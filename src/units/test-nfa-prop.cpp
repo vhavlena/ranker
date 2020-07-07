@@ -52,6 +52,21 @@ int main(int argc, char *argv[])
     BuchiAutomatonSpec sp(ren);
     BuchiAutomaton<StateSch, int> comp = sp.complementSchNFA(sp.getInitials());
 
+    for(auto t : comp.getAutGraphSCCs())
+    {
+      cout << "-------" << endl;
+      for(auto s : t)
+      {
+        cout << " " << s.toString() << endl;
+      }
+    }
+
+    auto sls = comp.getSelfLoops();
+    for(auto t : comp.getEventReachable(sls))
+    {
+      cout << " : " << t.toString() << endl;
+    }
+
     //cout << comp.toGraphwiz() << endl;
     slIgnore = sp.nfaSlAccept(comp);
 
@@ -62,7 +77,7 @@ int main(int argc, char *argv[])
     }
 
     // cout << comp.toString() << endl;
-    cout << comp.toGraphwiz() << endl;
+    //cout << comp.toGraphwiz() << endl;
     cout << comp.getStates().size() << endl;
   }
   os.close();

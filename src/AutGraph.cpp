@@ -40,15 +40,17 @@ void AutGraph::strongConnect(int v)
     } while(v != w);
     if(final)
       this->finalComponents.push_back(scc);
+    this->allComponents.push_back(scc);
   }
 }
 
 
-void AutGraph::computeFinalSCCs()
+void AutGraph::computeSCCs()
 {
   this->index = 0;
   this->S = stack<int>();
   this->finalComponents.clear();
+  this->allComponents.clear();
   for(VertItem v : this->vertices)
   {
     if(v.index == -1)
