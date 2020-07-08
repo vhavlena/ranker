@@ -56,6 +56,9 @@ public:
   BuchiAutomaton<StateSch, int> complementSchNFA(set<int>& start);
 
   set<StateSch> nfaSlAccept(BuchiAutomaton<StateSch, int>& nfaSchewe);
+  map<StateSch, int> getRankBound(BuchiAutomaton<StateSch, int>& nfaSchewe, set<StateSch>& slignore);
+  map<StateSch, int> getMaxReachSize(BuchiAutomaton<StateSch, int>& nfaSchewe, set<StateSch>& slIgnore);
+  map<StateSch, int> getMinReachSize();
 };
 
 #endif

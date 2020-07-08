@@ -181,6 +181,9 @@ public:
 
   std::map<State, int> propagateGraphValues(const std::function<int(LabelState<State>*,VecLabelStatesPtr)>& updFnc,
     const std::function<int(const State&)>& initFnc);
+
+  SetStates getCycleClosingStates(SetStates& slignore);
+  bool reachWithRestriction(const State& from, const State& to, SetStates& restr, SetStates& high);
 };
 
 #endif

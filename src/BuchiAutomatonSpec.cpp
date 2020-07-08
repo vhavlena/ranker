@@ -677,3 +677,99 @@ set<StateSch> BuchiAutomatonSpec::nfaSlAccept(BuchiAutomaton<StateSch, int>& nfa
   }
   return slAccept;
 }
+
+
+map<StateSch, int> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSch, int>& nfaSchewe, set<StateSch>& slignore)
+{
+  auto updMaxFnc = [&slignore] (LabelState<StateSch>* a, const std::vector<LabelState<StateSch>*> sts) -> int
+  {
+    int m = 0;
+    for(const LabelState<StateSch>* tmp : sts)
+    {
+      if(tmp->state.S == a->state.S && slignore.find(a->state) != slignore.end())
+        continue;
+      m = std::max(m, tmp->label);
+    }
+    return std::min(a->label, m);
+  };
+
+  auto initMaxFnc = [this] (const StateSch& act) -> int
+  {
+    set<int> ret;
+    set<int> fin = this->getFinals();
+    std::set_difference(act.S.begin(),act.S.end(),fin.begin(),
+      fin.end(), std::inserter(ret, ret.begin()));
+    if(this->containsRankSimEq(ret))
+      return std::max((int)ret.size() - 1, 0);
+    return ret.size();
+  };
+
+  return nfaSchewe.propagateGraphValues(updMaxFnc, initMaxFnc);
+}
+
+
+map<StateSch, int> BuchiAutomatonSpec::getMaxReachSize(BuchiAutomaton<StateSch, int>& nfaSchewe, set<StateSch>& slIgnore)
+{
+  auto updMaxFnc = [&slIgnore] (LabelState<StateSch>* a, const std::vector<LabelState<StateSch>*> sts) -> int
+  {
+    int m = 0;
+    for(const LabelState<StateSch>* tmp : sts)
+    {
+      if(tmp->state.S == a->state.S && slIgnore.find(a->state) != slIgnore.end())
+        continue;
+      m = std::max(m, tmp->label);
+    }
+    return std::min(a->label, m);
+  };
+
+  auto initMaxFnc = [] (const StateSch& act) -> int
+  {
+    return act.S.size();
+  };
+
+  return nfaSchewe.propagateGraphValues(updMaxFnc, initMaxFnc);
+}
+
+
+map<StateSch, int> BuchiAutomatonSpec::getMinReachSize()
+{
+  set<StateSch> slIgnore;
+  BuchiAutomaton<StateSch, int> comp;
+  map<StateSch, int> mp;
+  map<StateSch, int> ret;
+
+  auto updMaxFnc = [&slIgnore] (LabelState<StateSch>* a, const std::vector<LabelState<StateSch>*> sts) -> int
+  {
+    int m = 0;
+    for(const LabelState<StateSch>* tmp : sts)
+    {
+      if(tmp->state.S == a->state.S && slIgnore.find(a->state) != slIgnore.end())
+        continue;
+      m = std::max(m, tmp->label);
+    }
+    return std::min(a->label, m);
+  };
+
+  auto initMaxFnc = [] (const StateSch& act) -> int
+  {
+    return act.S.size();
+  };
+
+  for(int st : this->getStates())
+  {
+    set<int> ini = {st};
+    comp = this->complementSchNFA(ini);
+    slIgnore = this->nfaSlAccept(comp);
+    auto sls = comp.getSelfLoops();
+    mp = comp.propagateGraphValues(updMaxFnc, initMaxFnc);
+
+    int val = 10000;
+    for(auto t : comp.getEventReachable(sls))
+    {
+      val = std::min(val, mp[t]);
+    }
+
+    ret[{ini, set<int>(), RankFunc(), false}] = val;
+  }
+  return ret;
+}

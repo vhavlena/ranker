@@ -622,6 +622,77 @@ set<State> BuchiAutomaton<State, Symbol>::getEventReachable(set<State>& sls)
 }
 
 
+template <typename State, typename Symbol>
+set<State> BuchiAutomaton<State, Symbol>::getCycleClosingStates(set<State>& slignore)
+{
+  set<State> ret;
+  std::stack<State> stack;
+  set<State> done;
+  for(const State& in : this->initials)
+    stack.push(in);
+
+  while(stack.size() > 0)
+  {
+    State tst = stack.top();
+    stack.pop();
+    done.insert(tst);
+
+    for(const Symbol& alp : this->alph)
+    {
+      for(const State& d : this->trans[{tst, alp}])
+      {
+        if(d == tst && slignore.find(d) != slignore.end())
+          continue;
+        if(done.find(d) != done.end())
+        {
+          if(reachWithRestriction(d, tst, done, ret))
+            ret.insert(d);
+        }
+        else
+        {
+          stack.push(d);
+        }
+      }
+    }
+  }
+
+  return ret;
+}
+
+
+template <typename State, typename Symbol>
+bool BuchiAutomaton<State, Symbol>::reachWithRestriction(const State& from, const State& to, set<State>& restr, set<State>& high)
+{
+  set<State> ret;
+  std::stack<State> stack;
+  set<State> done;
+  stack.push(from);
+
+  while(stack.size() > 0)
+  {
+    State tst = stack.top();
+    stack.pop();
+    if(tst == to)
+      return true;
+    done.insert(tst);
+
+    for(const Symbol& alp : this->alph)
+    {
+      for(const State& d : this->trans[{tst, alp}])
+      {
+        if(high.find(d) != high.end())
+          continue;
+        if(done.find(d) == done.end() && restr.find(d) != restr.end())
+        {
+          stack.push(d);
+        }
+      }
+    }
+  }
+  return false;
+}
+
+
 template class BuchiAutomaton<int, int>;
 template class BuchiAutomaton<std::string, std::string>;
 template class BuchiAutomaton<StateKV, int>;
