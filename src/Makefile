@@ -19,20 +19,20 @@ test-nfa-prop: units/test-nfa-prop.cpp $(OBJ)/BuchiAutomataParser.o $(OBJ)/Buchi
 test-process: units/test-process.cpp $(OBJ)/BuchiAutomataParser.o $(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomatonSpec.o $(OBJ)/RankFunc.o $(OBJ)/AutGraph.o
 	g++ $(CPPFLAGS) -o units/$@ $?
 
-BuchiAutomataParser.o: BuchiAutomataParser.cpp BuchiAutomataParser.h AutGraph.o
-	g++ $(CPPFLAGS) -c -o $(OBJ)/$@ $<
+$(OBJ)/BuchiAutomataParser.o: BuchiAutomataParser.cpp BuchiAutomataParser.h $(OBJ)/AutGraph.o
+	g++ $(CPPFLAGS) -c -o $@ $<
 
-BuchiAutomaton.o: BuchiAutomaton.cpp BuchiAutomaton.h RankFunc.h AutGraph.h AutGraph.o
-	g++ $(CPPFLAGS) -c BuchiAutomaton.cpp -o $(OBJ)/$@
+$(OBJ)/BuchiAutomaton.o: BuchiAutomaton.cpp BuchiAutomaton.h RankFunc.h AutGraph.h $(OBJ)/AutGraph.o
+	g++ $(CPPFLAGS) -c BuchiAutomaton.cpp -o $@
 
-RankFunc.o: RankFunc.cpp RankFunc.h
-	g++ $(CPPFLAGS) -c -o $(OBJ)/$@ $<
+$(OBJ)/RankFunc.o: RankFunc.cpp RankFunc.h
+	g++ $(CPPFLAGS) -c -o $@ $<
 
-AutGraph.o: AutGraph.cpp AutGraph.h
-	g++ $(CPPFLAGS) -c -o $(OBJ)/$@ $<
+$(OBJ)/AutGraph.o: AutGraph.cpp AutGraph.h
+	g++ $(CPPFLAGS) -c -o $@ $<
 
-BuchiAutomatonSpec.o: BuchiAutomaton.o RankFunc.o BuchiAutomatonSpec.cpp BuchiAutomaton.h StateKV.h StateSch.h BuchiAutomatonSpec.h
-	g++ $(CPPFLAGS) -c BuchiAutomatonSpec.cpp -o $(OBJ)/$@
+$(OBJ)/BuchiAutomatonSpec.o: $(OBJ)/BuchiAutomaton.o $(OBJ)/RankFunc.o BuchiAutomatonSpec.cpp BuchiAutomaton.h StateKV.h StateSch.h BuchiAutomatonSpec.h
+	g++ $(CPPFLAGS) -c BuchiAutomatonSpec.cpp -o $@
 
 clean:
-	rm *.o units/test-parser units/test-kv-compl
+	rm obj/*.o units/test-parser units/test-kv-compl

@@ -171,6 +171,7 @@ public:
   void restriction(set<State>& st);
 
   void computeRankSim(SetStates& cl);
+  bool containsRankSimEq(SetStates& cl);
   vector<Symbol> containsSelfLoop(State& state);
 
   void getAutGraphComponents(AdjList& adjList, Vertices& vrt);
@@ -178,7 +179,7 @@ public:
   set<State> getEventReachable(set<State>& sls);
   set<State> getSelfLoops();
 
-  VecLabelStates propagateGraphValues(const std::function<int(LabelState<State>*,VecLabelStatesPtr)>& updFnc,
+  std::map<State, int> propagateGraphValues(const std::function<int(LabelState<State>*,VecLabelStatesPtr)>& updFnc,
     const std::function<int(const State&)>& initFnc);
 };
 

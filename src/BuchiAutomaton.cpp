@@ -354,6 +354,21 @@ void BuchiAutomaton<State, Symbol>::computeRankSim(std::set<State>& cl)
 
 
 template <typename State, typename Symbol>
+bool BuchiAutomaton<State, Symbol>::containsRankSimEq(std::set<State>& cl)
+{
+  this->computeRankSim(cl);
+  for(auto& item : this->oddRankSim)
+  {
+    if(item.first == item.second)
+      continue;
+    if(this->oddRankSim.find({item.second, item.first}) != this->oddRankSim.end())
+      return true;
+  }
+  return false;
+}
+
+
+template <typename State, typename Symbol>
 void BuchiAutomaton<State, Symbol>::transitiveClosure(
     BuchiAutomaton<State, Symbol>::StateRelation& rel, std::set<State>& cl)
 {
@@ -455,7 +470,7 @@ bool BuchiAutomaton<State, Symbol>::isRankLeq(std::set<State>& set1, std::set<St
 
 
 template <typename State, typename Symbol>
-std::vector<LabelState<State>> BuchiAutomaton<State, Symbol>::propagateGraphValues(
+std::map<State, int> BuchiAutomaton<State, Symbol>::propagateGraphValues(
     const std::function<int(LabelState<State>*,VecLabelStatesPtr)>& updFnc, const std::function<int(const State&)>& initFnc)
 {
   std::map<State, LabelState<State>*> lst;
@@ -492,10 +507,10 @@ std::vector<LabelState<State>> BuchiAutomaton<State, Symbol>::propagateGraphValu
     }
   } while(change);
 
-  VecLabelStates activeVal;
+  map<State, int> activeVal;
   for(int i = 0; i < active.size(); i++)
   {
-    activeVal.push_back(*(active[i]));
+    activeVal[active[i]->state] = active[i]->label;
     delete active[i];
   }
 
