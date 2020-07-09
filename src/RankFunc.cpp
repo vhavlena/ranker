@@ -238,7 +238,7 @@ bool RankFunc::relOddConsistent(set<std::pair<int, int> >& rel) const
 }
 
 
-bool RankFunc::zeroConsistent(map<int, int>& res, int reachMax) const
+bool RankFunc::isReachConsistent(map<int, int>& res, int reachMax) const
 {
   for(const auto& t : res)
   {
@@ -249,19 +249,5 @@ bool RankFunc::zeroConsistent(map<int, int>& res, int reachMax) const
         return false;
     }
   }
-
-
-  // auto it = this->find(0);
-  // auto it2 = this->find(6);
-  // if(it != this->end())
-  // {
-  //   if(it->second != this->getMaxRank() - 1)
-  //     return false;
-  // }
-  // if(it2 != this->end())
-  // {
-  //   if(it2->second < this->getMaxRank() - 2)
-  //     return false;
-  // }
   return true;
 }

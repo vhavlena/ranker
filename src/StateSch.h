@@ -45,21 +45,21 @@ struct StateSch {
   std::string toString() const
   {
     if(!tight)
-      return "{" + printSet(S) + "}";
-    std::string ret = "({" + printSet(S) + "},{" + printSet(O) + "},";
+      return StateSch::printSet(S);
+    std::string ret = "(" + StateSch::printSet(S) + "," + StateSch::printSet(O) + ",";
     ret += f.toString();
     ret += "," + std::to_string(i) + ")";
     return ret;
   }
 
-  std::string printSet(std::set<int> st) const
+  static std::string printSet(std::set<int> st)
   {
     std::string ret;
     for (auto s : st)
       ret += std::to_string(s) + " ";
     if(ret.back() == ' ')
       ret.pop_back();
-    return ret;
+    return "{" + ret + "}";
   }
 };
 
