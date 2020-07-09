@@ -74,7 +74,7 @@ public:
 
   std::string toString() const;
   bool isTightRank() const;
-  bool zeroConsistent() const;
+  bool zeroConsistent(map<int, int>& res, int reachMax) const;
 
   static vector<RankFunc> fromRankConstr(RankConstr constr);
   static vector<RankFunc> tightFromRankConstr(RankConstr constr, BackRel& rel, BackRel& oddRel);

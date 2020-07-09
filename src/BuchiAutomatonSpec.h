@@ -20,6 +20,8 @@ using std::vector;
 using std::set;
 using std::map;
 
+typedef set<int> DFAState;
+
 class BuchiAutomatonSpec : public BuchiAutomaton<int, int>
 {
 private:
@@ -35,9 +37,12 @@ protected:
 
   vector<RankFunc> getSchRanks(vector<int>& max, std::set<int>& states, StateSch& macrostate);
   vector<RankFunc> getSchRanksTight(vector<int>& max, set<int>& states,
-      StateSch& macrostate, map<int, set<int> >& succ, BackRel& dirRel, BackRel& oddRel);
-  set<StateSch> succSetSchStart(set<int>& state, int symbol, BackRel& dirRel, BackRel& oddRel);
-  set<StateSch> succSetSchTight(StateSch& state, int symbol, BackRel& dirRel, BackRel& oddRel);
+      StateSch& macrostate, map<int, set<int> >& succ, map<int, int> reachCons, int reachMax,
+      BackRel& dirRel, BackRel& oddRel);
+  set<StateSch> succSetSchStart(set<int>& state, int symbol, int rankBound, map<int, int> reachCons,
+      map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel);
+  set<StateSch> succSetSchTight(StateSch& state, int symbol, map<int, int> reachCons,
+      map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel);
   bool isSchFinal(StateSch& state) const { return state.tight ? state.O.size() == 0 : state.S.size() == 0; }
 
 
@@ -57,8 +62,8 @@ public:
 
   set<StateSch> nfaSlAccept(BuchiAutomaton<StateSch, int>& nfaSchewe);
   map<StateSch, int> getRankBound(BuchiAutomaton<StateSch, int>& nfaSchewe, set<StateSch>& slignore);
-  map<StateSch, int> getMaxReachSize(BuchiAutomaton<StateSch, int>& nfaSchewe, set<StateSch>& slIgnore);
-  map<StateSch, int> getMinReachSize();
+  map<DFAState, int> getMaxReachSize(BuchiAutomaton<StateSch, int>& nfaSchewe, set<StateSch>& slIgnore);
+  map<int, int> getMinReachSize();
 };
 
 #endif

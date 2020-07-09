@@ -166,8 +166,8 @@ bool RankFunc::isSuccValid(RankFunc& prev, map<int, set<int> >& succ) const
   {
     val = false;
     fnc = prev.find(s.first)->second;
-    if(fnc % 2 == 0)
-      continue;
+    // if(fnc % 2 == 0)
+    //   continue;
     for(int dst : s.second)
     {
       if((this->find(dst)->second) == fnc)
@@ -238,13 +238,30 @@ bool RankFunc::relOddConsistent(set<std::pair<int, int> >& rel) const
 }
 
 
-bool RankFunc::zeroConsistent() const
+bool RankFunc::zeroConsistent(map<int, int>& res, int reachMax) const
 {
-  auto it = this->find(0);
-  if(it != this->end())
+  for(const auto& t : res)
   {
-    if(it->second != this->getMaxRank() - 1)
-      return false;
+    auto it = this->find(t.first);
+    if(it != this->end())
+    {
+      if(it->second < this->getMaxRank() - 2*(reachMax - t.second))
+        return false;
+    }
   }
+
+
+  // auto it = this->find(0);
+  // auto it2 = this->find(6);
+  // if(it != this->end())
+  // {
+  //   if(it->second != this->getMaxRank() - 1)
+  //     return false;
+  // }
+  // if(it2 != this->end())
+  // {
+  //   if(it2->second < this->getMaxRank() - 2)
+  //     return false;
+  // }
   return true;
 }
