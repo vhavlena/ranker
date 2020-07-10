@@ -159,13 +159,11 @@ vector<RankFunc> BuchiAutomatonSpec::getSchRanksTight(vector<int>& max,
   }
 
   vector<RankFunc> ret;
-  std::cout << "before" << std::endl;
   for(RankFunc item : RankFunc::tightSuccFromRankConstr(constr, dirRel, oddRel, macrostate.f.getMaxRank()))
   {
     if(item.isSuccValid(macrostate.f, succ) && item.isReachConsistent(reachCons, reachMax))
       ret.push_back(item);
   }
-  std::cout << "after" << std::endl;
   return ret;
 }
 
