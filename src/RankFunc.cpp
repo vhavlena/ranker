@@ -2,7 +2,7 @@
 #include "RankFunc.h"
 
 
-RankFunc::RankFunc(const map<int,int> mp) : map<int,int>(mp)
+RankFunc::RankFunc(const map<int,int>& mp) : map<int,int>(mp)
 {
   RankInverse::iterator it;
   for(auto k : mp)
@@ -27,7 +27,7 @@ RankFunc::RankFunc(const map<int,int> mp) : map<int,int>(mp)
 }
 
 
-void RankFunc::addPair(std::pair<int, int> val)
+void RankFunc::addPair(std::pair<int, int>& val)
 {
   this->maxRank = std::max(this->maxRank, val.second);
   int tmp = this->maxRank;
@@ -49,7 +49,7 @@ void RankFunc::addPair(std::pair<int, int> val)
 }
 
 
-vector<RankFunc> RankFunc::cartTightProductMap(vector<RankFunc> s1, vector<std::pair<int, int> > s2,
+vector<RankFunc> RankFunc::cartTightProductMap(vector<RankFunc>& s1, vector<std::pair<int, int> >& s2,
     int rem, BackRel& rel, BackRel& oddRel, int max)
 {
   vector<RankFunc> ret;
@@ -168,14 +168,29 @@ bool RankFunc::isSuccValid(RankFunc& prev, map<int, set<int> >& succ) const
     fnc = prev.find(s.first)->second;
     // if(fnc % 2 == 0)
     //   continue;
-    for(int dst : s.second)
+    if(fnc % 2 == 0)
     {
-      if((this->find(dst)->second) == fnc)
+      for(int dst : s.second)
       {
-        val = true;
-        break;
+        if((this->find(dst)->second) % 2 == 0)
+        {
+          val = true;
+          break;
+        }
       }
     }
+    else
+    {
+      for(int dst : s.second)
+      {
+        if((this->find(dst)->second) == fnc)
+        {
+          val = true;
+          break;
+        }
+      }
+    }
+
     if (!val)
       return false;
   }

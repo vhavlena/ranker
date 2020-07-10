@@ -28,7 +28,7 @@ private:
   int maxRank;
   RankInverse inverse;
 
-  static vector<RankFunc> cartTightProductMap(vector<RankFunc> s1, vector<std::pair<int, int> > s2, int rem, BackRel& rel, BackRel& oddRel, int max = -1);
+  static vector<RankFunc> cartTightProductMap(vector<RankFunc>& s1, vector<std::pair<int, int> >& s2, int rem, BackRel& rel, BackRel& oddRel, int max = -1);
   static vector<RankFunc> cartTightProductMapList(RankConstr slist, BackRel& rel, BackRel& oddRel, int max = -1);
   static inline bool checkDirectBackRel(std::pair<int, int>& act, RankFunc& tmp, BackRel& rel);
   static inline bool checkOddBackRel(std::pair<int, int>& act, RankFunc& tmp, BackRel& oddRel);
@@ -39,8 +39,8 @@ public:
     this->maxRank = 0;
   }
 
-  RankFunc(const map<int,int> mp);
-  void addPair(std::pair<int, int> val);
+  RankFunc(const map<int,int>& mp);
+  void addPair(std::pair<int, int>& val);
 
   inline void addOddStates(set<int>& states)
   {
