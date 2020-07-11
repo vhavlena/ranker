@@ -159,11 +159,13 @@ vector<RankFunc> BuchiAutomatonSpec::getSchRanksTight(vector<int>& max,
   }
 
   vector<RankFunc> ret;
-  for(RankFunc item : RankFunc::tightSuccFromRankConstr(constr, dirRel, oddRel, macrostate.f.getMaxRank()))
+  vector<RankFunc> tmp = RankFunc::tightSuccFromRankConstr(constr, dirRel, oddRel, macrostate.f.getMaxRank());
+  for(RankFunc item : tmp)
   {
     if(item.isSuccValid(macrostate.f, succ) && item.isReachConsistent(reachCons, reachMax))
       ret.push_back(item);
   }
+  //std::cout << macrostate.toString() << " : " << tmp.size() << " : " << ret.size() << std::endl;
   return ret;
 }
 
@@ -199,7 +201,7 @@ set<StateSch> BuchiAutomatonSpec::succSetSchStart(set<int>& state, int symbol, i
 }
 
 set<StateSch> BuchiAutomatonSpec::succSetSchTight(StateSch& state, int symbol,
-    map<int, int> reachCons, map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel)
+    map<int, int> reachCons, map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel, set<std::tuple<DFAState, RankFunc, int>>& match)
 {
   set<StateSch> ret;
   set<int> sprime;
@@ -252,6 +254,16 @@ set<StateSch> BuchiAutomatonSpec::succSetSchTight(StateSch& state, int symbol,
   vector<RankFunc> ranks = getSchRanksTight(maxRank, sprime, state, succ,
       reachCons, maxReachAct, dirRel, oddRel);
   set<int> inverseRank;
+
+  // for(auto item : match)
+  // {
+  //   if(std::get<0>(item) == state.S && std::get<2>(item) == symbol && std::get<1>(item) >= state.f && std::get<1>(item).getMaxRank() == state.f.getMaxRank())
+  //   {
+  //     std::cout << "match" << std::endl;
+  //     break;
+  //   }
+  // }
+  // match.insert({state.S, state.f, symbol});
 
   for (auto r : ranks)
   {
@@ -320,6 +332,8 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSch()
   BackRel dirRel = createBackRel(this->getDirectSim());
   BackRel oddRel = createBackRel(this->getOddRankSim());
 
+  set<std::tuple<DFAState, RankFunc, int>> match;
+
   while(stack.size() > 0)
   {
     StateSch st = stack.top();
@@ -333,7 +347,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSch()
       set<StateSch> dst;
       if(st.tight)
       {
-        succ = succSetSchTight(st, sym, reachCons, maxReach, dirRel, oddRel);
+        succ = succSetSchTight(st, sym, reachCons, maxReach, dirRel, oddRel, match);
       }
       else
       {

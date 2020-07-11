@@ -42,7 +42,7 @@ protected:
   set<StateSch> succSetSchStart(set<int>& state, int symbol, int rankBound, map<int, int> reachCons,
       map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel);
   set<StateSch> succSetSchTight(StateSch& state, int symbol, map<int, int> reachCons,
-      map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel);
+      map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel, set<std::tuple<DFAState, RankFunc, int>>& match);
   bool isSchFinal(StateSch& state) const { return state.tight ? state.O.size() == 0 : state.S.size() == 0; }
 
 

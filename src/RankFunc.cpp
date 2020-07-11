@@ -170,6 +170,8 @@ bool RankFunc::isSuccValid(RankFunc& prev, map<int, set<int> >& succ) const
     //   continue;
     if(fnc % 2 == 0)
     {
+      if(s.second.size() == 0)
+        val = true;
       for(int dst : s.second)
       {
         if((this->find(dst)->second) % 2 == 0)
