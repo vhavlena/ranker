@@ -27,6 +27,7 @@ private:
   set<int> oddStates;
   int maxRank;
   RankInverse inverse;
+  vector<int> ranks;
 
   static vector<RankFunc> cartTightProductMap(vector<RankFunc>& s1, vector<std::pair<int, int> >& s2, int rem, BackRel& rel, BackRel& oddRel, int max = -1);
   static vector<RankFunc> cartTightProductMapList(RankConstr slist, BackRel& rel, BackRel& oddRel, int max = -1);
@@ -34,7 +35,7 @@ private:
   static inline bool checkOddBackRel(std::pair<int, int>& act, RankFunc& tmp, BackRel& oddRel);
 
 public:
-  RankFunc() : map<int,int>(), oddStates(), inverse(), tight(0)
+  RankFunc() : map<int,int>(), oddStates(), inverse(), tight(0), ranks()
   {
     this->maxRank = 0;
   }
@@ -66,6 +67,9 @@ public:
   bool relConsistent(set<std::pair<int, int> >& rel) const;
   bool relOddConsistent(set<std::pair<int, int> >& rel) const;
   bool isSuccValid(RankFunc& prev, map<int, set<int> >& succ) const;
+  bool isMaxRankValid(vector<int>& maxRank) const;
+
+  bool isAllLeq(RankFunc& f);
 
   int remTightCount() const
   {
@@ -75,6 +79,8 @@ public:
   std::string toString() const;
   bool isTightRank() const;
   bool isReachConsistent(map<int, int>& res, int reachMax) const;
+
+  vector<int>& getRanks() { return this->ranks; }
 
   static vector<RankFunc> fromRankConstr(RankConstr constr);
   static vector<RankFunc> tightFromRankConstr(RankConstr constr, BackRel& rel, BackRel& oddRel);

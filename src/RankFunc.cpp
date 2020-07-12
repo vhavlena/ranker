@@ -8,6 +8,7 @@ RankFunc::RankFunc(const map<int,int>& mp) : map<int,int>(mp)
   for(auto k : mp)
   {
     this->maxRank = std::max(this->maxRank, k.second);
+    this->ranks.push_back(k.second);
     int tmp = this->maxRank;
     if(tmp % 2 == 0) tmp++;
     if(this->tight.size() < (tmp-1)/2 + 1)
@@ -41,6 +42,7 @@ void RankFunc::addPair(std::pair<int, int>& val)
   }
 
   this->insert(val);
+  this->ranks.push_back(val.second);
   RankInverse::iterator it = this->inverse.find(val.second);
   if(it != this->inverse.end())
     it->second.insert(val.first);
@@ -166,15 +168,13 @@ bool RankFunc::isSuccValid(RankFunc& prev, map<int, set<int> >& succ) const
   {
     val = false;
     fnc = prev.find(s.first)->second;
-    // if(fnc % 2 == 0)
-    //   continue;
     if(fnc % 2 == 0)
     {
       if(s.second.size() == 0)
         val = true;
       for(int dst : s.second)
       {
-        if((this->find(dst)->second) % 2 == 0)
+        if(this->find(dst)->second % 2 == 0)
         {
           val = true;
           break;
@@ -185,7 +185,7 @@ bool RankFunc::isSuccValid(RankFunc& prev, map<int, set<int> >& succ) const
     {
       for(int dst : s.second)
       {
-        if((this->find(dst)->second) == fnc)
+        if(this->find(dst)->second == fnc)
         {
           val = true;
           break;
@@ -195,6 +195,19 @@ bool RankFunc::isSuccValid(RankFunc& prev, map<int, set<int> >& succ) const
 
     if (!val)
       return false;
+  }
+  return true;
+}
+
+
+bool RankFunc::isMaxRankValid(vector<int>& maxRank) const
+{
+  for(int i = 0; i < maxRank.size(); i++)
+  {
+    if(maxRank[i] < this->ranks[i])
+    {
+      return false;
+    }
   }
   return true;
 }
@@ -223,6 +236,19 @@ bool RankFunc::eqEven() const
   for(auto v : *this)
   {
     if(v.second % 2 == 0 && v.second != this->maxRank - 1)
+      return false;
+  }
+  return true;
+}
+
+bool RankFunc::isAllLeq(RankFunc& f)
+{
+  vector<int> rnk = f.getRanks();
+  if(this->ranks.size() != rnk.size())
+    return false;
+  for(int i = 0; i < this->ranks.size(); i++)
+  {
+    if(this->ranks[i] > rnk[i])
       return false;
   }
   return true;
