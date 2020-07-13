@@ -10,6 +10,8 @@
 
 #include <boost/dynamic_bitset.hpp>
 
+#define INF 100000000
+
 using std::map;
 using std::set;
 using std::vector;
@@ -28,9 +30,10 @@ private:
   int maxRank;
   RankInverse inverse;
   vector<int> ranks;
+  int reachRest;
 
-  static vector<RankFunc> cartTightProductMap(vector<RankFunc>& s1, vector<std::pair<int, int> >& s2, int rem, BackRel& rel, BackRel& oddRel, int max = -1);
-  static vector<RankFunc> cartTightProductMapList(RankConstr slist, BackRel& rel, BackRel& oddRel, int max = -1);
+  static vector<RankFunc> cartTightProductMap(vector<RankFunc>& s1, vector<std::pair<int, int> >& s2, int rem, BackRel& rel, BackRel& oddRel, int max, map<int, int>& reachRes, int reachMax);
+  static vector<RankFunc> cartTightProductMapList(RankConstr slist, BackRel& rel, BackRel& oddRel, int max, map<int, int>& reachRes, int reachMax);
   static inline bool checkDirectBackRel(std::pair<int, int>& act, RankFunc& tmp, BackRel& rel);
   static inline bool checkOddBackRel(std::pair<int, int>& act, RankFunc& tmp, BackRel& oddRel);
 
@@ -38,6 +41,7 @@ public:
   RankFunc() : map<int,int>(), oddStates(), inverse(), tight(0), ranks()
   {
     this->maxRank = 0;
+    this->reachRest = INF;
   }
 
   RankFunc(const map<int,int>& mp);
@@ -81,10 +85,12 @@ public:
   bool isReachConsistent(map<int, int>& res, int reachMax) const;
 
   vector<int>& getRanks() { return this->ranks; }
+  int getReachRestr() { return this->reachRest; }
+  void setReachRestr(int val) { this->reachRest = val; }
 
   static vector<RankFunc> fromRankConstr(RankConstr constr);
-  static vector<RankFunc> tightFromRankConstr(RankConstr constr, BackRel& rel, BackRel& oddRel);
-  static vector<RankFunc> tightSuccFromRankConstr(RankConstr constr, BackRel& rel, BackRel& oddRel, int max);
+  static vector<RankFunc> tightFromRankConstr(RankConstr constr, BackRel& rel, BackRel& oddRel, map<int, int>& reachRes, int reachMax);
+  static vector<RankFunc> tightSuccFromRankConstr(RankConstr constr, BackRel& rel, BackRel& oddRel, int max, map<int, int>& reachRes, int reachMax);
 };
 
 #endif

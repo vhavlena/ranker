@@ -21,6 +21,7 @@ using std::set;
 using std::map;
 
 typedef set<int> DFAState;
+typedef map<std::tuple<DFAState, int, int>, vector<std::pair<RankFunc,vector<RankFunc>>>> SuccRankCache;
 
 class BuchiAutomatonSpec : public BuchiAutomaton<int, int>
 {
@@ -42,7 +43,7 @@ protected:
   set<StateSch> succSetSchStart(set<int>& state, int symbol, int rankBound, map<int, int> reachCons,
       map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel);
   set<StateSch> succSetSchTight(StateSch& state, int symbol, map<int, int> reachCons,
-      map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel, map<std::pair<DFAState, int>, vector<std::pair<RankFunc,vector<RankFunc>>>>& match);
+      map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel, SuccRankCache& match);
   bool isSchFinal(StateSch& state) const { return state.tight ? state.O.size() == 0 : state.S.size() == 0; }
 
 
