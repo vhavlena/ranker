@@ -40,11 +40,12 @@ protected:
   vector<RankFunc> getSchRanksTight(vector<int>& max, set<int>& states,
       StateSch& macrostate, map<int, set<int> >& succ, map<int, int> reachCons, int reachMax,
       BackRel& dirRel, BackRel& oddRel);
-  set<StateSch> succSetSchStart(set<int>& state, int symbol, int rankBound, map<int, int> reachCons,
+  vector<StateSch> succSetSchStart(set<int>& state, int symbol, int rankBound, map<int, int> reachCons,
       map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel);
-  set<StateSch> succSetSchTight(StateSch& state, int symbol, map<int, int> reachCons,
+  vector<StateSch> succSetSchTight(StateSch& state, int symbol, map<int, int> reachCons,
       map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel, SuccRankCache& match);
   bool isSchFinal(StateSch& state) const { return state.tight ? state.O.size() == 0 : state.S.size() == 0; }
+  bool getRankSuccCache(vector<RankFunc>& out, StateSch& state, int symbol, SuccRankCache& match);
 
 
   set<StateSch> succSetSchTightMin(StateSch& state, int symbol);

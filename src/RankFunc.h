@@ -7,6 +7,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <string>
 
 #include <boost/dynamic_bitset.hpp>
 
@@ -15,6 +16,7 @@
 using std::map;
 using std::set;
 using std::vector;
+using std::string;
 
 class RankFunc;
 
