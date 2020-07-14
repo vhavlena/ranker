@@ -28,6 +28,10 @@ class BuchiAutomatonSpec : public BuchiAutomaton<int, int>
 private:
   BackRel createBackRel(BuchiAutomaton<int, int>::StateRelation& rel);
 
+  int calls = 0;
+  map<DFAState, int> rankBound;
+  SuccRankCache rankCache;
+
 protected:
   RankConstr rankConstr(vector<int>& max, set<int>& states);
   set<int> succSet(set<int>& state, int symbol);
@@ -43,9 +47,9 @@ protected:
   vector<StateSch> succSetSchStart(set<int>& state, int symbol, int rankBound, map<int, int> reachCons,
       map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel);
   vector<StateSch> succSetSchTight(StateSch& state, int symbol, map<int, int> reachCons,
-      map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel, SuccRankCache& match);
+      map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel);
   bool isSchFinal(StateSch& state) const { return state.tight ? state.O.size() == 0 : state.S.size() == 0; }
-  bool getRankSuccCache(vector<RankFunc>& out, StateSch& state, int symbol, SuccRankCache& match);
+  bool getRankSuccCache(vector<RankFunc>& out, StateSch& state, int symbol);
 
 
   set<StateSch> succSetSchTightMin(StateSch& state, int symbol);
@@ -63,7 +67,7 @@ public:
   BuchiAutomaton<StateSch, int> complementSchNFA(set<int>& start);
 
   set<StateSch> nfaSlAccept(BuchiAutomaton<StateSch, int>& nfaSchewe);
-  map<StateSch, int> getRankBound(BuchiAutomaton<StateSch, int>& nfaSchewe, set<StateSch>& slignore);
+  map<DFAState, int> getRankBound(BuchiAutomaton<StateSch, int>& nfaSchewe, set<StateSch>& slignore);
   map<DFAState, int> getMaxReachSize(BuchiAutomaton<StateSch, int>& nfaSchewe, set<StateSch>& slIgnore);
   map<int, int> getMinReachSize();
 };

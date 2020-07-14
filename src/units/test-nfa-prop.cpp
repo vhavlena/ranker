@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
     cout << "Rank bound: " << endl;
     for(auto t : sp.getRankBound(comp, slIgnore))
     {
-      cout << t.first.toString() << " : " << t.second << endl;
+      cout << StateSch::printSet(t.first) << " : " << t.second << endl;
     }
 
     cout << endl << "Max reach size: " << endl;
