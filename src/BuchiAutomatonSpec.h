@@ -28,7 +28,6 @@ class BuchiAutomatonSpec : public BuchiAutomaton<int, int>
 private:
   BackRel createBackRel(BuchiAutomaton<int, int>::StateRelation& rel);
 
-  int calls = 0;
   map<DFAState, int> rankBound;
   SuccRankCache rankCache;
 

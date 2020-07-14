@@ -158,26 +158,9 @@ vector<RankFunc> BuchiAutomatonSpec::getSchRanksTight(vector<int>& max,
     constr.push_back(singleConst);
   }
 
-  // auto it = this->tightCache.find(states);
-  // if(it != this->tightCache.end())
-  // {
-  //   for(auto item : it->second)
-  //   {
-  //     if(macrostate.f.getMaxRank() == item.first.getMaxRank() && macrostate.f.isAllLeq(item.first))
-  //       return item.second;
-  //   }
-  // }
-  // else
-  // {
-  //   this->tightCache[states] = vector<std::pair<RankFunc, vector<RankFunc>>>();
-  // }
-  //
-  // vector<RankFunc> ret = RankFunc::tightSuccFromRankConstr(constr, dirRel, oddRel, macrostate.f.getMaxRank(), reachCons, reachMax);
-  // this->tightCache[states].push_back({macrostate.f, ret});
-
-  calls++;
-  std::cout << StateSch::printSet(states) << " : " << macrostate.toString() << " : " << calls << std::endl;
-  return RankFunc::tightSuccFromRankConstr(constr, dirRel, oddRel, macrostate.f.getMaxRank(), reachCons, reachMax);;
+  auto ret = RankFunc::tightSuccFromRankConstr(constr, dirRel, oddRel, macrostate.f.getMaxRank(), reachCons, reachMax);
+  std::cout << macrostate.toString() << " : " << ret.size() << std::endl;
+  return ret;
 }
 
 vector<StateSch> BuchiAutomatonSpec::succSetSchStart(set<int>& state, int symbol, int rankBound,
