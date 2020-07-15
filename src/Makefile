@@ -1,5 +1,5 @@
 
-CPPFLAGS=-std=c++17 -O2
+CPPFLAGS=-std=c++17 -O2 #-Wl,-no_pie
 OBJ=obj
 
 test: test-parser test-kv-compl test-sch-compl test-process test-nfa-prop

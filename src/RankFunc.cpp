@@ -5,7 +5,7 @@
 RankFunc::RankFunc(const map<int,int>& mp) : map<int,int>(mp)
 {
   RankInverse::iterator it;
-  for(auto k : mp)
+  for(const auto& k : mp)
   {
     this->maxRank = std::max(this->maxRank, k.second);
     this->ranks.push_back(k.second);
@@ -28,7 +28,7 @@ RankFunc::RankFunc(const map<int,int>& mp) : map<int,int>(mp)
 }
 
 
-void RankFunc::addPair(std::pair<int, int>& val)
+void RankFunc::addPair(const std::pair<int, int>& val)
 {
   this->maxRank = std::max(this->maxRank, val.second);
   int tmp = this->maxRank;
@@ -55,11 +55,10 @@ vector<RankFunc> RankFunc::cartTightProductMap(vector<RankFunc>& s1, vector<std:
     int rem, BackRel& rel, BackRel& oddRel, int max, map<int, int>& reachRes, int reachMax)
 {
   vector<RankFunc> ret;
-  bool cnt = false;
   int maxRank;
-  for(auto v1 : s1)
+  for(const auto& v1 : s1)
   {
-    for(auto v2 : s2)
+    for(const auto& v2 : s2)
     {
       RankFunc tmp(v1);
       tmp.addPair(v2);
@@ -84,7 +83,7 @@ vector<RankFunc> RankFunc::cartTightProductMap(vector<RankFunc>& s1, vector<std:
 }
 
 
-bool RankFunc::checkDirectBackRel(std::pair<int, int>& act, RankFunc& tmp, BackRel& rel)
+bool RankFunc::checkDirectBackRel(const std::pair<int, int>& act, RankFunc& tmp, BackRel& rel)
 {
   for(auto st : rel[act.first])
   {
@@ -105,7 +104,7 @@ bool RankFunc::checkDirectBackRel(std::pair<int, int>& act, RankFunc& tmp, BackR
 }
 
 
-bool RankFunc::checkOddBackRel(std::pair<int, int>& act, RankFunc& tmp, BackRel& oddRel)
+bool RankFunc::checkOddBackRel(const std::pair<int, int>& act, RankFunc& tmp, BackRel& oddRel)
 {
   if(act.second % 2 != 0)
   {
@@ -175,7 +174,7 @@ bool RankFunc::isSuccValid(RankFunc& prev, map<int, set<int> >& succ) const
 {
   bool val = true;
   int fnc = 0;
-  for(auto s : succ)
+  for(const auto& s : succ)
   {
     val = false;
     fnc = prev.find(s.first)->second;
