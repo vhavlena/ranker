@@ -5,9 +5,9 @@
 void Simulations::splitString(string& line, vector<string>& split)
 {
   istringstream stream(line);
-  while(stream)
+  string item;
+  while(!stream.eof())
   {
-    string item;
     stream >> item;
     split.push_back(item);
   }
@@ -20,7 +20,7 @@ RabitSimLine Simulations::parseRabitRelLine(string& line)
   Simulations::splitString(line, sp);
   if(sp.size() != 4)
   {
-    throw "Parser: uncompatible relation format";
+    throw string("Parser: uncompatible relation format: ") + line;
   }
 
   return {{sp[0], sp[1]}, {sp[2], sp[3]}};
