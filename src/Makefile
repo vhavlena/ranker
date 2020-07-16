@@ -4,7 +4,7 @@ OBJ=obj
 
 test: test-parser test-kv-compl test-sch-compl test-process test-nfa-prop
 
-test-parser: units/test-parser.cpp $(OBJ)/BuchiAutomataParser.o $(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomatonSpec.o $(OBJ)/RankFunc.o $(OBJ)/AutGraph.o
+test-parser: units/test-parser.cpp $(OBJ)/BuchiAutomataParser.o $(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomatonSpec.o $(OBJ)/RankFunc.o $(OBJ)/AutGraph.o $(OBJ)/Simulations.o
 	g++ $(CPPFLAGS) -o units/$@ $?
 
 test-kv-compl: units/test-kv-compl.cpp $(OBJ)/BuchiAutomataParser.o $(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomatonSpec.o $(OBJ)/RankFunc.o $(OBJ)/AutGraph.o
@@ -26,6 +26,9 @@ $(OBJ)/BuchiAutomaton.o: BuchiAutomaton.cpp BuchiAutomaton.h RankFunc.h AutGraph
 	g++ $(CPPFLAGS) -c BuchiAutomaton.cpp -o $@
 
 $(OBJ)/RankFunc.o: RankFunc.cpp RankFunc.h
+	g++ $(CPPFLAGS) -c -o $@ $<
+
+$(OBJ)/Simulations.o: Simulations.cpp Simulations.h
 	g++ $(CPPFLAGS) -c -o $@ $<
 
 $(OBJ)/AutGraph.o: AutGraph.cpp AutGraph.h
