@@ -860,3 +860,47 @@ map<int, int> BuchiAutomatonSpec::getMinReachSize()
   }
   return ret;
 }
+
+
+map<int, int> BuchiAutomatonSpec::getMaxReachSizeInd()
+{
+  set<StateSch> slIgnore;
+  BuchiAutomaton<StateSch, int> comp;
+  map<StateSch, int> mp;
+  map<int, int> ret;
+
+  auto updMaxFnc = [&slIgnore] (LabelState<StateSch>* a, const std::vector<LabelState<StateSch>*> sts) -> int
+  {
+    int m = 0;
+    for(const LabelState<StateSch>* tmp : sts)
+    {
+      if(tmp->state.S == a->state.S && slIgnore.find(a->state) != slIgnore.end())
+        continue;
+      m = std::max(m, tmp->label);
+    }
+    return std::max(a->label, m);
+  };
+
+  auto initMaxFnc = [] (const StateSch& act) -> int
+  {
+    return act.S.size();
+  };
+
+  for(int st : this->getStates())
+  {
+    set<int> ini = {st};
+    comp = this->complementSchNFA(ini);
+    slIgnore = this->nfaSlAccept(comp);
+    auto sls = comp.getSelfLoops();
+    mp = comp.propagateGraphValues(updMaxFnc, initMaxFnc);
+
+    int val = 1000000;
+    for(auto t : comp.getEventReachable(sls))
+    {
+      val = std::min(val, mp[t]);
+    }
+
+    ret[st] = val;
+  }
+  return ret;
+}
