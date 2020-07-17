@@ -43,3 +43,20 @@ BuchiAutomaton<std::string, std::string>::StateRelation Simulations::parseRabitR
   }
   return rel;
 }
+
+
+string Simulations::execCmd(string& cmd)
+{
+  array<char, 128> buffer;
+  string result;
+  unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
+  if (!pipe)
+  {
+      throw "Process failed";
+  }
+  while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr)
+  {
+      result += buffer.data();
+  }
+  return result;
+}

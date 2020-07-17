@@ -4,6 +4,10 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <cstdio>
+#include <memory>
+#include <stdexcept>
+#include <array>
 #include <boost/algorithm/string.hpp>
 #include "BuchiAutomaton.h"
 
@@ -19,6 +23,8 @@ class Simulations {
 
 public:
   BuchiAutomaton<std::string, std::string>::StateRelation parseRabitRelation(istringstream & os);
+
+  static string execCmd(string& cmd);
 
 private:
   static RabitSimLine parseRabitRelLine(string& line);
