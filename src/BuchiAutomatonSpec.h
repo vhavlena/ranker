@@ -51,9 +51,13 @@ protected:
   bool getRankSuccCache(vector<RankFunc>& out, StateSch& state, int symbol);
 
 
-  set<StateSch> succSetSchTightMin(StateSch& state, int symbol);
+  //set<StateSch> succSetSchTightMin(StateSch& state, int symbol);
   vector<RankFunc> getSchRanksMin(vector<int>& max, set<int>& states, StateSch& macrostate, map<int, set<int> >& succ);
-  set<StateSch> succSetSchStartMin(set<int>& state, int symbol);
+  //set<StateSch> succSetSchStartMin(set<int>& state, int symbol);
+  vector<StateSch> succSetSchStartReduced(set<int>& state, int symbol, int rankBound, map<int, int> reachCons,
+      map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel);
+  vector<StateSch> succSetSchTightReduced(StateSch& state, int symbol, map<int, int> reachCons,
+      map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel);
 
   bool acceptSl(StateSch& state, vector<int>& alp);
 
@@ -62,7 +66,7 @@ public:
 
   BuchiAutomaton<StateKV, int> complementKV();
   BuchiAutomaton<StateSch, int> complementSch();
-  BuchiAutomaton<StateSch, int> complementSchMin();
+  BuchiAutomaton<StateSch, int> complementSchReduced();
   BuchiAutomaton<StateSch, int> complementSchNFA(set<int>& start);
 
   set<StateSch> nfaSlAccept(BuchiAutomaton<StateSch, int>& nfaSchewe);
