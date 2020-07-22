@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
 
     BuchiAutomaton<int, int> ren = ba.renameAut();
     BuchiAutomatonSpec sp(ren);
-    BuchiAutomaton<StateSch, int> comp = sp.complementSch();
+    BuchiAutomaton<StateSch, int> comp = sp.complementSchReduced();
 
     cout << comp.getStates().size() << endl;
   }

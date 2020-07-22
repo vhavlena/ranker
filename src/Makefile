@@ -2,7 +2,7 @@
 CPPFLAGS=-std=c++17 -O2 #-Wl,-no_pie
 OBJ=obj
 
-test: test-parser test-kv-compl test-sch-compl test-process test-nfa-prop
+test: test-parser test-kv-compl test-sch-compl test-process test-nfa-prop test-sch-red-compl
 
 test-parser: units/test-parser.cpp $(OBJ)/BuchiAutomataParser.o $(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomatonSpec.o $(OBJ)/RankFunc.o $(OBJ)/AutGraph.o $(OBJ)/Simulations.o
 	g++ $(CPPFLAGS) -o units/$@ $?
@@ -11,6 +11,9 @@ test-kv-compl: units/test-kv-compl.cpp $(OBJ)/BuchiAutomataParser.o $(OBJ)/Buchi
 	g++ $(CPPFLAGS) -o units/$@ $?
 
 test-sch-compl: units/test-sch-compl.cpp $(OBJ)/BuchiAutomataParser.o $(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomatonSpec.o $(OBJ)/RankFunc.o $(OBJ)/AutGraph.o $(OBJ)/Simulations.o
+	g++ $(CPPFLAGS) -o units/$@ $?
+
+test-sch-red-compl: units/test-sch-red-compl.cpp $(OBJ)/BuchiAutomataParser.o $(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomatonSpec.o $(OBJ)/RankFunc.o $(OBJ)/AutGraph.o $(OBJ)/Simulations.o
 	g++ $(CPPFLAGS) -o units/$@ $?
 
 test-nfa-prop: units/test-nfa-prop.cpp $(OBJ)/BuchiAutomataParser.o $(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomatonSpec.o $(OBJ)/RankFunc.o $(OBJ)/AutGraph.o $(OBJ)/Simulations.o
@@ -38,4 +41,4 @@ $(OBJ)/BuchiAutomatonSpec.o: $(OBJ)/BuchiAutomaton.o $(OBJ)/RankFunc.o BuchiAuto
 	g++ $(CPPFLAGS) -c BuchiAutomatonSpec.cpp -o $@
 
 clean:
-	rm obj/*.o units/test-parser units/test-kv-compl
+	rm obj/*.o units/test-parser units/test-kv-compl units/test-sch-red-compl units/test-sch-compl units/test-nfa-prop units/test-process

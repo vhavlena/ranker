@@ -6,6 +6,7 @@ src/units/test-nfa-prop
 src/units/test-parser
 src/units/test-process
 src/units/test-sch-compl
+src/units/test-sch-red-compl
 
 src/img
 src/obj
