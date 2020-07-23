@@ -8,5 +8,7 @@ src/units/test-process
 src/units/test-sch-compl
 src/units/test-sch-red-compl
 
+benchmarks
+
 src/img
 src/obj

@@ -353,7 +353,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSch()
       stack.push(tmp);
     }
   }
-  std::cout << nfaStates.size() << std::endl;
+  //std::cout << nfaStates.size() << std::endl;
 
   // Compute rank upper bound on the macrostates
   this->rankBound = this->getRankBound(comp, slIgnore, maxReach, reachCons);
@@ -403,7 +403,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSch()
       mpVect[pr] = succ; //dst;
       if(!cnt) break;
     }
-    std::cout << comst.size() << " : " << stack.size() << std::endl;
+    //std::cout << comst.size() << " : " << stack.size() << std::endl;
   }
 
   return BuchiAutomaton<StateSch, int>(comst, finals,
@@ -584,7 +584,7 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchStartReduced(set<int>& state, int
 
   int reachMaxAct = maxReach[sprime];
   RankConstr constr = rankConstr(maxRank, sprime);
-  for(const RankFunc& item : RankFunc::tightFromRankConstr(constr, dirRel, oddRel, reachCons, reachMaxAct))
+  for(const RankFunc& item : RankFunc::tightFromRankConstrOdd(constr, dirRel, oddRel, reachCons, reachMaxAct))
   {
     ret.push_back({sprime, set<int>(), item, 0, true});
   }

@@ -39,6 +39,9 @@ private:
   static inline bool checkDirectBackRel(const std::pair<int, int>& act, RankFunc& tmp, BackRel& rel);
   static inline bool checkOddBackRel(const std::pair<int, int>& act, RankFunc& tmp, BackRel& oddRel);
 
+  static vector<RankFunc> cartTightProductMapOdd(vector<RankFunc>& s1, vector<std::pair<int, int> >& s2, int rem, BackRel& rel, BackRel& oddRel, int max, map<int, int>& reachRes, int reachMax);
+  static vector<RankFunc> cartTightProductMapListOdd(RankConstr slist, BackRel& rel, BackRel& oddRel, int max, map<int, int>& reachRes, int reachMax);
+
 public:
   RankFunc() : map<int,int>(), oddStates(), inverse(), tight(0), ranks()
   {
@@ -92,6 +95,7 @@ public:
 
   static vector<RankFunc> fromRankConstr(RankConstr constr);
   static vector<RankFunc> tightFromRankConstr(RankConstr constr, BackRel& rel, BackRel& oddRel, map<int, int>& reachRes, int reachMax);
+  static vector<RankFunc> tightFromRankConstrOdd(RankConstr constr, BackRel& rel, BackRel& oddRel, map<int, int>& reachRes, int reachMax);
   static vector<RankFunc> tightSuccFromRankConstr(RankConstr constr, BackRel& rel, BackRel& oddRel, int max, map<int, int>& reachRes, int reachMax);
 };
 

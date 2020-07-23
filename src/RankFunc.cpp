@@ -82,6 +82,46 @@ vector<RankFunc> RankFunc::cartTightProductMap(vector<RankFunc>& s1, vector<std:
   return ret;
 }
 
+vector<RankFunc> RankFunc::cartTightProductMapOdd(vector<RankFunc>& s1, vector<std::pair<int, int> >& s2,
+    int rem, BackRel& rel, BackRel& oddRel, int max, map<int, int>& reachRes, int reachMax)
+{
+  vector<RankFunc> ret;
+  int maxRank;
+  bool ins;
+  for(const auto& v1 : s1)
+  {
+    ins = false;
+    for(const auto& v2 : s2)
+    {
+      if(v2.second % 2 == 0)
+      {
+        if(!ins)
+          ret.push_back(v1);
+        ins = true;
+        continue;
+      }
+      RankFunc tmp(v1);
+      tmp.addPair(v2);
+      if(rem < tmp.remTightCount())
+        continue;
+      if(max != -1 && rem == 0 && tmp.getMaxRank() != max)
+        continue;
+
+      maxRank = std::min(tmp.getReachRestr(), v2.second + 2*(reachMax - reachRes[v2.first]));
+      if(maxRank < tmp.getMaxRank())
+        continue;
+      tmp.setReachRestr(maxRank);
+
+      if(!RankFunc::checkDirectBackRel(v2, tmp, rel))
+        continue;
+      if(!RankFunc::checkOddBackRel(v2, tmp, oddRel))
+        continue;
+      ret.push_back(tmp);
+    }
+  }
+  return ret;
+}
+
 
 bool RankFunc::checkDirectBackRel(const std::pair<int, int>& act, RankFunc& tmp, BackRel& rel)
 {
@@ -150,6 +190,50 @@ vector<RankFunc> RankFunc::cartTightProductMapList(RankConstr slist, BackRel& re
 }
 
 
+vector<RankFunc> RankFunc::cartTightProductMapListOdd(RankConstr slist, BackRel& rel, BackRel& oddRel, int max, map<int, int>& reachRes, int reachMax)
+{
+  vector<RankFunc> ret;
+  vector<RankFunc> retcp;
+  if(slist.size() == 0)
+    return ret;
+  set<int> states;
+
+  for(auto p : slist[0])
+  {
+    RankFunc sing(map<int, int>({p}));
+    sing.setReachRestr(p.second + 2*(reachMax - reachRes[p.first]));
+    ret.push_back(sing);
+    states.insert(p.first);
+  }
+  for(int i = 1; i < slist.size(); i++)
+  {
+    if(slist[i].size() == 0)
+      return ret;
+    ret = RankFunc::cartTightProductMapOdd(ret, slist[i], slist.size() - i - 1, rel, oddRel, max, reachRes, reachMax);
+    states.insert(slist[i][0].first);
+    //std::cout << i << " : " << ret.size() << std::endl;
+  }
+
+  for(int i = 0; i < ret.size(); i++)
+  {
+    if(ret[i].getMaxRank() % 2 == 0)
+      continue;
+    auto odd = ret[i].getOddStates();
+    for(int s : states)
+    {
+      if(odd.find(s) == odd.end())
+      {
+        ret[i].addPair({s, ret[i].getMaxRank() - 1});
+      }
+    }
+    retcp.push_back(ret[i]);
+  }
+
+  //std::cout << retcp.size() << std::endl;
+  return retcp;
+}
+
+
 vector<RankFunc> RankFunc::fromRankConstr(RankConstr constr)
 {
   vector<vector<std::pair<int,bool> > > emp;
@@ -161,6 +245,12 @@ vector<RankFunc> RankFunc::fromRankConstr(RankConstr constr)
 vector<RankFunc> RankFunc::tightFromRankConstr(RankConstr constr, BackRel& rel, BackRel& oddRel, map<int, int>& reachRes, int reachMax)
 {
   return RankFunc::cartTightProductMapList(constr, rel, oddRel, -1, reachRes, reachMax);
+}
+
+
+vector<RankFunc> RankFunc::tightFromRankConstrOdd(RankConstr constr, BackRel& rel, BackRel& oddRel, map<int, int>& reachRes, int reachMax)
+{
+  return RankFunc::cartTightProductMapListOdd(constr, rel, oddRel, -1, reachRes, reachMax);
 }
 
 
