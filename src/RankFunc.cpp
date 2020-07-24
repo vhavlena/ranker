@@ -218,7 +218,7 @@ vector<RankFunc> RankFunc::cartTightProductMapListOdd(RankConstr slist, BackRel&
   {
     if(ret[i].getMaxRank() % 2 == 0)
       continue;
-    auto odd = ret[i].getOddStates();
+    auto odd(ret[i].getOddStates());
     for(int s : states)
     {
       if(odd.find(s) == odd.end())
@@ -229,7 +229,6 @@ vector<RankFunc> RankFunc::cartTightProductMapListOdd(RankConstr slist, BackRel&
     retcp.push_back(ret[i]);
   }
 
-  //std::cout << retcp.size() << std::endl;
   return retcp;
 }
 

@@ -27,12 +27,13 @@ typedef vector<vector<std::pair<int,bool> > > BackRel;
 class RankFunc : public map<int,int>
 {
 private:
-  boost::dynamic_bitset<> tight;
+
   set<int> oddStates;
   int maxRank;
   RankInverse inverse;
   vector<int> ranks;
   int reachRest;
+  boost::dynamic_bitset<> tight;
 
   static vector<RankFunc> cartTightProductMap(vector<RankFunc>& s1, vector<std::pair<int, int> >& s2, int rem, BackRel& rel, BackRel& oddRel, int max, map<int, int>& reachRes, int reachMax);
   static vector<RankFunc> cartTightProductMapList(RankConstr slist, BackRel& rel, BackRel& oddRel, int max, map<int, int>& reachRes, int reachMax);

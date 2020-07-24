@@ -12,9 +12,9 @@ std::set<Symbol> BuchiAutomaton<State, Symbol>::getAlph()
 
 
 template <typename State, typename Symbol>
-BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAut()
+BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAut(int start)
 {
-  int stcnt = 0;
+  int stcnt = start;
   int symcnt = 0;
   std::map<State, int> mpstate;
   std::map<Symbol, int> mpsymbol;
@@ -22,7 +22,7 @@ BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAut()
   std::map< std::pair<int, int>, std::set<int> > rtrans;
   std::set<int> rfin;
   std::set<int> rini;
-  this->invRenameMap = std::vector<State>(this->states.size());
+  this->invRenameMap = std::vector<State>(this->states.size() + start);
 
   for(auto st : this->states)
   {
@@ -693,7 +693,148 @@ bool BuchiAutomaton<State, Symbol>::reachWithRestriction(const State& from, cons
 }
 
 
+template <>
+bool BuchiAutomaton<int, int>::isEmpty()
+{
+  vector<vector<int> > adjList(this->states.size());
+  vector<VertItem> vrt;
+
+  getAutGraphComponents(adjList, vrt);
+
+  AutGraph gr(adjList, vrt, this->finals);
+  gr.computeSCCs();
+  set<int> fin;
+  for(auto s : gr.getFinalComponents())
+  {
+    fin.insert(s.begin(), s.end());
+  }
+
+  set<int> in;
+  set<int> tmp = AutGraph::reachableVertices(adjList, this->getInitials());
+  set_intersection(fin.begin(), fin.end(), tmp.begin(), tmp.end(),
+    std::inserter(in, in.begin()));
+
+  if(in.size() > 0)
+    return false;
+  return true;
+}
+
+
+template <typename State, typename Symbol>
+BuchiAutomaton<tuple<State, int, bool>, Symbol> BuchiAutomaton<State, Symbol>::productBA(BuchiAutomaton<int, Symbol>& other)
+{
+  typedef tuple<State, int, bool> ProdState;
+  set<ProdState> nstates;
+  set<ProdState> nini;
+  stack<ProdState> stack;
+  set<State> fin1 = this->getFinals();
+  set<int> fin2 = other.getFinals();
+  auto tr1 = this->getTransitions();
+  auto tr2 = other.getTransitions();
+  map<std::pair<ProdState, Symbol>, set<ProdState>> ntr;
+  set<ProdState> nfin;
+
+  for(const State& st1 : this->getInitials())
+  {
+    for(const int& st2 : other.getInitials())
+    {
+      stack.push({st1, st2, 0});
+      nstates.insert({st1, st2, 0});
+      nini.insert({st1, st2, 0});
+    }
+  }
+
+  while(stack.size() > 0)
+  {
+    ProdState act = stack.top();
+    stack.pop();
+
+    for(const Symbol& sym : this->getAlph())
+    {
+      set<ProdState> dst;
+      for(const State& d1 : tr1[{std::get<0>(act), sym}])
+      {
+        for(const int& d2 : tr2[{std::get<1>(act), sym}])
+        {
+          if(!std::get<2>(act) && fin1.find(d1) != fin1.end())
+          {
+            dst.insert({d1, d2, 1});
+          }
+          else if(std::get<2>(act) && fin2.find(d2) != fin2.end())
+          {
+            dst.insert({d1, d2, 0});
+          }
+          else
+          {
+            dst.insert({d1, d2, std::get<2>(act)});
+          }
+        }
+      }
+      for(auto& item : dst)
+      {
+        if(nstates.find(item) != nstates.end())
+        {
+          nstates.insert(item);
+          stack.push(item);
+        }
+      }
+      ntr[{act, sym}] = dst;
+    }
+  }
+
+  for(const State& st1 : this->getStates())
+  {
+    for(const int& fin2 : fin2)
+    {
+      nstates.insert({st1, fin2, 1});
+      nfin.insert({st1, fin2, 1});
+    }
+  }
+
+  return BuchiAutomaton<tuple<State, int, bool>, Symbol>(nstates, nfin, nini, ntr);
+}
+
+
+template <typename State, typename Symbol>
+BuchiAutomaton<State, Symbol> BuchiAutomaton<State, Symbol>::unionBA(BuchiAutomaton<State, Symbol>& other)
+{
+
+  set<State> nstates;
+  set<State> nini;
+  Transitions ntr(this->getTransitions());
+  set<State> nfin;
+
+  set_union(this->getStates().begin(), this->getStates().end(), other.getStates().begin(),
+    other.getStates().end(), std::inserter(nstates, nstates.begin()));
+  set_union(this->getInitials().begin(), this->getInitials().end(), other.getInitials().begin(),
+    other.getInitials().end(), std::inserter(nini, nini.begin()));
+  set_union(this->getFinals().begin(), this->getFinals().end(), other.getFinals().begin(),
+    other.getFinals().end(), std::inserter(nfin, nfin.begin()));
+  ntr.insert(other.getTransitions().begin(), other.getTransitions().end());
+  return BuchiAutomaton<State, Symbol>(nstates, nfin, nini, ntr, this->getAlph());
+}
+
+
+template <typename State, typename Symbol>
+void BuchiAutomaton<State, Symbol>::singleInitial(State init)
+{
+  auto& tr = this->getTransitions();
+  this->states.insert(init);
+  for(const Symbol& s : this->getAlph())
+  {
+    tr[{init, s}] = set<State>();
+    for(const State& st : this->getInitials())
+    {
+      auto dst = tr[{st, s}];
+      tr[{init, s}].insert(dst.begin(), dst.end());
+    }
+  }
+  this->initials = set<State>({init});
+}
+
+
 template class BuchiAutomaton<int, int>;
+template class BuchiAutomaton<tuple<int, int, bool>, int>;
 template class BuchiAutomaton<std::string, std::string>;
 template class BuchiAutomaton<StateKV, int>;
 template class BuchiAutomaton<StateSch, int>;

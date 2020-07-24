@@ -607,6 +607,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced()
 
   // NFA part of the Schewe construction
   BuchiAutomaton<StateSch, int> comp = this->complementSchNFA(this->getInitials());
+
   set<StateSch> slIgnore = this->nfaSlAccept(comp);
   set<StateSch> nfaStates = comp.getStates();
   comst.insert(nfaStates.begin(), nfaStates.end());
@@ -615,6 +616,8 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced()
   map<int, int> reachCons = this->getMinReachSize();
   map<DFAState, int> maxReach = this->getMaxReachSize(comp, slIgnore);
 
+  mp.insert(comp.getTransitions().begin(), comp.getTransitions().end());
+  finals = set<StateSch>(comp.getFinals());
   // Compute states necessary to generate in the tight part
   set<StateSch> tightStart = comp.getCycleClosingStates(slIgnore);
   for(const StateSch& tmp : tightStart)
@@ -650,11 +653,10 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced()
     for(int sym : alph)
     {
       auto pr = std::make_pair(st, sym);
-      //set<StateSch> dst;
+      set<StateSch> dst;
       if(st.tight)
       {
         succ = succSetSchTightReduced(st, sym, reachCons, maxReach, dirRel, oddRel);
-        //succ = set<StateSch>();
       }
       else
       {
@@ -663,18 +665,22 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced()
       }
       for (const StateSch& s : succ)
       {
-        //dst.insert(s);
+        dst.insert(s);
         if(comst.find(s) == comst.end())
         {
           stack.push(s);
           comst.insert(s);
         }
       }
-      mpVect[pr] = succ; //dst;
+      if(!st.tight)
+        mp[pr].insert(dst.begin(), dst.end());
+      else
+        mp[pr] = dst;
       if(!cnt) break;
     }
     //std::cout << comst.size() << " : " << stack.size() << std::endl;
   }
+
 
   return BuchiAutomaton<StateSch, int>(comst, finals,
     initials, mp, alph);
@@ -851,7 +857,7 @@ map<DFAState, int> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSch, int
       rank = std::min(rank, (int)ret.size() - maxCnt + 1);
     if(minReach != INF)
       rank = std::max(std::min(rank, maxReach - minReach + 1), 0);
-    if(this->containsRankSimEq(ret))
+    if(this->containsRankSimEq(ret) && ret.size() > 1)
       rank = std::min(rank, std::max((int)ret.size() - 1, 0));
     return rank;
   };

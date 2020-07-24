@@ -8,10 +8,13 @@
 #include <stack>
 #include <iostream>
 #include <algorithm>
+#include <tuple>
 
 #include "AutGraph.h"
 #include "StateKV.h"
 #include "StateSch.h"
+
+using std::tuple;
 
 class AutGraph;
 
@@ -110,7 +113,7 @@ public:
   std::set<Symbol> getAlph();
   std::string toString();
   std::string toGraphwiz();
-  BuchiAutomaton<int, int> renameAut();
+  BuchiAutomaton<int, int> renameAut(int start = 0);
 
   SetStates& getStates()
   {
@@ -184,6 +187,12 @@ public:
 
   SetStates getCycleClosingStates(SetStates& slignore);
   bool reachWithRestriction(const State& from, const State& to, SetStates& restr, SetStates& high);
+
+  bool isEmpty();
+
+  BuchiAutomaton<tuple<State, int, bool>, Symbol> productBA(BuchiAutomaton<int, Symbol>& other);
+  BuchiAutomaton<State, Symbol> unionBA(BuchiAutomaton<State, Symbol>& other);
+  void singleInitial(State init);
 };
 
 #endif
