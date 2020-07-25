@@ -515,6 +515,7 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
     this->rankCache[{state.S, symbol, state.f.getMaxRank()}].push_back({state.f, tmp});
   }
 
+
   vector<RankFunc> maxRanks;
   bool cnt = true;
   for(auto& r : tmp)
@@ -547,20 +548,23 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
     ret.push_back({sprime, oprime_tmp, r, iprime, true});
   }
 
-  for(StateSch& st : ret)
+  vector<StateSch> retAll;
+  for(const StateSch& st : ret)
   {
-    map<int, int> rnkMap = (map<int, int>)st.f;
+    retAll.push_back(st);
+    map<int, int> rnkMap((map<int, int>)st.f);
     if(st.i != 0 || st.O.size() == 0)
     {
       for(int o : st.O)
       {
         rnkMap[o]--;
       }
-      ret.push_back({st.S, set<int>(), RankFunc(rnkMap), st.i, true});
+
+      retAll.push_back({st.S, set<int>(), RankFunc(rnkMap), st.i, true});
     }
   }
 
-  return ret;
+  return retAll;
 }
 
 vector<StateSch> BuchiAutomatonSpec::succSetSchStartReduced(set<int>& state, int symbol, int rankBound,
@@ -678,9 +682,8 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced()
         mp[pr] = dst;
       if(!cnt) break;
     }
-    //std::cout << comst.size() << " : " << stack.size() << std::endl;
+    std::cout << comst.size() << " : " << stack.size() << std::endl;
   }
-
 
   return BuchiAutomaton<StateSch, int>(comst, finals,
     initials, mp, alph);
