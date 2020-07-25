@@ -588,7 +588,25 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchStartReduced(set<int>& state, int
 
   int reachMaxAct = maxReach[sprime];
   RankConstr constr = rankConstr(maxRank, sprime);
-  for(const RankFunc& item : RankFunc::tightFromRankConstrOdd(constr, dirRel, oddRel, reachCons, reachMaxAct))
+  auto tmp = RankFunc::tightFromRankConstrOdd(constr, dirRel, oddRel, reachCons, reachMaxAct);
+  vector<RankFunc> maxRanks;
+  bool cnt = true;
+  for(auto& r : tmp)
+  {
+    cnt = true;
+    for(auto& rp : tmp)
+    {
+      if(r != rp && r.isAllLeq(rp) && r.getMaxRank() == rp.getMaxRank())
+      {
+        cnt = false;
+        break;
+      }
+    }
+    if(cnt) maxRanks.push_back(r);
+  }
+
+
+  for(const RankFunc& item : maxRanks)
   {
     ret.push_back({sprime, set<int>(), item, 0, true});
   }

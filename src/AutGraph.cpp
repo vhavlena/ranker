@@ -38,8 +38,20 @@ void AutGraph::strongConnect(int v)
         final = true;
       }
     } while(v != w);
-    if(final)
-      this->finalComponents.push_back(scc);
+    if(final && scc.size() > 1)
+    {
+      auto item = scc.begin();
+      if(scc.size() == 1)
+      {
+        auto it = std::find(this->adjList[*item].begin(), this->adjList[*item].end(), *item);
+        if(it != this->adjList[*item].end())
+          this->finalComponents.push_back(scc);
+      }
+      else
+      {
+        this->finalComponents.push_back(scc);
+      }
+    }
     this->allComponents.push_back(scc);
   }
 }

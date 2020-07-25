@@ -25,7 +25,7 @@ test-process: units/test-process.cpp $(OBJ)/BuchiAutomataParser.o $(OBJ)/BuchiAu
 $(OBJ)/BuchiAutomataParser.o: BuchiAutomataParser.cpp BuchiAutomataParser.h $(OBJ)/AutGraph.o
 	g++ $(CPPFLAGS) -c -o $@ $<
 
-$(OBJ)/BuchiAutomaton.o: BuchiAutomaton.cpp BuchiAutomaton.h RankFunc.h AutGraph.h $(OBJ)/AutGraph.o
+$(OBJ)/BuchiAutomaton.o: BuchiAutomaton.cpp BuchiAutomaton.h RankFunc.h AuxFunctions.h AutGraph.h $(OBJ)/AutGraph.o $(OBJ)/AuxFunctions.o
 	g++ $(CPPFLAGS) -c BuchiAutomaton.cpp -o $@
 
 $(OBJ)/RankFunc.o: RankFunc.cpp RankFunc.h

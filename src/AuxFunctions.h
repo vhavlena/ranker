@@ -3,6 +3,7 @@
 #define AUX_FNC_H_
 
 #include <set>
+#include <map>
 #include <vector>
 
 using namespace std;
@@ -41,6 +42,16 @@ namespace Aux
     {
       ret = cartProduct<T>(ret, slist[i]);
     }
+    return ret;
+  }
+
+
+  template <typename T, typename S>
+  std::set<S> mapSet(std::map<T, S>& mp, std::set<T>& st)
+  {
+    std::set<S> ret;
+    for(const auto& p : st)
+      ret.insert(mp[p]);
     return ret;
   }
 

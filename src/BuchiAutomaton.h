@@ -13,6 +13,7 @@
 #include "AutGraph.h"
 #include "StateKV.h"
 #include "StateSch.h"
+#include "AuxFunctions.h"
 
 using std::tuple;
 
@@ -60,15 +61,6 @@ private:
 protected:
   std::string toStringWith(std::function<std::string(State)>& stateStr,  std::function<std::string(Symbol)>& symStr);
   std::string toGraphwizWith(std::function<std::string(State)>& stateStr,  std::function<std::string(Symbol)>& symStr);
-
-  template <typename T, typename S>
-  std::set<S> mapSet(std::map<T, S> mp, std::set<T> st)
-  {
-    std::set<S> ret;
-    for(auto p : st)
-      ret.insert(mp[p]);
-    return ret;
-  }
 
   bool isRankLeq(std::set<State>& set1, std::set<State>& set2, StateRelation& rel);
   bool deriveRankConstr(State& st1, State& st2, StateRelation& rel, std::map<Symbol, bool>& ignore);

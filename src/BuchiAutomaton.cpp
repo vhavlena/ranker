@@ -34,9 +34,9 @@ BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAut(int start)
     }
   }
 
-  rstate = mapSet(mpstate, this->states);
-  rini = mapSet(mpstate, this->initials);
-  rfin = mapSet(mpstate, this->finals);
+  rstate = Aux::mapSet(mpstate, this->states);
+  rini = Aux::mapSet(mpstate, this->initials);
+  rfin = Aux::mapSet(mpstate, this->finals);
   for(auto p : this->trans)
   {
     auto it = mpsymbol.find(p.first.second);
@@ -50,7 +50,7 @@ BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAut(int start)
     {
       val = it->second;
     }
-    std::set<int> to = mapSet(mpstate, p.second);
+    std::set<int> to = Aux::mapSet(mpstate, p.second);
     rtrans.insert({std::make_pair(mpstate[p.first.first], val), to});
   }
 
@@ -219,7 +219,7 @@ void BuchiAutomaton<int, int>::removeUseless()
     fin.insert(s.begin(), s.end());
   }
 
-  set<int> reach = gr.reachableVertices(fin);
+  set<int> reach = gr.reachableVertices(this->getInitials());
   set<int> backreach = gr.reachableVertices(revList, fin);
   set<int> ret;
 
