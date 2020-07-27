@@ -38,7 +38,7 @@ void AutGraph::strongConnect(int v)
         final = true;
       }
     } while(v != w);
-    if(final && scc.size() > 1)
+    if(final && scc.size() >= 1)
     {
       auto item = scc.begin();
       if(scc.size() == 1)
