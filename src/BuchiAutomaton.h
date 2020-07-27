@@ -106,6 +106,7 @@ public:
   std::string toString();
   std::string toGraphwiz();
   BuchiAutomaton<int, int> renameAut(int start = 0);
+  BuchiAutomaton<int, int> renameAutDict(map<Symbol, int>& mpsymbol, int start = 0);
 
   SetStates& getStates()
   {
@@ -185,6 +186,8 @@ public:
   BuchiAutomaton<tuple<State, int, bool>, Symbol> productBA(BuchiAutomaton<int, Symbol>& other);
   BuchiAutomaton<State, Symbol> unionBA(BuchiAutomaton<State, Symbol>& other);
   void singleInitial(State init);
+
+  vector<set<State>> getRunTree(vector<Symbol>& word);
 };
 
 #endif

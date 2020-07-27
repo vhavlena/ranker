@@ -73,6 +73,67 @@ BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAut(int start)
 
 
 template <typename State, typename Symbol>
+BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAutDict(map<Symbol, int>& mpsymbol, int start)
+{
+  int stcnt = start;
+  int symcnt = 0;
+  std::map<State, int> mpstate;
+  //std::map<Symbol, int> mpsymbol;
+  std::set<int> rstate;
+  std::map< std::pair<int, int>, std::set<int> > rtrans;
+  std::set<int> rfin;
+  std::set<int> rini;
+  this->invRenameMap = std::vector<State>(this->states.size() + start);
+
+  for(auto st : this->states)
+  {
+    auto it = mpstate.find(st);
+    this->invRenameMap[stcnt] = st;
+    if(it == mpstate.end())
+    {
+      mpstate[st] = stcnt++;
+    }
+  }
+
+  rstate = Aux::mapSet(mpstate, this->states);
+  rini = Aux::mapSet(mpstate, this->initials);
+  rfin = Aux::mapSet(mpstate, this->finals);
+  for(auto p : this->trans)
+  {
+    //auto it = mpsymbol.find(p.first.second);
+    int val = mpsymbol[p.first.second];
+    // if(it == mpsymbol.end())
+    // {
+    //   val = symcnt;
+    //   mpsymbol[p.first.second] = symcnt++;
+    // }
+    // else
+    // {
+    //   val = it->second;
+    // }
+    std::set<int> to = Aux::mapSet(mpstate, p.second);
+    rtrans.insert({std::make_pair(mpstate[p.first.first], val), to});
+  }
+
+  auto ret = BuchiAutomaton<int, int>(rstate, rfin, rini, rtrans);
+  this->renameStateMap = mpstate;
+
+  std::set<std::pair<int, int> > rdirSim, roddSim;
+  for(auto item : this->directSim)
+  {
+    rdirSim.insert({mpstate[item.first], mpstate[item.second]});
+  }
+  for(auto item : this->oddRankSim)
+  {
+    roddSim.insert({mpstate[item.first], mpstate[item.second]});
+  }
+  ret.setDirectSim(rdirSim);
+  ret.setOddRankSim(roddSim);
+  return ret;
+}
+
+
+template <typename State, typename Symbol>
 std::string BuchiAutomaton<State, Symbol>::toStringWith(std::function<std::string(State)>& stateStr,
   std::function<std::string(Symbol)>& symStr)
 {
@@ -408,9 +469,9 @@ bool BuchiAutomaton<State, Symbol>::deriveRankConstr(State& st1, State& st2,
   {
     set<State> dst1 = this->trans[{st1, sym}];
     set<State> dst2 = this->trans[{st2, sym}];
-    if(!isRankLeq(dst1, dst2, rel) && !ignore[sym])
+    if(!isRankLeq(dst1, dst2, rel) /*&& !ignore[sym]*/)
       leq = false;
-    if(!isRankLeq(dst2, dst1, rel) && !ignore[sym])
+    if(!isRankLeq(dst2, dst1, rel) /*&& !ignore[sym]*/)
       geq = false;
     //propagateFwd(st1, st2, dst1, dst2, rel, nw);
   }
@@ -831,6 +892,34 @@ void BuchiAutomaton<State, Symbol>::singleInitial(State init)
   }
   this->initials = set<State>({init});
 }
+
+
+template <typename State, typename Symbol>
+vector<set<State>> BuchiAutomaton<State, Symbol>::getRunTree(vector<Symbol>& word)
+{
+  set<State> nstates;
+  set<State> nini;
+  Transitions ntr = this->getTransitions();
+  set<State> nfin;
+  vector<set<State>> ret;
+
+  set<State> act = this->getInitials();
+
+  ret.push_back(act);
+  for(const Symbol& sym : word)
+  {
+    set<State> dst;
+    for(const auto& item : act)
+    {
+      set<State> tmp = ntr[{item, sym}];
+      dst.insert(tmp.begin(), tmp.end());
+    }
+    act = dst;
+    ret.push_back(dst);
+  }
+  return ret;
+}
+
 
 
 template class BuchiAutomaton<int, int>;

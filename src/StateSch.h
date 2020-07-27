@@ -39,7 +39,7 @@ struct StateSch {
 
   bool operator ==(const StateSch& rhs) const
   {
-    return S == rhs.S && O == rhs.O && f == rhs.f && i == rhs.i;
+    return S == rhs.S && O == rhs.O && f == rhs.f && i == rhs.i && tight == rhs.tight;
   }
 
   std::string toString() const

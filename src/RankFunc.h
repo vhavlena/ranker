@@ -9,7 +9,7 @@
 #include <iostream>
 #include <string>
 
-#include <boost/dynamic_bitset.hpp>
+//#include <boost/dynamic_bitset.hpp>
 
 #define INF 100000000
 
@@ -33,7 +33,8 @@ private:
   RankInverse inverse;
   vector<int> ranks;
   int reachRest;
-  boost::dynamic_bitset<> tight;
+  //boost::dynamic_bitset<> tight;
+  vector<bool> tight;
 
   static vector<RankFunc> cartTightProductMap(vector<RankFunc>& s1, vector<std::pair<int, int> >& s2, int rem, BackRel& rel, BackRel& oddRel, int max, map<int, int>& reachRes, int reachMax);
   static vector<RankFunc> cartTightProductMapList(RankConstr slist, BackRel& rel, BackRel& oddRel, int max, map<int, int>& reachRes, int reachMax);
@@ -44,7 +45,7 @@ private:
   static vector<RankFunc> cartTightProductMapListOdd(RankConstr slist, BackRel& rel, BackRel& oddRel, int max, map<int, int>& reachRes, int reachMax);
 
 public:
-  RankFunc() : map<int,int>(), oddStates(), inverse(), tight(0), ranks()
+  RankFunc() : map<int,int>(), oddStates(), inverse(), ranks(), tight()
   {
     this->maxRank = 0;
     this->reachRest = INF;
@@ -83,10 +84,16 @@ public:
 
   int remTightCount() const
   {
-    return this->tight.size() - this->tight.count();
+    int i = 0;
+    for(const auto& t : this->tight)
+    {
+      if(t) i++;
+    }
+    return this->tight.size() - i;
   }
 
   std::string toString() const;
+  std::string toStringVer() const;
   bool isTightRank() const;
   bool isReachConsistent(map<int, int>& res, int reachMax) const;
 

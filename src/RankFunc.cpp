@@ -4,6 +4,7 @@
 
 RankFunc::RankFunc(const map<int,int>& mp) : map<int,int>(mp)
 {
+  this->maxRank = 0;
   RankInverse::iterator it;
   for(const auto& k : mp)
   {
@@ -12,11 +13,12 @@ RankFunc::RankFunc(const map<int,int>& mp) : map<int,int>(mp)
     int tmp = this->maxRank;
     if(tmp % 2 == 0) tmp++;
     if(this->tight.size() < (tmp-1)/2 + 1)
-      this->tight.resize((tmp-1)/2 + 1);
+      this->tight.resize((tmp-1)/2 + 1, 0);
     if(k.second % 2 != 0)
     {
       this->oddStates.insert(k.first);
-      this->tight.set((k.second - 1) / 2);
+      //this->tight.set((k.second - 1) / 2);
+      this->tight[(k.second - 1) / 2] = 1;
     }
 
     it = this->inverse.find(k.second);
@@ -34,11 +36,12 @@ void RankFunc::addPair(const std::pair<int, int>& val)
   int tmp = this->maxRank;
   if(tmp % 2 == 0) tmp++;
   if(this->tight.size() < (tmp-1)/2 + 1)
-    this->tight.resize((tmp-1)/2 + 1);
+    this->tight.resize((tmp-1)/2 + 1, 0);
   if(val.second % 2 != 0)
   {
     this->oddStates.insert(val.first);
-    this->tight.set((val.second - 1) / 2);
+    //this->tight.set((val.second - 1) / 2);
+    this->tight[(val.second - 1) / 2] = 1;
   }
 
   this->insert(val);
@@ -216,7 +219,7 @@ vector<RankFunc> RankFunc::cartTightProductMapListOdd(RankConstr slist, BackRel&
 
   for(int i = 0; i < ret.size(); i++)
   {
-    if(ret[i].getMaxRank() % 2 == 0)
+    if(ret[i].getMaxRank() % 2 == 0 || ret[i].remTightCount() != 0)
       continue;
     auto odd(ret[i].getOddStates());
     for(int s : states)
@@ -326,7 +329,12 @@ std::string RankFunc::toString() const
 
 bool RankFunc::isTightRank() const
 {
-  return this->tight.all();
+  for(const auto& t : this->tight)
+  {
+    if(!t)  return false;
+  }
+  return true;
+  //return this->tight.all();
 }
 
 
@@ -392,4 +400,13 @@ bool RankFunc::isReachConsistent(map<int, int>& res, int reachMax) const
     }
   }
   return true;
+}
+
+
+std::string RankFunc::toStringVer() const
+{
+  string ret;
+  for(auto i : this->tight)
+    ret += to_string(i);
+  return ret;
 }
