@@ -45,18 +45,24 @@ BuchiAutomaton<std::string, std::string>::StateRelation Simulations::parseRabitR
 }
 
 
-string Simulations::execCmd(string& cmd)
+string Simulations::execCmd(string& cmd, int timeout)
 {
   array<char, 128> buffer;
-  string result;
-  unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
+  string result = "";
+  string toutCmd = "gtimeout " + std::to_string(timeout) + "s " + cmd;
+  auto pipe = popen(toutCmd.c_str(), "r");
   if (!pipe)
   {
-      throw "Process failed";
+    throw "Process failed";
   }
-  while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr)
+  while (fgets(buffer.data(), buffer.size(), pipe) != nullptr)
   {
-      result += buffer.data();
+    result += buffer.data();
+  }
+  int r = pclose(pipe);
+  if(r != 0) //Timeout expired
+  {
+    throw TimeoutException();
   }
   return result;
 }

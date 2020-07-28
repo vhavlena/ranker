@@ -561,20 +561,23 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
 
   for (auto& r : maxRanks)
   {
-    // if(!r.isSuccValid(state.f, succ) ||  !r.isMaxRankValid(rnkBnd))
-    //   continue;
     set<int> oprime_tmp;
-    auto odd = r.getOddStates();
-    std::set_difference(oprime.begin(), oprime.end(), odd.begin(), odd.end(),
-      std::inserter(oprime_tmp, oprime_tmp.begin()));
-    iprime = 0;
-    // set<int> oprime_tmp;
-    // inverseRank = r.inverseRank(iprime);
-    // if (state.O.size() == 0)
-    //   oprime_tmp = inverseRank;
-    // else
-    //   std::set_intersection(oprime.begin(),oprime.end(),inverseRank.begin(),
-    //     inverseRank.end(), std::inserter(oprime_tmp, oprime_tmp.begin()));
+    if(this->opt.cutPoint)
+    {
+      inverseRank = r.inverseRank(iprime);
+      if (state.O.size() == 0)
+        oprime_tmp = inverseRank;
+      else
+        std::set_intersection(oprime.begin(),oprime.end(),inverseRank.begin(),
+          inverseRank.end(), std::inserter(oprime_tmp, oprime_tmp.begin()));
+    }
+    else
+    {
+      auto odd = r.getOddStates();
+      std::set_difference(oprime.begin(), oprime.end(), odd.begin(), odd.end(),
+        std::inserter(oprime_tmp, oprime_tmp.begin()));
+      iprime = 0;
+    }
     ret.push_back({sprime, oprime_tmp, r, iprime, true});
   }
 
@@ -582,11 +585,22 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
   for(const StateSch& st : ret)
   {
     retAll.insert(st);
-    //bool cnt = true;
     map<int, int> rnkMap((map<int, int>)st.f);
-    set<int> no;
-    //if(st.i != 0 || st.O.size() == 0)
+
+    if(this->opt.cutPoint)
     {
+      if(st.i != 0 || st.O.size() == 0)
+      {
+        for(int o : st.O)
+        {
+          rnkMap[o]--;
+        }
+        retAll.insert({st.S, set<int>(), RankFunc(rnkMap), st.i, true});
+      }
+    }
+    else
+    {
+      set<int> no;
       for(int o : st.O)
       {
         if(rnkMap[o] > 0)
@@ -594,7 +608,6 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
         else
           no.insert(o);
       }
-
       retAll.insert({st.S, no, RankFunc(rnkMap), st.i, true});
     }
   }
@@ -665,6 +678,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced()
   // NFA part of the Schewe construction
   BuchiAutomaton<StateSch, int> comp = this->complementSchNFA(this->getInitials());
   map<std::pair<StateSch, int>, set<StateSch>> prev = comp.getReverseTransitions();
+  //std::cout << comp.toGraphwiz() << std::endl;
 
   set<StateSch> slIgnore = this->nfaSlAccept(comp);
   set<StateSch> nfaStates = comp.getStates();

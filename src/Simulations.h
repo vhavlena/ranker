@@ -8,10 +8,19 @@
 #include <memory>
 #include <stdexcept>
 #include <array>
+#include <exception>
 #include <boost/algorithm/string.hpp>
 #include "BuchiAutomaton.h"
 
 using namespace std;
+
+class TimeoutException: public exception
+{
+  virtual const char* what() const throw()
+  {
+    return "Timeout expired";
+  }
+};
 
 struct RabitSimLine
 {
@@ -24,7 +33,7 @@ class Simulations {
 public:
   BuchiAutomaton<std::string, std::string>::StateRelation parseRabitRelation(istringstream & os);
 
-  static string execCmd(string& cmd);
+  static string execCmd(string& cmd, int timeout = 1000);
 
 private:
   static RabitSimLine parseRabitRelLine(string& line);

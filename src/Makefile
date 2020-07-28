@@ -40,7 +40,7 @@ $(OBJ)/AutGraph.o: AutGraph.cpp AutGraph.h
 $(OBJ)/AuxFunctions.o: AuxFunctions.cpp AuxFunctions.h
 	g++ $(CPPFLAGS) -c -o $@ $<
 
-$(OBJ)/BuchiAutomatonSpec.o: $(OBJ)/BuchiAutomaton.o $(OBJ)/RankFunc.o $(OBJ)/AuxFunctions.o BuchiAutomatonSpec.cpp BuchiAutomaton.h StateKV.h StateSch.h BuchiAutomatonSpec.h
+$(OBJ)/BuchiAutomatonSpec.o: $(OBJ)/BuchiAutomaton.o $(OBJ)/RankFunc.o $(OBJ)/AuxFunctions.o BuchiAutomatonSpec.cpp BuchiAutomaton.h StateKV.h StateSch.h BuchiAutomatonSpec.h Options.h
 	g++ $(CPPFLAGS) -c BuchiAutomatonSpec.cpp -o $@
 
 clean:

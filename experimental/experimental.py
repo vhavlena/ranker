@@ -16,9 +16,9 @@ import os.path
 import resource
 from enum import Enum
 
-STATESLINE = -2
+STATESLINE = -3
 TIMELINE = -1
-CHECK = -3
+CHECK = -2
 TIMEOUT = 100 #in seconds
 AUT = 100000
 
@@ -89,7 +89,7 @@ def main():
     files = files[:AUT]
 
     print_config(AUT)
-    print("Aut;states;time;aux")
+    print("Aut;states;time;check")
 
     for eq_file in files:
         filename = os.path.join(formulafolder, eq_file)
@@ -108,14 +108,13 @@ def main():
 def parse_output_rnk(output):
     lines = output.split('\n')
     lines = list(filter(None, lines)) #Remove empty lines
-    sat = lines[STATESLINE]
-    model_check = str()
-    # if sat == "sat":
-    #     match = re.search("Model check: ([a-zA-Z]+)", lines[MODEL_CHECK])
-    #     model_check = match.group(1)
+    match = re.search("States: ([0-9]+)", lines[STATESLINE])
+    states = match.group(1)
+    match = re.search("Check: ([a-zA-Z]+)", lines[CHECK])
+    check = match.group(1)
     match = re.search("Time: ([0-9]+.[0-9]+)", lines[TIMELINE])
     time = round(float(match.group(1)), 2)
-    return sat, time, model_check
+    return states, time, check
 
 
 def print_config(formulas):

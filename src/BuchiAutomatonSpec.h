@@ -15,6 +15,7 @@
 #include "BuchiAutomaton.h"
 #include "StateKV.h"
 #include "StateSch.h"
+#include "Options.h"
 
 using std::vector;
 using std::set;
@@ -30,6 +31,8 @@ private:
 
   map<DFAState, int> rankBound;
   SuccRankCache rankCache;
+
+  ComplOptions opt;
 
 protected:
   RankConstr rankConstr(vector<int>& max, set<int>& states);
@@ -62,7 +65,10 @@ protected:
   bool acceptSl(StateSch& state, vector<int>& alp);
 
 public:
-  BuchiAutomatonSpec(BuchiAutomaton<int, int> &t) : BuchiAutomaton<int, int>(t) {}
+  BuchiAutomatonSpec(BuchiAutomaton<int, int> &t) : BuchiAutomaton<int, int>(t), rankBound(), rankCache()
+  {
+    opt = { .cutPoint = false};
+  }
 
   BuchiAutomaton<StateKV, int> complementKV();
   BuchiAutomaton<StateSch, int> complementSch();
@@ -74,6 +80,9 @@ public:
   map<DFAState, int> getMaxReachSize(BuchiAutomaton<StateSch, int>& nfaSchewe, set<StateSch>& slIgnore);
   map<int, int> getMaxReachSizeInd();
   map<int, int> getMinReachSize();
+
+  void setComplOptions(ComplOptions& co) { this->opt = co; }
+  ComplOptions getComplOptions() const { return this->opt; }
 };
 
 #endif
