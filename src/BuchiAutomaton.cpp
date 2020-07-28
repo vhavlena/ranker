@@ -921,6 +921,24 @@ vector<set<State>> BuchiAutomaton<State, Symbol>::getRunTree(vector<Symbol>& wor
 }
 
 
+template <typename State, typename Symbol>
+std::map<std::pair<State, Symbol>, set<State>> BuchiAutomaton<State, Symbol>::getReverseTransitions()
+{
+  Transitions prev;
+  for(const State& s : this->getStates())
+  {
+    for(const Symbol& a : this->getAlphabet())
+      prev[{s,a}] = set<State>();
+  }
+  for(const auto& t : this->getTransitions())
+  {
+    for(const auto& d : t.second)
+      prev[{d,t.first.second}].insert(t.first.first);
+  }
+  return prev;
+}
+
+
 
 template class BuchiAutomaton<int, int>;
 template class BuchiAutomaton<tuple<int, int, bool>, int>;

@@ -51,9 +51,9 @@ protected:
   bool getRankSuccCache(vector<RankFunc>& out, StateSch& state, int symbol);
 
 
-  //set<StateSch> succSetSchTightMin(StateSch& state, int symbol);
-  vector<RankFunc> getSchRanksMin(vector<int>& max, set<int>& states, StateSch& macrostate, map<int, set<int> >& succ);
-  //set<StateSch> succSetSchStartMin(set<int>& state, int symbol);
+  void getSchRanksTightReduced(vector<RankFunc>& out, vector<int>& max,
+      set<int>& states, int symbol, StateSch& macrostate, map<int, set<int> >& succ,
+      map<int, int> reachCons, int reachMax, BackRel& dirRel, BackRel& oddRel);
   vector<StateSch> succSetSchStartReduced(set<int>& state, int symbol, int rankBound, map<int, int> reachCons,
       map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel);
   vector<StateSch> succSetSchTightReduced(StateSch& state, int symbol, map<int, int> reachCons,

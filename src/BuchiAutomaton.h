@@ -188,6 +188,8 @@ public:
   void singleInitial(State init);
 
   vector<set<State>> getRunTree(vector<Symbol>& word);
+
+  Transitions getReverseTransitions();
 };
 
 #endif
