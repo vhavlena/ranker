@@ -76,7 +76,7 @@ template <typename State, typename Symbol>
 BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAutDict(map<Symbol, int>& mpsymbol, int start)
 {
   int stcnt = start;
-  int symcnt = 0;
+  //int symcnt = 0;
   std::map<State, int> mpstate;
   //std::map<Symbol, int> mpsymbol;
   std::set<int> rstate;
@@ -461,8 +461,8 @@ bool BuchiAutomaton<State, Symbol>::deriveRankConstr(State& st1, State& st2,
   bool leq = true;
   bool geq = true;
   bool ret = false;
-  bool fwdlq = false;
-  bool fwdgq = false;
+  //bool fwdlq = false;
+  //bool fwdgq = false;
   StateRelation nw;
 
   for(Symbol sym : this->alph)
@@ -495,7 +495,6 @@ void BuchiAutomaton<State, Symbol>::propagateFwd(State& st1, State& st2,
     BuchiAutomaton<State, Symbol>::StateRelation& rel,
     BuchiAutomaton<State, Symbol>::StateRelation& nw)
 {
-  State fw1, fw2;
   std::set<State> fset1, fset2;
   std::set_difference(set1.begin(), set1.end(), this->finals.begin(), this->finals.end(),
     std::inserter(fset1, fset1.begin()));
@@ -833,7 +832,7 @@ BuchiAutomaton<tuple<State, int, bool>, Symbol> BuchiAutomaton<State, Symbol>::p
       }
       for(auto& item : dst)
       {
-        if(nstates.find(item) != nstates.end())
+        if(nstates.find(item) == nstates.end())
         {
           nstates.insert(item);
           stack.push(item);

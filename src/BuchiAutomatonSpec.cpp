@@ -700,6 +700,19 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced()
     }
   }
 
+  int newState = this->getTransitions().size(); //Assumes numbered states: from 0, no gaps
+  set<pair<DFAState,int>> slNonEmpty = this->nfaSingleSlNoAccept(comp);
+  map<pair<DFAState,int>, StateSch> slTrans;
+  for(const auto& pr : slNonEmpty)
+  {
+    StateSch ns = { set<int>({newState}), set<int>(), RankFunc(), 0 };
+    slTrans[pr] = ns;
+    mp[{ns,pr.second}] = set<StateSch>({ns});
+    finals.insert(ns);
+    newState++;
+  }
+
+
   // Compute rank upper bound on the macrostates
   this->rankBound = this->getRankBound(comp, slIgnore, maxReach, reachCons);
 
@@ -729,14 +742,10 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced()
       if(st.tight)
       {
         succ = succSetSchTightReduced(st, sym, reachCons, maxReach, dirRel, oddRel);
-        // if(succ.size() > 2)
-        //   std::cout << succ.size() << std::endl;
-        //succ = vector<StateSch>();
       }
       else
       {
         succ = succSetSchStartReduced(st.S, sym, rankBound[st.S], reachCons, maxReach, dirRel, oddRel);
-        //std::cout << succ.size() << std::endl;
         cnt = false;
       }
       for (const StateSch& s : succ)
@@ -747,6 +756,12 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced()
           stack.push(s);
           comst.insert(s);
         }
+      }
+
+      auto it = slTrans.find({st.S, sym});
+      if(it != slTrans.end())
+      {
+        dst.insert(it->second);
       }
       if(!st.tight)
       {
@@ -891,6 +906,24 @@ set<StateSch> BuchiAutomatonSpec::nfaSlAccept(BuchiAutomaton<StateSch, int>& nfa
     }
   }
   return slAccept;
+}
+
+
+set<pair<DFAState,int>> BuchiAutomatonSpec::nfaSingleSlNoAccept(BuchiAutomaton<StateSch, int>& nfaSchewe)
+{
+  vector<int> alph;
+  set<pair<DFAState,int>> slNoAccept;
+  for(StateSch st : nfaSchewe.getStates())
+  {
+    if(st.tight)  continue;
+    alph = nfaSchewe.containsSelfLoop(st);
+    if(alph.size() == 1)
+    {
+      if(!acceptSl(st, alph))
+        slNoAccept.insert({st.S, alph[0]});
+    }
+  }
+  return slNoAccept;
 }
 
 
