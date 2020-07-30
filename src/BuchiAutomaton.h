@@ -9,6 +9,7 @@
 #include <iostream>
 #include <algorithm>
 #include <tuple>
+#include <functional>
 
 #include "AutGraph.h"
 #include "StateKV.h"
@@ -63,7 +64,7 @@ protected:
   std::string toGraphwizWith(std::function<std::string(State)>& stateStr,  std::function<std::string(Symbol)>& symStr);
 
   bool isRankLeq(std::set<State>& set1, std::set<State>& set2, StateRelation& rel);
-  bool deriveRankConstr(State& st1, State& st2, StateRelation& rel, std::map<Symbol, bool>& ignore);
+  bool deriveRankConstr(State& st1, State& st2, StateRelation& rel);
   void propagateFwd(State& st1, State& st2, SetStates& set1, SetStates& set2,
     StateRelation& rel,StateRelation& nw);
   void transitiveClosure(StateRelation& rel, SetStates& cl);

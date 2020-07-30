@@ -44,9 +44,9 @@ protected:
 
   vector<RankFunc> getSchRanks(vector<int>& max, std::set<int>& states, StateSch& macrostate);
   void getSchRanksTight(vector<RankFunc>& out, vector<int>& max, set<int>& states,
-      StateSch& macrostate, map<int, set<int> >& succ, map<int, int> reachCons, int reachMax,
+      StateSch& macrostate, map<int, int> reachCons, int reachMax,
       BackRel& dirRel, BackRel& oddRel);
-  vector<StateSch> succSetSchStart(set<int>& state, int symbol, int rankBound, map<int, int> reachCons,
+  vector<StateSch> succSetSchStart(set<int>& state, int rankBound, map<int, int> reachCons,
       map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel);
   vector<StateSch> succSetSchTight(StateSch& state, int symbol, map<int, int> reachCons,
       map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel);
@@ -55,9 +55,9 @@ protected:
 
 
   void getSchRanksTightReduced(vector<RankFunc>& out, vector<int>& max,
-      set<int>& states, int symbol, StateSch& macrostate, map<int, set<int> >& succ,
+      set<int>& states, int symbol, StateSch& macrostate,
       map<int, int> reachCons, int reachMax, BackRel& dirRel, BackRel& oddRel);
-  vector<StateSch> succSetSchStartReduced(set<int>& state, int symbol, int rankBound, map<int, int> reachCons,
+  vector<StateSch> succSetSchStartReduced(set<int>& state, int rankBound, map<int, int> reachCons,
       map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel);
   vector<StateSch> succSetSchTightReduced(StateSch& state, int symbol, map<int, int> reachCons,
       map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel);

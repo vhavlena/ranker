@@ -251,7 +251,7 @@ void BuchiAutomaton<int, int>::getAutGraphComponents(AdjList& adjList, Vertices&
   {
     adjListSet[tr.first.first].insert(tr.second.begin(), tr.second.end());
   }
-  for(int i = 0; i < adjListSet.size(); i++)
+  for(unsigned i = 0; i < adjListSet.size(); i++)
   {
     adjList[i] = vector<int>(adjListSet[i].begin(), adjListSet[i].end());
   }
@@ -266,7 +266,7 @@ void BuchiAutomaton<int, int>::removeUseless()
   vector<VertItem> vrt;
 
   getAutGraphComponents(adjList, vrt);
-  for(int i = 0; i < adjList.size(); i++)
+  for(unsigned i = 0; i < adjList.size(); i++)
   {
     for(auto dst : adjList[i])
       revList[dst].push_back(i);
@@ -404,7 +404,7 @@ void BuchiAutomaton<State, Symbol>::computeRankSim(std::set<State>& cl)
       {
         if(this->finals.find(st2) != this->finals.end())
           continue;
-        bool der = deriveRankConstr(st1, st2, rel, ignore);
+        bool der = deriveRankConstr(st1, st2, rel);
         if(der)
           add = true;
       }
@@ -433,7 +433,7 @@ template <typename State, typename Symbol>
 void BuchiAutomaton<State, Symbol>::transitiveClosure(
     BuchiAutomaton<State, Symbol>::StateRelation& rel, std::set<State>& cl)
 {
-  int s = rel.size();
+  unsigned s = rel.size();
   do
   {
     s = rel.size();
@@ -455,8 +455,7 @@ void BuchiAutomaton<State, Symbol>::transitiveClosure(
 
 template <typename State, typename Symbol>
 bool BuchiAutomaton<State, Symbol>::deriveRankConstr(State& st1, State& st2,
-    BuchiAutomaton<State, Symbol>::StateRelation& rel,
-    std::map<Symbol, bool>& ignore)
+    BuchiAutomaton<State, Symbol>::StateRelation& rel)
 {
   bool leq = true;
   bool geq = true;
@@ -568,7 +567,7 @@ std::map<State, int> BuchiAutomaton<State, Symbol>::propagateGraphValues(
   } while(change);
 
   map<State, int> activeVal;
-  for(int i = 0; i < active.size(); i++)
+  for(unsigned i = 0; i < active.size(); i++)
   {
     activeVal[active[i]->state] = active[i]->label;
     delete active[i];

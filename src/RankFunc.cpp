@@ -12,7 +12,7 @@ RankFunc::RankFunc(const map<int,int>& mp) : map<int,int>(mp)
     this->ranks.push_back(k.second);
     int tmp = this->maxRank;
     if(tmp % 2 == 0) tmp++;
-    if(this->tight.size() < (tmp-1)/2 + 1)
+    if((int)this->tight.size() < (tmp-1)/2 + 1)
       this->tight.resize((tmp-1)/2 + 1, 0);
     if(k.second % 2 != 0)
     {
@@ -35,7 +35,7 @@ void RankFunc::addPair(const std::pair<int, int>& val)
   this->maxRank = std::max(this->maxRank, val.second);
   int tmp = this->maxRank;
   if(tmp % 2 == 0) tmp++;
-  if(this->tight.size() < (tmp-1)/2 + 1)
+  if((int)this->tight.size() < (tmp-1)/2 + 1)
     this->tight.resize((tmp-1)/2 + 1, 0);
   if(val.second % 2 != 0)
   {
@@ -185,7 +185,7 @@ vector<RankFunc> RankFunc::cartTightProductMapList(RankConstr slist, BackRel& re
     sing.setReachRestr(p.second + 2*(reachMax - reachRes[p.first]));
     ret.push_back(sing);
   }
-  for(int i = 1; i < slist.size(); i++)
+  for(int i = 1; i < (int)slist.size(); i++)
   {
     ret = RankFunc::cartTightProductMap(ret, slist[i], slist.size() - i - 1, rel, oddRel, max, reachRes, reachMax);
   }
@@ -208,7 +208,7 @@ vector<RankFunc> RankFunc::cartTightProductMapListOdd(RankConstr slist, BackRel&
     ret.push_back(sing);
     states.insert(p.first);
   }
-  for(int i = 1; i < slist.size(); i++)
+  for(int i = 1; i < (int)slist.size(); i++)
   {
     if(slist[i].size() == 0)
       return ret;
@@ -217,7 +217,7 @@ vector<RankFunc> RankFunc::cartTightProductMapListOdd(RankConstr slist, BackRel&
     //std::cout << i << " : " << ret.size() << std::endl;
   }
 
-  for(int i = 0; i < ret.size(); i++)
+  for(unsigned i = 0; i < ret.size(); i++)
   {
     if(ret[i].getMaxRank() % 2 == 0 || ret[i].remTightCount() != 0)
       continue;
@@ -304,7 +304,7 @@ bool RankFunc::isSuccValid(RankFunc& prev, map<int, set<int> >& succ) const
 
 bool RankFunc::isMaxRankValid(vector<int>& maxRank) const
 {
-  for(int i = 0; i < maxRank.size(); i++)
+  for(unsigned i = 0; i < maxRank.size(); i++)
   {
     if(maxRank[i] < this->ranks[i])
     {
@@ -353,7 +353,7 @@ bool RankFunc::isAllLeq(RankFunc& f)
   vector<int> rnk = f.getRanks();
   if(this->ranks.size() != rnk.size())
     return false;
-  for(int i = 0; i < this->ranks.size(); i++)
+  for(unsigned i = 0; i < this->ranks.size(); i++)
   {
     if(this->ranks[i] > rnk[i])
       return false;
