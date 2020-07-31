@@ -33,7 +33,7 @@ string printRunTree(vector<set<StateSch>> &rt, vector<int>& word)
   {
     str += "\"" + printRTMacrostate(item) + "\"\n";
   }
-  for(int i = 0; i < rt.size() - 1; i++)
+  for(unsigned i = 0; i < rt.size() - 1; i++)
   {
     str += "\"" + printRTMacrostate(rt[i]) + "\" -> \"" + printRTMacrostate(rt[i+1]) + "\" [label=" + to_string(word[i]) + "]\n";
   }
@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
     string checkRes = "";
     try
     {
-      checkRes = Simulations::execCmd(cmdCheck, 10);
+      checkRes = Simulations::execCmd(cmdCheck, 25);
       checkRes = renProd.isEmpty() && checkRes == "Included.\n" ? "true" : "false";
     }
     catch(TimeoutException)

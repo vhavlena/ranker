@@ -5,6 +5,7 @@
 #include <set>
 #include <map>
 #include <vector>
+#include <string>
 
 using namespace std;
 
@@ -12,6 +13,7 @@ namespace Aux
 {
   int countEqClasses(int n, set<int>& st, set<pair<int, int>>& rel);
   vector< vector<int> > getAllSubsets(vector<int> set);
+  string printVector(vector<int> st);
 
   template <typename T>
   std::set<std::vector<T> > cartProduct(std::set<std::vector<T> > s1, std::set<std::vector<T> > s2)

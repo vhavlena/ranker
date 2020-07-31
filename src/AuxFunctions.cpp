@@ -60,4 +60,14 @@ vector< vector<int> > getAllSubsets(vector<int> set)
   return subset;
 }
 
+string printVector(vector<int> st)
+{
+  string ret;
+  for (auto s : st)
+    ret += std::to_string(s) + " ";
+  if(ret.back() == ' ')
+    ret.pop_back();
+  return "{" + ret + "}";
+}
+
 }
