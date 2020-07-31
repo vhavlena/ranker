@@ -681,6 +681,11 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced()
   //std::cout << comp.toGraphwiz() << std::endl;
 
   set<StateSch> slIgnore = this->nfaSlAccept(comp);
+  set<pair<DFAState,int>> slNonEmpty = this->nfaSingleSlNoAccept(comp);
+  set<StateSch> ignoreAll;
+  for(const auto& t : slNonEmpty)
+    ignoreAll.insert({t.first, set<int>(), RankFunc(), 0, false});
+  ignoreAll.insert(slIgnore.begin(), slIgnore.end());
   set<StateSch> nfaStates = comp.getStates();
   comst.insert(nfaStates.begin(), nfaStates.end());
 
@@ -691,7 +696,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced()
   mp.insert(comp.getTransitions().begin(), comp.getTransitions().end());
   finals = set<StateSch>(comp.getFinals());
   // Compute states necessary to generate in the tight part
-  set<StateSch> tightStart = comp.getCycleClosingStates(slIgnore);
+  set<StateSch> tightStart = comp.getCycleClosingStates(ignoreAll);
   for(const StateSch& tmp : tightStart)
   {
     if(tmp.S.size() > 0)
@@ -701,13 +706,14 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced()
   }
 
   int newState = this->getTransitions().size(); //Assumes numbered states: from 0, no gaps
-  set<pair<DFAState,int>> slNonEmpty = this->nfaSingleSlNoAccept(comp);
   map<pair<DFAState,int>, StateSch> slTrans;
   for(const auto& pr : slNonEmpty)
   {
     StateSch ns = { set<int>({newState}), set<int>(), RankFunc(), 0, false };
+    StateSch src = { pr.first, set<int>(), RankFunc(), 0, false };
     slTrans[pr] = ns;
     mp[{ns,pr.second}] = set<StateSch>({ns});
+    mp[{src, pr.second}].insert(ns);
     finals.insert(ns);
     comst.insert(ns);
     newState++;
@@ -715,7 +721,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced()
 
 
   // Compute rank upper bound on the macrostates
-  this->rankBound = this->getRankBound(comp, slIgnore, maxReach, reachCons);
+  this->rankBound = this->getRankBound(comp, ignoreAll, maxReach, reachCons);
 
   StateSch init = {getInitials(), set<int>(), RankFunc(), 0, false};
   initials.insert(init);
@@ -759,11 +765,11 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced()
         }
       }
 
-      // auto it = slTrans.find({st.S, sym});
-      // if(it != slTrans.end())
-      // {
-      //   dst.insert(it->second);
-      // }
+      auto it = slTrans.find({st.S, sym});
+      if(it != slTrans.end())
+      {
+        dst.insert(it->second);
+      }
       if(!st.tight)
       {
         if(!cnt)

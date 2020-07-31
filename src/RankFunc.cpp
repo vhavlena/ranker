@@ -407,6 +407,6 @@ std::string RankFunc::toStringVer() const
 {
   string ret;
   for(auto i : this->tight)
-    ret += to_string(i);
+    ret += std::to_string(i);
   return ret;
 }
