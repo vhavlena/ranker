@@ -62,6 +62,7 @@ private:
 protected:
   std::string toStringWith(std::function<std::string(State)>& stateStr,  std::function<std::string(Symbol)>& symStr);
   std::string toGraphwizWith(std::function<std::string(State)>& stateStr,  std::function<std::string(Symbol)>& symStr);
+  std::string toGffWith(std::function<std::string(State)>& stateStr,  std::function<std::string(Symbol)>& symStr);
 
   bool isRankLeq(std::set<State>& set1, std::set<State>& set2, StateRelation& rel);
   bool deriveRankConstr(State& st1, State& st2, StateRelation& rel);
@@ -106,6 +107,7 @@ public:
   std::set<Symbol> getAlph();
   std::string toString();
   std::string toGraphwiz();
+  std::string toGff();
   BuchiAutomaton<int, int> renameAut(int start = 0);
   BuchiAutomaton<int, int> renameAutDict(map<Symbol, int>& mpsymbol, int start = 0);
 

@@ -500,6 +500,12 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
   map<int, set<int> > succ;
   auto fin = getFinals();
 
+  // if(!state.f.relConsistent(this->getDirectSim()))
+  //   return ret;
+  //
+  // if(!state.f.relOddConsistent(this->getOddRankSim()))
+  //   return ret;
+
   for(int st : state.S)
   {
     set<int> dst = getTransitions()[std::make_pair(st, symbol)];
@@ -574,8 +580,16 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
     else
     {
       auto odd = r.getOddStates();
-      std::set_difference(oprime.begin(), oprime.end(), odd.begin(), odd.end(),
-        std::inserter(oprime_tmp, oprime_tmp.begin()));
+      if (state.O.size() == 0)
+      {
+        std::set_difference(sprime.begin(), sprime.end(), odd.begin(), odd.end(),
+          std::inserter(oprime_tmp, oprime_tmp.begin()));
+      }
+      else
+      {
+        std::set_difference(oprime.begin(), oprime.end(), odd.begin(), odd.end(),
+          std::inserter(oprime_tmp, oprime_tmp.begin()));
+      }
       iprime = 0;
     }
     ret.push_back({sprime, oprime_tmp, r, iprime, true});
@@ -587,6 +601,8 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
     retAll.insert(st);
     map<int, int> rnkMap((map<int, int>)st.f);
 
+    if(state.O.size() == 0)
+      continue;
     if(this->opt.cutPoint)
     {
       if(st.i != 0 || st.O.size() == 0)
@@ -600,14 +616,21 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
     }
     else
     {
+
       set<int> no;
+      bool cnt = true;
       for(int o : st.O)
       {
-        if(rnkMap[o] > 0)
+        if(rnkMap[o] > 0 && fin.find(o) == fin.end())
           rnkMap[o]--;
         else
+        {
+          cnt = false;
           no.insert(o);
+        }
       }
+      if(!cnt)
+        continue;
       retAll.insert({st.S, no, RankFunc(rnkMap), st.i, true});
     }
   }
@@ -699,6 +722,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced()
   set<StateSch> tightStart = comp.getCycleClosingStates(ignoreAll);
   for(const StateSch& tmp : tightStart)
   {
+    //std::cout << tmp.toString() << std::endl;
     if(tmp.S.size() > 0)
     {
       stack.push(tmp);
@@ -753,6 +777,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced()
       else
       {
         succ = succSetSchStartReduced(st.S, rankBound[st.S], reachCons, maxReach, dirRel, oddRel);
+        //cout << st.toString() << " : " << succ.size() << endl;
         cnt = false;
       }
       for (const StateSch& s : succ)

@@ -156,6 +156,68 @@ std::string BuchiAutomaton<State, Symbol>::toStringWith(std::function<std::strin
 
 
 template <typename State, typename Symbol>
+std::string BuchiAutomaton<State, Symbol>::toGffWith(std::function<std::string(State)>& stateStr,
+  std::function<std::string(Symbol)>& symStr)
+{
+  int tid = 0;
+  std::string str = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n";
+  str += "<structure label-on=\"transition\" type=\"fa\">\n";
+  str += "<alphabet type=\"classical\">\n";
+  for(auto s : this->getAlphabet())
+    str += "<symbol>" + symStr(s) + "</symbol>\n";
+  str += "</alphabet>\n";
+
+  str += "<stateset>\n";
+  for(auto st : this->states)
+    str += "<state sid=\"" + stateStr(st) +  "\"></state>\n";
+  str += "</stateset>\n";
+
+  str += "<acc type=\"buchi\">\n";
+  for(auto p : this->finals)
+    str += "<stateID>" + stateStr(p) +  "</stateID>\n";
+  str += "</acc>\n";
+
+  str += "<initialStateSet>\n";
+  for(auto p : this->initials)
+    str += "<stateID>" + stateStr(p) +  "</stateID>\n";
+  str += "</initialStateSet>\n";
+
+  str += "<transitionset>\n";
+  for (auto p : this->trans)
+  {
+    for(auto d : p.second)
+    {
+      str += "<transition tid=\"" + std::to_string(tid++) + "\">\n";
+      str +=  "<from>" + stateStr(p.first.first) + "</from>\n<to>" + stateStr(d) +
+        + "</to>\n<read>" + symStr(p.first.second) + "</read>\n";
+      str += "</transition>";
+    }
+  }
+  str += "</transitionset>\n";
+  str += "</structure>\n";
+  return str;
+}
+
+
+template <>
+std::string BuchiAutomaton<std::string, std::string>::toGff()
+{
+  std::function<std::string(std::string)> f1 = [&] (std::string x) {return x;};
+  std::function<std::string(std::string)> f2 = [&] (std::string x) {return x;};
+  return toGffWith(f1, f2);
+}
+
+
+template <>
+std::string BuchiAutomaton<int, int>::toGff()
+{
+  std::function<std::string(int)> f1 = [=] (int x) {return std::to_string(x);};
+  std::function<std::string(int)> f2 = [=] (int x) {return std::to_string(x);};
+  return toGffWith(f1, f2);
+}
+
+
+template <typename State, typename Symbol>
 std::string BuchiAutomaton<State, Symbol>::toGraphwizWith(std::function<std::string(State)>& stateStr,
   std::function<std::string(Symbol)>& symStr)
 {
@@ -178,6 +240,7 @@ std::string BuchiAutomaton<State, Symbol>::toGraphwizWith(std::function<std::str
   str += "}\n";
   return str;
 }
+
 
 template <>
 std::string BuchiAutomaton<int, int>::toGraphwiz()
@@ -202,6 +265,20 @@ std::string BuchiAutomaton<std::string, std::string>::toGraphwiz()
   std::function<std::string(std::string)> f2 = [&] (std::string x) {return x;};
   return toGraphwizWith(f1, f2);
 }
+
+
+template <>
+std::string BuchiAutomaton<tuple<int, int, bool>, int>::toGraphwiz()
+{
+  std::function<std::string(tuple<int, int, bool>)> f1 = [&] (tuple<int, int, bool> x)
+  {
+    return "(" + std::to_string(std::get<0>(x)) + " " +
+      std::to_string(std::get<1>(x)) + " " + std::to_string(std::get<2>(x)) + ")";
+  };
+  std::function<std::string(int)> f2 = [=] (int x) {return std::to_string(x);};
+  return toGraphwizWith(f1, f2);
+}
+
 
 template <>
 std::string BuchiAutomaton<int, int>::toString()
@@ -228,6 +305,20 @@ std::string BuchiAutomaton<StateKV, int>::toString()
   std::function<std::string(int)> f2 = [=] (int x) {return std::to_string(x);};
   return toStringWith(f1, f2);
 }
+
+
+template <>
+std::string BuchiAutomaton<tuple<int, int, bool>, int>::toString()
+{
+  std::function<std::string(tuple<int, int, bool>)> f1 = [&] (tuple<int, int, bool> x)
+  {
+    return "(" + std::to_string(std::get<0>(x)) + " " +
+      std::to_string(std::get<1>(x)) + " " + std::to_string(std::get<2>(x)) + ")";
+  };
+  std::function<std::string(int)> f2 = [=] (int x) {return std::to_string(x);};
+  return toStringWith(f1, f2);
+}
+
 
 template <>
 std::string BuchiAutomaton<StateSch, int>::toString()
