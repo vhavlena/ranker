@@ -74,6 +74,7 @@ int main(int argc, char *argv[])
     ComplOptions opt = { .cutPoint = false };
     sp.setComplOptions(opt);
     BuchiAutomaton<StateSch, int> comp = sp.complementSchReduced();
+    //cout << comp.toGraphwiz() << endl;
 
     cout << "Generated states: " << comp.getStates().size() << " Generated trans: " << comp.getTransitions().size() << endl;
 
@@ -83,12 +84,15 @@ int main(int argc, char *argv[])
     map<int, int> id;
     for(auto al : comp.getAlphabet())
       id[al] = al;
-    BuchiAutomaton<int, int> renCompl = comp.renameAutDict(id);
+
     BuchiAutomaton<int, int> renComplUn = comp.renameAutDict(id, ren.getStates().size());
+    BuchiAutomaton<int, int> renCompl = comp.renameAutDict(id);
 
     renCompl.removeUseless();
     cout << "States: " << renCompl.getStates().size() << " Transitions: " << renCompl.getTransitions().size() << endl;
 
+    // for(auto t : comp.getRenameStateMap())
+    //   cout << t.first.toString() << " : " << t.second << endl;
     auto prod = renCompl.productBA(ren);
     BuchiAutomaton<int, int> renProd = prod.renameAut();
     BuchiAutomaton<int, int> renUnion = renComplUn.unionBA(ren);
@@ -111,7 +115,7 @@ int main(int argc, char *argv[])
       checkRes = Simulations::execCmd(cmdCheck, 25);
       checkRes = renProd.isEmpty() && checkRes == "Included.\n" ? "true" : "false";
     }
-    catch(TimeoutException)
+    catch(const TimeoutException &)
     {
       checkRes = "TO";
     }

@@ -160,20 +160,7 @@ void BuchiAutomatonSpec::getSchRanksTight(vector<RankFunc>& out, vector<int>& ma
     constr.push_back(singleConst);
   }
 
-  //std::cout << " --- " << std::endl;
-  //auto ret = RankFunc::tightSuccFromRankConstr(constr, dirRel, oddRel, macrostate.f.getMaxRank(), reachCons, reachMax);
-  //std::cout << macrostate.toString() << " : " << ret.size() << std::endl;
-  //return ret;
-
   auto tmp = RankFunc::tightSuccFromRankConstr(constr, dirRel, oddRel, macrostate.f.getMaxRank(), reachCons, reachMax);
-  // map<int, int> a = {{0,3}, {2,1}, {4,3}, {5,3}, {7,2}, {10,3}};
-  // RankFunc aa(a);
-  // std::cout << aa.toStringVer() << " : " << aa.isTightRank() << std::endl;
-  //std::cout << aa.toString() << std::endl;
-  // if(macrostate.S == set<int>({0,2,4,5,7,10}) && macrostate.f == aa)
-  //   std::cout << macrostate.toString() << " : " << tmp.size() << std::endl;
-
-  //out = tmp;
   RankFunc sng(sngmap);
   if(sng.isTightRank() && sng.getMaxRank() == macrostate.f.getMaxRank() && tmp.size() > 0)
     out = vector<RankFunc>({sng});
@@ -182,7 +169,6 @@ void BuchiAutomatonSpec::getSchRanksTight(vector<RankFunc>& out, vector<int>& ma
     //std::cout << sng.toString() << std::endl;
     out = vector<RankFunc>();
   }
-  //out = RankFunc::tightSuccFromRankConstr(constr, dirRel, oddRel, macrostate.f.getMaxRank(), reachCons, reachMax);
 }
 
 vector<StateSch> BuchiAutomatonSpec::succSetSchStart(set<int>& state, int rankBound,
@@ -498,11 +484,12 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
   int iprime;
   vector<int> maxRank(getStates().size(), state.f.getMaxRank());
   map<int, set<int> > succ;
+  map<int, bool > pre;
   auto fin = getFinals();
 
   // if(!state.f.relConsistent(this->getDirectSim()))
   //   return ret;
-  //
+  // //
   // if(!state.f.relOddConsistent(this->getOddRankSim()))
   //   return ret;
 
@@ -512,6 +499,19 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
     for(int d : dst)
     {
       maxRank[d] = std::min(maxRank[d], state.f[st]);
+      // auto it = pre.find(d);
+      // if(it != pre.end())
+      // {
+      //   if(fin.find(d) != fin.end())
+      //     pre[d] = true;
+      // }
+      // else
+      // {
+      //   if(fin.find(d) != fin.end())
+      //     pre[d] = true;
+      //   else
+      //     pre[d] = false;
+      // }
     }
     sprime.insert(dst.begin(), dst.end());
     if(fin.find(st) == fin.end())
@@ -617,21 +617,24 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
     else
     {
 
-      set<int> no;
-      bool cnt = true;
-      for(int o : st.O)
-      {
-        if(rnkMap[o] > 0 && fin.find(o) == fin.end())
-          rnkMap[o]--;
-        else
-        {
-          cnt = false;
-          no.insert(o);
-        }
-      }
-      if(!cnt)
-        continue;
-      retAll.insert({st.S, no, RankFunc(rnkMap), st.i, true});
+      // set<int> no;
+      // bool cnt = true;
+      // for(int o : st.O)
+      // {
+      //   if(rnkMap[o] > 0 && fin.find(o) == fin.end())
+      //   {
+      //     //if(pre[o])
+      //     rnkMap[o]--;
+      //   }
+      //   else
+      //   {
+      //     cnt = false;
+      //     no.insert(o);
+      //   }
+      // }
+      // if(!cnt)
+      //   continue;
+      // retAll.insert({st.S, no, RankFunc(rnkMap), st.i, true});
     }
   }
 
