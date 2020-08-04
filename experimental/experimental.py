@@ -14,6 +14,7 @@ import re
 import os
 import os.path
 import resource
+import xml.etree.ElementTree as ET
 from enum import Enum
 
 STATESLINE = -3
@@ -35,7 +36,7 @@ def main():
         help_err()
         sys.exit()
     try:
-        opts, args = getopt.getopt(sys.argv[3:], "tf:", ["tex", "aut=", "rnk", "safra", "pitterman"])
+        opts, args = getopt.getopt(sys.argv[3:], "tf:", ["tex", "aut=", "rnk", "safra", "piterman"])
     except getopt.GetoptError as err:
         help_err()
         sys.exit()
@@ -55,7 +56,7 @@ def main():
             tool = ToolType.RNK
         if o in ("--safra"):
             tool = ToolType.SAFRA
-        if o in ("--pitterman"):
+        if o in ("--piterman"):
             tool = ToolType.PITTERMAN
 
     if tool is None:
@@ -65,26 +66,30 @@ def main():
 
     print_fnc = None
     parse_fnc = None
+    ext = None
     args = []
+    preargs = []
     if tool == ToolType.RNK:
         print_fnc = print_output_rnk
         parse_fnc = parse_output_rnk
         args = []
+        ext = ".ba"
     elif tool == ToolType.SAFRA:
-        print_fnc = print_output
+        print_fnc = print_output_goal
         parse_fnc = parse_output_goal
-        args = []
+        preargs = ["complement", "-m", "safra"]
+        ext = ".gff"
     elif tool == ToolType.PITTERMAN:
-        print_fnc = print_output
+        print_fnc = print_output_goal
         parse_fnc = parse_output_goal
-        args = []
-
+        preargs = ["complement", "-m", "piterman", "-r"]
+        ext = ".gff"
 
     #Experiments
 
     files = [f for f in os.listdir(formulafolder) \
         if os.path.isfile(os.path.join(formulafolder, f)) and \
-            f.endswith(".ba")]
+            f.endswith(ext)]
     files.sort()
     files = files[:AUT]
 
@@ -95,7 +100,7 @@ def main():
         filename = os.path.join(formulafolder, eq_file)
 
         try:
-            output = subprocess.check_output([bin, filename]+args, \
+            output = subprocess.check_output([bin] + preargs + [filename]+ args, \
                 timeout=TIMEOUT, stderr=subprocess.STDOUT).decode("utf-8")
             parse = parse_fnc(output)
         except subprocess.TimeoutExpired:
@@ -135,17 +140,20 @@ def print_output(filename, parse):
     print("{0};{1};{2}".format(filename, format_output(parse[0]), format_output(parse[1])))
 
 
+def print_output_goal(filename, parse):
+    print("{0};{1}".format(filename, format_output(parse[0])))
+
+
 def parse_output_goal(output):
-    lines = output.split('\n')
-    lines = list(filter(None, lines)) #Remove empty lines
-    sat = lines[0]
-    time = None
-    for line in lines:
-        match = re.search(r':total-time[\s]+([0-9]+.[0-9]+)', line)
-        if match is not None:
-            time = round(float(match.group(1)), 2)
-            break
-    return sat, time
+    root = ET.fromstring(output)
+    root = toParseable(root)
+    return len(root.findall('stateset/state')), None, None
+
+
+def toParseable(tree):
+    t = ET.tostring(tree)
+    t = t.lower()
+    return ET.fromstring(t)
 
 
 def help_err():
