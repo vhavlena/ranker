@@ -91,10 +91,9 @@ int main(int argc, char *argv[])
     renCompl.removeUseless();
     cout << "States: " << renCompl.getStates().size() << " Transitions: " << renCompl.getTransitions().size() << endl;
 
-    // for(auto t : comp.getRenameStateMap())
-    //   cout << t.first.toString() << " : " << t.second << endl;
     auto prod = renCompl.productBA(ren);
-    BuchiAutomaton<int, int> renProd = prod.renameAut();
+    BuchiAutomaton<int, int> renProd = prod.renameAutDict(id);
+
     BuchiAutomaton<int, int> renUnion = renComplUn.unionBA(ren);
     renUnion.singleInitial(renUnion.getStates().size());
 

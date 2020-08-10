@@ -934,10 +934,10 @@ BuchiAutomaton<tuple<State, int, bool>, Symbol> BuchiAutomaton<State, Symbol>::p
 
   for(const State& st1 : this->getStates())
   {
-    for(const int& fin2 : fin2)
+    for(const int& f2 : fin2)
     {
-      nstates.insert({st1, fin2, 1});
-      nfin.insert({st1, fin2, 1});
+      nstates.insert({st1, f2, 1});
+      nfin.insert({st1, f2, 1});
     }
   }
 

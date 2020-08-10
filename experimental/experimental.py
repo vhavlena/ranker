@@ -20,13 +20,14 @@ from enum import Enum
 STATESLINE = -3
 TIMELINE = -1
 CHECK = -2
-TIMEOUT = 100 #in seconds
+TIMEOUT = 300 #in seconds
 AUT = 100000
 
 class ToolType(Enum):
     RNK = 1
     SAFRA = 2
     PITTERMAN = 3
+    SCHEWE = 4
 
 
 
@@ -36,7 +37,7 @@ def main():
         help_err()
         sys.exit()
     try:
-        opts, args = getopt.getopt(sys.argv[3:], "tf:", ["tex", "aut=", "rnk", "safra", "piterman"])
+        opts, args = getopt.getopt(sys.argv[3:], "tf:", ["tex", "aut=", "rnk", "safra", "piterman", "schewe"])
     except getopt.GetoptError as err:
         help_err()
         sys.exit()
@@ -58,6 +59,8 @@ def main():
             tool = ToolType.SAFRA
         if o in ("--piterman"):
             tool = ToolType.PITTERMAN
+        if o in ("--schewe"):
+            tool = ToolType.SCHEWE
 
     if tool is None:
         print("Tool must be specified")
@@ -83,6 +86,11 @@ def main():
         print_fnc = print_output_goal
         parse_fnc = parse_output_goal
         preargs = ["complement", "-m", "piterman", "-r"]
+        ext = ".gff"
+    elif tool == ToolType.SCHEWE:
+        print_fnc = print_output_goal
+        parse_fnc = parse_output_goal
+        preargs = ["complement", "-m", "rank", "-tr", "-ro", "-r"]
         ext = ".gff"
 
     #Experiments

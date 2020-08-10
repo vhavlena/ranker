@@ -447,21 +447,24 @@ void BuchiAutomatonSpec::getSchRanksTightReduced(vector<RankFunc>& out, vector<i
   }
 
   vector<RankFunc> tmp;
-  int rankSetSize = 0;
+  int rankSetSize = 1;
 
-  if(!getRankSuccCache(tmp, macrostate, symbol))
+  if(macrostate.S.size() < 7 && macrostate.f.getMaxRank() < 9)
   {
-    tmp = RankFunc::tightSuccFromRankConstr(constr, dirRel, oddRel, macrostate.f.getMaxRank(), reachCons, reachMax);
-    this->rankCache[{macrostate.S, symbol, macrostate.f.getMaxRank()}].push_back({macrostate.f, tmp});
-    rankSetSize = tmp.size();
-  }
-  else
-  {
-    rankSetSize = tmp.size();
-    for(auto& r : tmp)
+    if(!getRankSuccCache(tmp, macrostate, symbol))
     {
-      if(!r.isMaxRankValid(rnkBnd))
-        rankSetSize--;
+      tmp = RankFunc::tightSuccFromRankConstr(constr, dirRel, oddRel, macrostate.f.getMaxRank(), reachCons, reachMax);
+      this->rankCache[{macrostate.S, symbol, macrostate.f.getMaxRank()}].push_back({macrostate.f, tmp});
+      rankSetSize = tmp.size();
+    }
+    else
+    {
+      rankSetSize = tmp.size();
+      for(auto& r : tmp)
+      {
+        if(!r.isMaxRankValid(rnkBnd))
+          rankSetSize--;
+      }
     }
   }
 
@@ -616,25 +619,18 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
     }
     else
     {
-
-      // set<int> no;
-      // bool cnt = true;
-      // for(int o : st.O)
-      // {
-      //   if(rnkMap[o] > 0 && fin.find(o) == fin.end())
-      //   {
-      //     //if(pre[o])
-      //     rnkMap[o]--;
-      //   }
-      //   else
-      //   {
-      //     cnt = false;
-      //     no.insert(o);
-      //   }
-      // }
+      set<int> no;
+      //bool cnt = true;
+      for(int o : st.O)
+      {
+        if(rnkMap[o] > 0 && fin.find(o) == fin.end())
+          rnkMap[o]--;
+        else
+          no.insert(o);
+      }
       // if(!cnt)
       //   continue;
-      // retAll.insert({st.S, no, RankFunc(rnkMap), st.i, true});
+      retAll.insert({st.S, no, RankFunc(rnkMap), st.i, true});
     }
   }
 
@@ -679,6 +675,7 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchStartReduced(set<int>& state, int
     if(cnt) maxRanks.push_back(r);
   }
 
+  //std::cout << tmp.size() << " : " << maxRanks.size() << std::endl;
 
   for(const RankFunc& item : maxRanks)
   {
