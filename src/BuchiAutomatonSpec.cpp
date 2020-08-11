@@ -724,7 +724,6 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced()
   set<StateSch> tightStart = comp.getCycleClosingStates(ignoreAll);
   for(const StateSch& tmp : tightStart)
   {
-    //std::cout << tmp.toString() << std::endl;
     if(tmp.S.size() > 0)
     {
       stack.push(tmp);
@@ -892,6 +891,7 @@ bool BuchiAutomatonSpec::acceptSl(StateSch& state, vector<int>& alp)
     return false;
   for(const int& a : alp)
   {
+    all = false;
     for(int st : rel)
     {
       set<int> sng = {st};
@@ -1036,9 +1036,10 @@ map<DFAState, int> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSch, int
       }
     }
     int rank = std::min((int)ret.size(), tmp);
-    for(int st : fin)
+
+    for(int st : act.S)
     {
-      if(minReachSize[st] == maxReach)
+      if(fin.find(st) != fin.end() && minReachSize[st] == maxReach)
         return 0;
     }
     if(maxCnt > 2)
