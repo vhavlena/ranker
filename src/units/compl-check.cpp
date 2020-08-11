@@ -6,6 +6,7 @@
 #include <chrono>
 #include <iomanip>
 
+#include "units-config.h"
 #include "../BuchiAutomaton.h"
 #include "../Simulations.h"
 #include "../BuchiAutomatonSpec.h"
@@ -13,9 +14,6 @@
 #include "../Options.h"
 
 using namespace std;
-
-string RABITEXE = "";
-string TMPNAME = "tmp124232.ba";
 
 int main(int argc, char *argv[])
 {

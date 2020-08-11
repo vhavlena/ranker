@@ -8,28 +8,13 @@
 #include <stdexcept>
 #include <string>
 #include <array>
+
+#include "units-config.h"
 #include "../BuchiAutomaton.h"
 #include "../BuchiAutomataParser.h"
 #include "../Simulations.h"
 
 using namespace std;
-
-string RABITEXE = "";
-
-std::string exec(string& cmd) {
-    std::array<char, 128> buffer;
-    std::string result;
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
-    if (!pipe)
-    {
-        throw "Process failed";
-    }
-    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr)
-    {
-        result += buffer.data();
-    }
-    return result;
-}
 
 int main()
 {
@@ -64,9 +49,9 @@ int main()
   os.close();
 
   cout << endl << "Simulation parsing: " << endl;
-  string cmd = "java -jar " + RABITEXE + " ../../examples/A3.ba ../../examples/A3.ba -dirsim";
+  string cmd = "java -jar " + RABITEXE + " ../../examples/2.5-0.1/A6.ba ../../examples/2.5-0.1/A6.ba -dirsim";
   Simulations sim;
-  istringstream strr(exec(cmd));
+  istringstream strr(Simulations::execCmd(cmd));
   try
   {
     for(const auto& item : sim.parseRabitRelation(strr))

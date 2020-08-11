@@ -6,6 +6,7 @@
 #include <chrono>
 #include <iomanip>
 
+#include "units-config.h"
 #include "../BuchiAutomaton.h"
 #include "../Simulations.h"
 #include "../BuchiAutomatonSpec.h"
@@ -39,9 +40,6 @@ string printRunTree(vector<set<StateSch>> &rt, vector<int>& word)
   }
   return str;
 }
-
-string RABITEXE = "";
-string TMPNAME = "tmp124232.ba";
 
 int main(int argc, char *argv[])
 {
@@ -93,7 +91,6 @@ int main(int argc, char *argv[])
 
     auto prod = renCompl.productBA(ren);
     BuchiAutomaton<int, int> renProd = prod.renameAutDict(id);
-
     BuchiAutomaton<int, int> renUnion = renComplUn.unionBA(ren);
     renUnion.singleInitial(renUnion.getStates().size());
 

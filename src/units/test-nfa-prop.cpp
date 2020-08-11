@@ -4,6 +4,8 @@
 #include <map>
 #include <fstream>
 #include <algorithm>
+
+#include "units-config.h"
 #include "../BuchiAutomaton.h"
 #include "../Simulations.h"
 #include "../BuchiAutomatonSpec.h"
@@ -11,9 +13,6 @@
 #include "../AuxFunctions.h"
 
 using namespace std;
-
-string RABITEXE = "";
-
 
 int main(int argc, char *argv[])
 {
@@ -105,40 +104,6 @@ int main(int argc, char *argv[])
     {
       cout << t << endl;
     }
-
-    // set<int> ret;
-    // set<int> fin = sp.getFinals();
-    // std::set_difference(sp.getStates().begin(),sp.getStates().end(),fin.begin(),
-    //   fin.end(), std::inserter(ret, ret.begin()));
-    // vector<int> states(ret.begin(), ret.end());
-    // map<StateSch, int> rnkmap;
-    //
-    // for(const StateSch& s : comp.getStates())
-    // {
-    //   rnkmap[s] = 0;
-    // }
-    //
-    // for(vector<int>& sub : Aux::getAllSubsets(states))
-    // {
-    //   set<int> st(sub.begin(), sub.end());
-    //   sp.computeRankSim(st);
-    //   int classes = Aux::countEqClasses(sp.getStates().size(), st, sp.getOddRankSim());
-    //   //cout << StateSch::printSet(st) << " : " << classes << endl;
-    //   for(const StateSch& s : comp.getStates())
-    //   {
-    //     if(std::includes(s.S.begin(), s.S.end(), st.begin(), st.end()))
-    //     {
-    //       rnkmap[s] = std::max(rnkmap[s], classes);
-    //     }
-    //   }
-    // }
-    //
-    // for(const auto& k : rnkmap)
-    // {
-    //   cout << k.first.toString() << " : " << k.second << std::endl;
-    // }
-    //
-
   }
   os.close();
   return 0;

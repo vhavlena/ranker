@@ -3,6 +3,7 @@
 #include <set>
 #include <map>
 #include <fstream>
+
 #include "../BuchiAutomaton.h"
 #include "../BuchiAutomatonSpec.h"
 #include "../BuchiAutomataParser.h"
@@ -20,26 +21,15 @@ int main(int argc, char *argv[])
     return 1;
   }
   os.open(argv[1]);
-  cout << argv[1] << endl;
 
   if(os)
   {
     BuchiAutomaton<string, string> ba = parser.parseBaFormat(os);
-    BuchiAutomaton<int, int> ren = ba.renameAut();
+    auto ren = ba.renameAut();
     ren.removeUseless();
     //ren.complete(-1);
-    ren = ren.renameAut();
-    cout << ren.toGraphwiz() << endl;
 
-    auto vec = ren.reachableVector();
-    for(int i = 0; i < vec.size(); i++)
-    {
-      cout << i << ": ";
-      for(auto s : vec[i])
-        cout << s << ", ";
-      cout << endl;
-    }
-
+    cout << ren.toGff() << endl << endl;
     cout << ren.toGraphwiz() << endl;
   }
   os.close();

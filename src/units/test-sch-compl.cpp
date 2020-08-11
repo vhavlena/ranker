@@ -3,14 +3,14 @@
 #include <set>
 #include <map>
 #include <fstream>
+
+#include "units-config.h"
 #include "../BuchiAutomaton.h"
 #include "../Simulations.h"
 #include "../BuchiAutomatonSpec.h"
 #include "../BuchiAutomataParser.h"
 
 using namespace std;
-
-string RABITEXE = "";
 
 int main(int argc, char *argv[])
 {
