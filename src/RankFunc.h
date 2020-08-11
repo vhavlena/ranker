@@ -80,7 +80,7 @@ public:
   bool isSuccValid(RankFunc& prev, map<int, set<int> >& succ) const;
   bool isMaxRankValid(vector<int>& maxRank) const;
 
-  bool isAllLeq(RankFunc& f);
+  bool isAllLeq(const RankFunc& f);
 
   int remTightCount() const
   {
@@ -97,7 +97,7 @@ public:
   bool isTightRank() const;
   bool isReachConsistent(map<int, int>& res, int reachMax) const;
 
-  vector<int>& getRanks() { return this->ranks; }
+  const vector<int>& getRanks() const { return this->ranks; }
   int getReachRestr() { return this->reachRest; }
   void setReachRestr(int val) { this->reachRest = val; }
 

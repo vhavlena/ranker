@@ -348,7 +348,7 @@ bool RankFunc::eqEven() const
   return true;
 }
 
-bool RankFunc::isAllLeq(RankFunc& f)
+bool RankFunc::isAllLeq(const RankFunc& f)
 {
   vector<int> rnk = f.getRanks();
   if(this->ranks.size() != rnk.size())
