@@ -734,6 +734,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced()
   map<pair<DFAState,int>, StateSch> slTrans;
   for(const auto& pr : slNonEmpty)
   {
+    //std::cout << StateSch::printSet(pr.first) << std::endl;
     StateSch ns = { set<int>({newState}), set<int>(), RankFunc(), 0, false };
     StateSch src = { pr.first, set<int>(), RankFunc(), 0, false };
     slTrans[pr] = ns;
@@ -891,14 +892,13 @@ bool BuchiAutomatonSpec::acceptSl(StateSch& state, vector<int>& alp)
     return false;
   for(const int& a : alp)
   {
-    all = false;
     for(int st : rel)
     {
+      all = false;
       set<int> sng = {st};
       stack = std::stack<set<int>>();
       comst.clear();
       stack.push(succSet(sng, a));
-      comst.insert(sng);
       comst.insert(succSet(sng, a));
 
       while(stack.size() > 0)

@@ -91,6 +91,9 @@ int main(int argc, char *argv[])
 
     auto prod = renCompl.productBA(ren);
     BuchiAutomaton<int, int> renProd = prod.renameAutDict(id);
+    //renProd.removeUseless();
+    //cout << renProd.toGraphwiz() << endl;
+
     BuchiAutomaton<int, int> renUnion = renComplUn.unionBA(ren);
     renUnion.singleInitial(renUnion.getStates().size());
 
@@ -113,7 +116,10 @@ int main(int argc, char *argv[])
     }
     catch(const TimeoutException &)
     {
-      checkRes = "TO";
+      if(!renProd.isEmpty())
+        checkRes = "false";
+      else
+        checkRes = "TO";
     }
 
     cout << std::boolalpha;
