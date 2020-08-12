@@ -15,6 +15,8 @@
 
 using namespace std;
 
+const bool CHECK = false;
+
 string printRTMacrostate(const set<StateSch>& m)
 {
   string ret = "<";
@@ -107,19 +109,27 @@ int main(int argc, char *argv[])
     ch << renUnion.toString();
     ch.close();
 
-    string cmdCheck = "java -jar " + RABITEXE + " all.ba " + TMPNAME + " -de";
     string checkRes = "";
-    try
+
+    if(CHECK)
     {
-      checkRes = Simulations::execCmd(cmdCheck, 25);
-      checkRes = renProd.isEmpty() && checkRes == "Included.\n" ? "true" : "false";
+      string cmdCheck = "java -jar " + RABITEXE + " all.ba " + TMPNAME + " -de";
+      try
+      {
+        checkRes = Simulations::execCmd(cmdCheck, 25);
+        checkRes = renProd.isEmpty() && checkRes == "Included.\n" ? "true" : "false";
+      }
+      catch(const TimeoutException &)
+      {
+        if(!renProd.isEmpty())
+          checkRes = "false";
+        else
+          checkRes = "TO";
+      }
     }
-    catch(const TimeoutException &)
+    else
     {
-      if(!renProd.isEmpty())
-        checkRes = "false";
-      else
-        checkRes = "TO";
+      checkRes = "N/A";
     }
 
     cout << std::boolalpha;

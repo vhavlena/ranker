@@ -490,12 +490,6 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
   map<int, bool > pre;
   auto fin = getFinals();
 
-  // if(!state.f.relConsistent(this->getDirectSim()))
-  //   return ret;
-  // //
-  // if(!state.f.relOddConsistent(this->getOddRankSim()))
-  //   return ret;
-
   for(int st : state.S)
   {
     set<int> dst = getTransitions()[std::make_pair(st, symbol)];
@@ -1173,9 +1167,3 @@ map<int, int> BuchiAutomatonSpec::getMaxReachSizeInd()
   }
   return ret;
 }
-
-
-// int BuchiAutomatonSpec::countEquivalenceClasses(vector<int>& st, StateRelation& rel)
-// {
-//   return ret.size();
-// }

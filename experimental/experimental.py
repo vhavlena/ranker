@@ -102,7 +102,7 @@ def main():
     files = files[:AUT]
 
     print_config(AUT)
-    print("Aut;states;time;check")
+    print("aut;states;time;check")
 
     for eq_file in files:
         filename = os.path.join(formulafolder, eq_file)
