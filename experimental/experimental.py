@@ -113,6 +113,8 @@ def main():
             parse = parse_fnc(output)
         except subprocess.TimeoutExpired:
             parse = None, None, None
+        except subprocess.CalledProcessError:
+            parse = "MO", "MO", "MO"
 
         filename = os.path.basename(filename)
         print_fnc(filename, parse)
