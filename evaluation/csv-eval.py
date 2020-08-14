@@ -45,10 +45,11 @@ def main():
     fltrows = dict()
     for rd in filesfdr:
         for row in rd:
+            autname = os.path.splitext(row["aut"])[0]
             try:
-                fltrows[row["aut"]].append(row[FILTERROW])
+                fltrows[autname].append(row[FILTERROW])
             except KeyError:
-                fltrows[row["aut"]] = [row[FILTERROW]]
+                fltrows[autname] = [row[FILTERROW]]
 
     print(header)
     for k, v in fltrows.items():

@@ -13,6 +13,7 @@ src/units/tmp*
 src/units/all.ba
 
 benchmarks
+results
 
 src/img
 src/obj
