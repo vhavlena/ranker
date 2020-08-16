@@ -73,7 +73,18 @@ int main(int argc, char *argv[])
     BuchiAutomatonSpec sp(ren);
     ComplOptions opt = { .cutPoint = false };
     sp.setComplOptions(opt);
-    BuchiAutomaton<StateSch, int> comp = sp.complementSchReduced();
+    BuchiAutomaton<StateSch, int> comp;
+    try
+    {
+      comp = sp.complementSchReduced();
+    }
+    catch (const std::bad_alloc&)
+    {
+      os.close();
+      std::cerr << "Memory error" << std::endl;
+      return 2;
+    }
+
     //cout << comp.toGraphwiz() << endl;
 
     cout << "Generated states: " << comp.getStates().size() << " Generated trans: " << comp.getTransitions().size() << endl;
@@ -129,7 +140,7 @@ int main(int argc, char *argv[])
     }
     else
     {
-      checkRes = "N/A";
+      checkRes = "NA";
     }
 
     cout << std::boolalpha;

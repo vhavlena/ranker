@@ -28,6 +28,7 @@ class ToolType(Enum):
     SAFRA = 2
     PITTERMAN = 3
     SCHEWE = 4
+    HARD = 5
 
 
 
@@ -37,7 +38,7 @@ def main():
         help_err()
         sys.exit()
     try:
-        opts, args = getopt.getopt(sys.argv[3:], "tf:", ["tex", "aut=", "rnk", "safra", "piterman", "schewe"])
+        opts, args = getopt.getopt(sys.argv[3:], "tf:", ["tex", "aut=", "rnk", "safra", "piterman", "schewe", "hard"])
     except getopt.GetoptError as err:
         help_err()
         sys.exit()
@@ -61,6 +62,9 @@ def main():
             tool = ToolType.PITTERMAN
         if o in ("--schewe"):
             tool = ToolType.SCHEWE
+        if o in ("--hard"):
+            tool = ToolType.HARD
+
 
     if tool is None:
         print("Tool must be specified")
@@ -92,6 +96,11 @@ def main():
         parse_fnc = parse_output_goal
         preargs = ["complement", "-m", "rank", "-tr", "-ro", "-r"]
         ext = ".gff"
+    elif tool == ToolType.HARD:
+        print_fnc = print_output_hard
+        parse_fnc = parse_output_hard
+        args = []
+        ext = ".ba"
 
     #Experiments
 
@@ -113,8 +122,11 @@ def main():
             parse = parse_fnc(output)
         except subprocess.TimeoutExpired:
             parse = None, None, None
-        except subprocess.CalledProcessError:
-            parse = "MO", "MO", "MO"
+        except subprocess.CalledProcessError as e:
+            if e.returncode == 2:
+                parse = "MO", "MO", "MO"
+            else:
+                parse = "Error", "Error", "Error"
 
         filename = os.path.basename(filename)
         print_fnc(filename, parse)
@@ -144,6 +156,18 @@ def format_output(parse):
 def print_output_rnk(filename, rnk_parse):
     print("{0};{1};{2};{3}".format(filename, format_output(rnk_parse[0]), \
         format_output(rnk_parse[1]), format_output(rnk_parse[2])))
+
+
+def print_output_hard(filename, rnk_parse):
+    print("{0};{1}".format(filename, format_output(rnk_parse)))
+
+
+def parse_output_hard(output):
+    lines = output.split('\n')
+    lines = list(filter(None, lines)) #Remove empty lines
+    match = re.search("([a-zA-Z]+)", lines[-1])
+    check = match.group(1)
+    return check
 
 
 def print_output(filename, parse):

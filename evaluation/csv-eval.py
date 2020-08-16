@@ -18,7 +18,7 @@ import csv
 import xml.etree.ElementTree as ET
 from enum import Enum
 
-FILTERROW = "states"
+FILTERROW = ["rnk", "piterman", "check"]
 
 def main():
     if len(sys.argv) < 2:
@@ -46,10 +46,16 @@ def main():
     for rd in filesfdr:
         for row in rd:
             autname = os.path.splitext(row["aut"])[0]
+            item = []
+            for fl in FILTERROW:
+                try:
+                    item.append(row[fl])
+                except KeyError:
+                    continue
             try:
-                fltrows[autname].append(row[FILTERROW])
+                fltrows[autname] += item
             except KeyError:
-                fltrows[autname] = [row[FILTERROW]]
+                fltrows[autname] = item
 
     print(header)
     for k, v in fltrows.items():
