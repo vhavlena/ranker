@@ -36,7 +36,7 @@ def main():
             sys.stderr.write("Cannot open the file {0}".format(f))
             close_files(filesfd)
 
-    header = "name;"
+    header = "aut;"
     for fd in filesfd:
         name = fd.readline().strip()
         header += name[1:] + ";"
@@ -45,7 +45,7 @@ def main():
     fltrows = dict()
     for rd in filesfdr:
         for row in rd:
-            autname = os.path.splitext(row["aut"])[0]
+            autname = row["aut"] #os.path.splitext(row["aut"])[0]
             item = []
             for fl in FILTERROW:
                 try:

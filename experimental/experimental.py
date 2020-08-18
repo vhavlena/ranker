@@ -138,7 +138,9 @@ def parse_output_rnk(output):
     match = re.search("States: ([0-9]+)", lines[STATESLINE])
     states = match.group(1)
     match = re.search("Check: ([a-zA-Z]+)", lines[CHECK])
-    check = match.group(1)
+    check = None
+    if match is not None:
+        check = match.group(1)
     match = re.search("Time: ([0-9]+.[0-9]+)", lines[TIMELINE])
     time = round(float(match.group(1)), 2)
     return states, time, check
