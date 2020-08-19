@@ -33,7 +33,6 @@ int main(int argc, char *argv[])
   {
     const char* rabitpath_cstr = std::getenv("RABITEXE");
     std::string rabitpath = (nullptr == rabitpath_cstr)? RABITEXE : rabitpath_cstr;
-    std::cout << rabitpath << "\n";
 
     BuchiAutomaton<string, string> ba = parser.parseBaFormat(os);
     string cmd = "java -jar " + rabitpath + " " + filename + " " + filename + " -dirsim";
