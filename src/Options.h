@@ -4,7 +4,8 @@
 
 struct ComplOptions
 {
-  bool cutPoint = false;;
+  bool cutPoint = false;
+  bool succEmptyCheck = true;
 };
 
 #endif

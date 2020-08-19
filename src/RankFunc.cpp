@@ -329,12 +329,12 @@ std::string RankFunc::toString() const
 
 bool RankFunc::isTightRank() const
 {
-  for(const auto& t : this->tight)
-  {
-    if(!t)  return false;
-  }
-  return true;
-  //return this->tight.all();
+  // for(const auto& t : this->tight)
+  // {
+  //   if(!t)  return false;
+  // }
+  // return true;
+  return this->tight.all();
 }
 
 
@@ -406,7 +406,7 @@ bool RankFunc::isReachConsistent(map<int, int>& res, int reachMax) const
 std::string RankFunc::toStringVer() const
 {
   string ret;
-  for(auto i : this->tight)
-    ret += std::to_string(i);
+  // for(auto i : this->tight)
+  //   ret += std::to_string(i);
   return ret;
 }

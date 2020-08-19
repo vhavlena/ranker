@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
     ba.computeRankSim(cl);
     BuchiAutomaton<int, int> ren = ba.renameAut();
     BuchiAutomatonSpec sp(ren);
-    ComplOptions opt = { .cutPoint = false };
+    ComplOptions opt = { .cutPoint = false, .succEmptyCheck = false };
     sp.setComplOptions(opt);
     BuchiAutomaton<StateSch, int> comp;
     try
@@ -136,6 +136,10 @@ int main(int argc, char *argv[])
           checkRes = "false";
         else
           checkRes = "TO";
+      }
+      catch(const char *)
+      {
+        checkRes = "NA";
       }
     }
     else

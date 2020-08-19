@@ -319,6 +319,8 @@ BackRel BuchiAutomatonSpec::createBackRel(BuchiAutomaton<int, int>::StateRelatio
   BackRel bRel(this->getStates().size());
   for(auto p : rel)
   {
+    if(p.first == p.second)
+      continue;
     if(p.first <= p.second)
       bRel[p.second].push_back({p.first, false});
     else
@@ -449,7 +451,7 @@ void BuchiAutomatonSpec::getSchRanksTightReduced(vector<RankFunc>& out, vector<i
   vector<RankFunc> tmp;
   int rankSetSize = 1;
 
-  if(macrostate.S.size() < 7 && macrostate.f.getMaxRank() < 9)
+  if(this->opt.succEmptyCheck && macrostate.S.size() < 7 && macrostate.f.getMaxRank() < 9)
   {
     if(!getRankSuccCache(tmp, macrostate, symbol))
     {
@@ -602,13 +604,17 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
       continue;
     if(this->opt.cutPoint)
     {
+      set<int> no;
       if(st.i != 0 || st.O.size() == 0)
       {
         for(int o : st.O)
         {
-          rnkMap[o]--;
+          if(rnkMap[o] > 0 && fin.find(o) == fin.end())
+            rnkMap[o]--;
+          else
+            no.insert(o);
         }
-        retAll.insert({st.S, set<int>(), RankFunc(rnkMap), st.i, true});
+        retAll.insert({st.S, no, RankFunc(rnkMap), st.i, true});
       }
     }
     else
