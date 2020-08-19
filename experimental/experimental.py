@@ -117,16 +117,25 @@ def main():
         filename = os.path.join(formulafolder, eq_file)
 
         try:
-            output = subprocess.check_output([bin] + preargs + [filename]+ args, \
-                timeout=TIMEOUT, stderr=subprocess.STDOUT).decode("utf-8")
-            parse = parse_fnc(output)
-        except subprocess.TimeoutExpired:
-            parse = None, None, None
-        except subprocess.CalledProcessError as e:
-            if e.returncode == 2:
+            proc = subprocess.Popen([bin] + preargs + [filename]+ args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            output, errs = proc.communicate(timeout=TIMEOUT)
+            if proc.returncode == 0:
+                try:
+                    output = output.decode("utf-8")
+                except (UnicodeDecodeError, AttributeError):
+                    pass
+                parse = parse_fnc(output)
+            elif proc.returncode == 2:
                 parse = "MO", "MO", "MO"
             else:
                 parse = "Error", "Error", "Error"
+
+        except subprocess.TimeoutExpired:
+            proc.terminate()
+            parse = None, None, None
+        except subprocess.CalledProcessError as e:
+            proc.terminate()
+            parse = "MO", "MO", "MO"
 
         filename = os.path.basename(filename)
         print_fnc(filename, parse)
