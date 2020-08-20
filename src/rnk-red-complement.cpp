@@ -1,4 +1,5 @@
 
+#include <cstdlib>
 #include <iostream>
 #include <set>
 #include <map>
@@ -30,8 +31,11 @@ int main(int argc, char *argv[])
 
   if(os)
   {
+    const char* rabitpath_cstr = std::getenv("RABITEXE");
+    std::string rabitpath = (nullptr == rabitpath_cstr)? RABITEXE : rabitpath_cstr;
+
     BuchiAutomaton<string, string> ba = parser.parseBaFormat(os);
-    string cmd = "java -jar " + RABITEXE + " " + filename + " " + filename + " -dirsim";
+    string cmd = "java -jar " + rabitpath + " " + filename + " " + filename + " -dirsim";
     Simulations sim;
     istringstream strr(Simulations::execCmd(cmd));
 
@@ -56,10 +60,10 @@ int main(int argc, char *argv[])
       return 2;
     }
 
-    cout << "Generated states: " << comp.getStates().size() << " Generated trans: " << comp.getTransitions().size() << endl;
-
     auto t2 = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+
+    cout << "Generated states: " << comp.getStates().size() << "\nGenerated trans: " << comp.getTransitions().size() << endl;
 
     map<int, int> id;
     for(auto al : comp.getAlphabet())
@@ -67,7 +71,7 @@ int main(int argc, char *argv[])
 
     BuchiAutomaton<int, int> renCompl = comp.renameAutDict(id);
     renCompl.removeUseless();
-    cout << "States: " << renCompl.getStates().size() << " Transitions: " << renCompl.getTransitions().size() << endl;
+    cout << "States: " << renCompl.getStates().size() << "\nTransitions: " << renCompl.getTransitions().size() << endl;
 
     cout << std::fixed;
     cout << std::setprecision(2);
