@@ -6,6 +6,11 @@ struct ComplOptions
 {
   bool cutPoint = false;
   bool succEmptyCheck = true;
+
+  unsigned ROMinState = 9;
+
+  unsigned CacheMaxState = 6;
+  int CacheMaxRank = 8;
 };
 
 #endif

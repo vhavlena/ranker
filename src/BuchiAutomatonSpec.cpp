@@ -452,7 +452,7 @@ void BuchiAutomatonSpec::getSchRanksTightReduced(vector<RankFunc>& out, vector<i
   vector<RankFunc> tmp;
   int rankSetSize = 1;
 
-  if(this->opt.succEmptyCheck && macrostate.S.size() < 7 && macrostate.f.getMaxRank() < 9)
+  if(this->opt.succEmptyCheck && macrostate.S.size() <= this->opt.CacheMaxState && macrostate.f.getMaxRank() <= this->opt.CacheMaxRank)
   {
     if(!getRankSuccCache(tmp, macrostate, symbol))
     {
@@ -660,7 +660,7 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchStartReduced(set<int>& state, int
 
   vector<RankFunc> maxRanks;
 
-  if(state.size() >= 9)
+  if(state.size() >= this->opt.ROMinState)
     maxRanks = RankFunc::getRORanks(rankBound, state, fin, this->opt.cutPoint);
   else
   {
