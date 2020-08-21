@@ -160,8 +160,9 @@ void BuchiAutomatonSpec::getSchRanksTight(vector<RankFunc>& out, vector<int>& ma
     constr.push_back(singleConst);
   }
 
-  auto tmp = RankFunc::tightSuccFromRankConstr(constr, dirRel, oddRel, macrostate.f.getMaxRank(), reachCons, reachMax);
-  RankFunc sng(sngmap);
+  auto tmp = RankFunc::tightSuccFromRankConstr(constr, dirRel, oddRel, macrostate.f.getMaxRank(),
+    reachCons, reachMax, true);
+  RankFunc sng(sngmap, true);
   if(sng.isTightRank() && sng.getMaxRank() == macrostate.f.getMaxRank() && tmp.size() > 0)
     out = vector<RankFunc>({sng});
   else
@@ -192,7 +193,7 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchStart(set<int>& state, int rankBo
 
   int reachMaxAct = maxReach[sprime];
   RankConstr constr = rankConstr(maxRank, sprime);
-  for(const RankFunc& item : RankFunc::tightFromRankConstr(constr, dirRel, oddRel, reachCons, reachMaxAct))
+  for(const RankFunc& item : RankFunc::tightFromRankConstr(constr, dirRel, oddRel, reachCons, reachMaxAct, true))
   {
     ret.push_back({sprime, set<int>(), item, 0, true});
   }
@@ -455,7 +456,8 @@ void BuchiAutomatonSpec::getSchRanksTightReduced(vector<RankFunc>& out, vector<i
   {
     if(!getRankSuccCache(tmp, macrostate, symbol))
     {
-      tmp = RankFunc::tightSuccFromRankConstr(constr, dirRel, oddRel, macrostate.f.getMaxRank(), reachCons, reachMax);
+      tmp = RankFunc::tightSuccFromRankConstr(constr, dirRel, oddRel, macrostate.f.getMaxRank(),
+        reachCons, reachMax, this->opt.cutPoint);
       this->rankCache[{macrostate.S, symbol, macrostate.f.getMaxRank()}].push_back({macrostate.f, tmp});
       rankSetSize = tmp.size();
     }
@@ -470,7 +472,7 @@ void BuchiAutomatonSpec::getSchRanksTightReduced(vector<RankFunc>& out, vector<i
     }
   }
 
-  RankFunc sng(sngmap);
+  RankFunc sng(sngmap, this->opt.cutPoint);
   if(sng.isTightRank() && sng.getMaxRank() == macrostate.f.getMaxRank() && rankSetSize > 0)
     out = vector<RankFunc>({sng});
   else
@@ -614,7 +616,7 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
           else
             no.insert(o);
         }
-        retAll.insert({st.S, no, RankFunc(rnkMap), st.i, true});
+        retAll.insert({st.S, no, RankFunc(rnkMap, this->opt.cutPoint), st.i, true});
       }
     }
     else
@@ -630,7 +632,7 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
       }
       // if(!cnt)
       //   continue;
-      retAll.insert({st.S, no, RankFunc(rnkMap), st.i, true});
+      retAll.insert({st.S, no, RankFunc(rnkMap, this->opt.cutPoint), st.i, true});
     }
   }
 
@@ -656,27 +658,34 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchStartReduced(set<int>& state, int
       maxRank[st] -= 1;
   }
 
-  int reachMaxAct = maxReach[sprime];
-  RankConstr constr = rankConstr(maxRank, sprime);
-  auto tmp = RankFunc::tightFromRankConstr(constr, dirRel, oddRel, reachCons, reachMaxAct);
-
-  set<RankFunc> tmpSet(tmp.begin(), tmp.end());
   vector<RankFunc> maxRanks;
-  bool cnt = true;
-  for(auto& r : tmp)
+
+  if(state.size() >= 9)
+    maxRanks = RankFunc::getRORanks(rankBound, state, fin, this->opt.cutPoint);
+  else
   {
-    cnt = true;
-    auto it = tmpSet.upper_bound(r);
-    while(it != tmpSet.end())
+    int reachMaxAct = maxReach[sprime];
+    RankConstr constr = rankConstr(maxRank, sprime);
+    auto tmp = RankFunc::tightFromRankConstr(constr, dirRel, oddRel, reachCons, reachMaxAct, this->opt.cutPoint);
+
+    set<RankFunc> tmpSet(tmp.begin(), tmp.end());
+
+    bool cnt = true;
+    for(auto& r : tmp)
     {
-      if(r != (*it) && r.getMaxRank() == it->getMaxRank() && r.isAllLeq(*it))
+      cnt = true;
+      auto it = tmpSet.upper_bound(r);
+      while(it != tmpSet.end())
       {
-        cnt = false;
-        break;
+        if(r != (*it) && r.getMaxRank() == it->getMaxRank() && r.isAllLeq(*it))
+        {
+          cnt = false;
+          break;
+        }
+        it = std::next(it, 1);
       }
-      it = std::next(it, 1);
+      if(cnt) maxRanks.push_back(r);
     }
-    if(cnt) maxRanks.push_back(r);
   }
 
   for(const RankFunc& item : maxRanks)

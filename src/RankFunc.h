@@ -37,13 +37,17 @@ private:
   boost::dynamic_bitset<> tight;
   //vector<bool> tight;
 
-  static vector<RankFunc> cartTightProductMap(vector<RankFunc>& s1, vector<std::pair<int, int> >& s2, int rem, BackRel& rel, BackRel& oddRel, int max, map<int, int>& reachRes, int reachMax);
-  static vector<RankFunc> cartTightProductMapList(RankConstr slist, BackRel& rel, BackRel& oddRel, int max, map<int, int>& reachRes, int reachMax);
+  static vector<RankFunc> cartTightProductMap(vector<RankFunc>& s1, vector<std::pair<int, int> >& s2, int rem,
+      BackRel& rel, BackRel& oddRel, int max, map<int, int>& reachRes, int reachMax, bool useInverse);
+  static vector<RankFunc> cartTightProductMapList(RankConstr slist, BackRel& rel, BackRel& oddRel, int max,
+      map<int, int>& reachRes, int reachMax, bool useInverse);
   static inline bool checkDirectBackRel(const std::pair<int, int>& act, const RankFunc& tmp, BackRel& rel);
   static inline bool checkOddBackRel(const std::pair<int, int>& act, const RankFunc& tmp, BackRel& oddRel);
 
-  static vector<RankFunc> cartTightProductMapOdd(vector<RankFunc>& s1, vector<std::pair<int, int> >& s2, int rem, BackRel& rel, BackRel& oddRel, int max, map<int, int>& reachRes, int reachMax);
-  static vector<RankFunc> cartTightProductMapListOdd(RankConstr slist, BackRel& rel, BackRel& oddRel, int max, map<int, int>& reachRes, int reachMax);
+  static vector<RankFunc> cartTightProductMapOdd(vector<RankFunc>& s1, vector<std::pair<int, int> >& s2,
+      int rem, BackRel& rel, BackRel& oddRel, int max, map<int, int>& reachRes, int reachMax, bool useInverse);
+  static vector<RankFunc> cartTightProductMapListOdd(RankConstr slist, BackRel& rel, BackRel& oddRel,
+      int max, map<int, int>& reachRes, int reachMax, bool useInverse);
 
 public:
   RankFunc() : map<int,int>(), oddStates(), inverse(), ranks(), tight()
@@ -52,8 +56,8 @@ public:
     this->reachRest = INF;
   }
 
-  RankFunc(const map<int,int>& mp);
-  void addPair(const std::pair<int, int>& val);
+  RankFunc(const map<int,int>& mp, bool useInverse);
+  void addPair(const std::pair<int, int>& val, bool useInverse);
 
   inline void addOddStates(set<int>& states)
   {
@@ -104,11 +108,11 @@ public:
   void setReachRestr(int val) { this->reachRest = val; }
 
   static vector<RankFunc> fromRankConstr(RankConstr constr);
-  static vector<RankFunc> tightFromRankConstr(RankConstr constr, BackRel& rel, BackRel& oddRel, map<int, int>& reachRes, int reachMax);
-  static vector<RankFunc> tightFromRankConstrOdd(RankConstr constr, BackRel& rel, BackRel& oddRel, map<int, int>& reachRes, int reachMax);
-  static vector<RankFunc> tightSuccFromRankConstr(RankConstr constr, BackRel& rel, BackRel& oddRel, int max, map<int, int>& reachRes, int reachMax);
+  static vector<RankFunc> tightFromRankConstr(RankConstr constr, BackRel& rel, BackRel& oddRel, map<int, int>& reachRes, int reachMax, bool useInverse);
+  static vector<RankFunc> tightFromRankConstrOdd(RankConstr constr, BackRel& rel, BackRel& oddRel, map<int, int>& reachRes, int reachMax, bool useInverse);
+  static vector<RankFunc> tightSuccFromRankConstr(RankConstr constr, BackRel& rel, BackRel& oddRel, int max, map<int, int>& reachRes, int reachMax, bool useInverse);
 
-  static vector<RankFunc> getRORanks(int ranks, std::set<int>& states, std::set<int>& fin);
+  static vector<RankFunc> getRORanks(int ranks, std::set<int>& states, std::set<int>& fin, bool useInverse);
 };
 
 #endif
