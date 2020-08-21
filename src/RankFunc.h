@@ -8,6 +8,7 @@
 #include <string>
 #include <iostream>
 #include <string>
+#include "AuxFunctions.h"
 
 #include <boost/dynamic_bitset.hpp>
 
@@ -38,8 +39,8 @@ private:
 
   static vector<RankFunc> cartTightProductMap(vector<RankFunc>& s1, vector<std::pair<int, int> >& s2, int rem, BackRel& rel, BackRel& oddRel, int max, map<int, int>& reachRes, int reachMax);
   static vector<RankFunc> cartTightProductMapList(RankConstr slist, BackRel& rel, BackRel& oddRel, int max, map<int, int>& reachRes, int reachMax);
-  static inline bool checkDirectBackRel(const std::pair<int, int>& act, RankFunc& tmp, BackRel& rel);
-  static inline bool checkOddBackRel(const std::pair<int, int>& act, RankFunc& tmp, BackRel& oddRel);
+  static inline bool checkDirectBackRel(const std::pair<int, int>& act, const RankFunc& tmp, BackRel& rel);
+  static inline bool checkOddBackRel(const std::pair<int, int>& act, const RankFunc& tmp, BackRel& oddRel);
 
   static vector<RankFunc> cartTightProductMapOdd(vector<RankFunc>& s1, vector<std::pair<int, int> >& s2, int rem, BackRel& rel, BackRel& oddRel, int max, map<int, int>& reachRes, int reachMax);
   static vector<RankFunc> cartTightProductMapListOdd(RankConstr slist, BackRel& rel, BackRel& oddRel, int max, map<int, int>& reachRes, int reachMax);
@@ -106,6 +107,8 @@ public:
   static vector<RankFunc> tightFromRankConstr(RankConstr constr, BackRel& rel, BackRel& oddRel, map<int, int>& reachRes, int reachMax);
   static vector<RankFunc> tightFromRankConstrOdd(RankConstr constr, BackRel& rel, BackRel& oddRel, map<int, int>& reachRes, int reachMax);
   static vector<RankFunc> tightSuccFromRankConstr(RankConstr constr, BackRel& rel, BackRel& oddRel, int max, map<int, int>& reachRes, int reachMax);
+
+  static vector<RankFunc> getRORanks(int ranks, std::set<int>& states, std::set<int>& fin);
 };
 
 #endif

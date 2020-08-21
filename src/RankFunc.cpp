@@ -2,9 +2,10 @@
 #include "RankFunc.h"
 
 
-RankFunc::RankFunc(const map<int,int>& mp) : map<int,int>(mp)
+RankFunc::RankFunc(const map<int,int>& mp) : map<int,int>(mp), oddStates(), inverse(), ranks(), tight()
 {
   this->maxRank = 0;
+  this->reachRest = INF;
   RankInverse::iterator it;
   for(const auto& k : mp)
   {
@@ -126,7 +127,7 @@ vector<RankFunc> RankFunc::cartTightProductMapOdd(vector<RankFunc>& s1, vector<s
 }
 
 
-bool RankFunc::checkDirectBackRel(const std::pair<int, int>& act, RankFunc& tmp, BackRel& rel)
+bool RankFunc::checkDirectBackRel(const std::pair<int, int>& act, const RankFunc& tmp, BackRel& rel)
 {
   for(auto st : rel[act.first])
   {
@@ -147,7 +148,7 @@ bool RankFunc::checkDirectBackRel(const std::pair<int, int>& act, RankFunc& tmp,
 }
 
 
-bool RankFunc::checkOddBackRel(const std::pair<int, int>& act, RankFunc& tmp, BackRel& oddRel)
+bool RankFunc::checkOddBackRel(const std::pair<int, int>& act, const RankFunc& tmp, BackRel& oddRel)
 {
   if(act.second % 2 != 0)
   {
@@ -408,5 +409,43 @@ std::string RankFunc::toStringVer() const
   string ret;
   // for(auto i : this->tight)
   //   ret += std::to_string(i);
+  return ret;
+}
+
+
+vector<RankFunc> RankFunc::getRORanks(int ranks, std::set<int>& states, std::set<int>& fin)
+{
+  vector<RankFunc> ret;
+  set<int> nofin;
+  std::set_difference(states.begin(), states.end(), fin.begin(),
+    fin.end(), std::inserter(nofin, nofin.begin()));
+
+  vector<int> nfvec(nofin.begin(), nofin.end());
+  vector<vector<int>> subsets = Aux::getAllSubsets(nfvec);
+  for(auto& sb : subsets)
+  {
+    if(sb.size() > ranks || sb.size() == 0)
+      continue;
+
+    vector<int> perm(sb.begin(), sb.end());
+    do {
+      std::map<int, int> rnk;
+      int i = 1;
+      for(int st : states)
+      {
+        if(fin.find(st) != fin.end())
+          rnk.insert({st, 2*(sb.size()-1)});
+        else
+          rnk.insert({st, 2*sb.size()-1});
+      }
+      for(int item : perm)
+      {
+        rnk[item] = i;
+        i += 2;
+      }
+      RankFunc fnc(rnk);
+      ret.push_back(fnc);
+    } while(std::next_permutation(perm.begin(), perm.end()));
+  }
   return ret;
 }
