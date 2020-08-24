@@ -3,7 +3,7 @@ CPPFLAGS=-std=c++17 -O2 -Wall -Wextra #-Wl,-no_pie
 OBJ=obj
 GCC=g++
 
-complement: rnk-red-complement
+complement: ranker
 
 test: test-parser test-kv-compl test-sch-compl test-process test-nfa-prop \
 	test-sch-red-compl test-sch-hard
@@ -48,7 +48,7 @@ test-process: units/test-process.cpp $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/AutGraph.o $(OBJ)/Simulations.o $(OBJ)/AuxFunctions.o
 	$(GCC) $(CPPFLAGS) -o units/$@ $?
 
-rnk-red-complement: rnk-red-complement.cpp $(OBJ)/BuchiAutomataParser.o \
+ranker: ranker.cpp $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomatonSpec.o $(OBJ)/RankFunc.o \
 	$(OBJ)/AutGraph.o $(OBJ)/Simulations.o $(OBJ)/AuxFunctions.o
 	$(GCC) $(CPPFLAGS) -o $@ $?
@@ -80,4 +80,4 @@ $(OBJ)/BuchiAutomatonSpec.o: $(OBJ)/BuchiAutomaton.o $(OBJ)/RankFunc.o \
 
 clean:
 	rm -f obj/*.o units/test-parser units/test-kv-compl units/test-sch-red-compl \
-	units/test-sch-compl units/test-nfa-prop units/test-process
+	units/test-sch-compl units/test-nfa-prop units/test-process ranker

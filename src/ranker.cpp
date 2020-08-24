@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
     ba.computeRankSim(cl);
     BuchiAutomaton<int, int> ren = ba.renameAut();
     BuchiAutomatonSpec sp(ren);
-    ComplOptions opt = { .cutPoint = false, .succEmptyCheck = true, .ROMinState = 9, .CacheMaxState = 6, .CacheMaxRank = 8 };
+    ComplOptions opt = { .cutPoint = false, .succEmptyCheck = true, .ROMinState = 9, .ROMinRank = 7, .CacheMaxState = 6, .CacheMaxRank = 8 };
     sp.setComplOptions(opt);
     BuchiAutomaton<StateSch, int> comp;
     try

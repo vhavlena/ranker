@@ -660,7 +660,7 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchStartReduced(set<int>& state, int
 
   vector<RankFunc> maxRanks;
 
-  if(state.size() >= this->opt.ROMinState)
+  if(state.size() >= this->opt.ROMinState && m >= this->opt.ROMinRank)
     maxRanks = RankFunc::getRORanks(rankBound, state, fin, this->opt.cutPoint);
   else
   {

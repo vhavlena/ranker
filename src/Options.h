@@ -8,6 +8,7 @@ struct ComplOptions
   bool succEmptyCheck = true;
 
   unsigned ROMinState = 9;
+  int ROMinRank = 7;
 
   unsigned CacheMaxState = 6;
   int CacheMaxRank = 8;
