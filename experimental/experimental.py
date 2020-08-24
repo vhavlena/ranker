@@ -13,6 +13,8 @@ import string
 import re
 import os
 import os.path
+import signal
+import psutil
 import resource
 import xml.etree.ElementTree as ET
 from enum import Enum
@@ -131,10 +133,12 @@ def main():
                 parse = "Error", "Error", "Error"
 
         except subprocess.TimeoutExpired:
-            proc.terminate()
+            #proc.terminate()
+            kill_proc_tree(proc.pid, sig=signal.SIGKILL, include_parent=True)
             parse = None, None, None
         except subprocess.CalledProcessError as e:
-            proc.terminate()
+            #proc.terminate()
+            kill_proc_tree(proc.pid, sig=signal.SIGKILL, include_parent=True)
             parse = "MO", "MO", "MO"
 
         filename = os.path.basename(filename)
@@ -199,6 +203,26 @@ def toParseable(tree):
     t = ET.tostring(tree)
     t = t.lower()
     return ET.fromstring(t)
+
+
+# taken from https://psutil.readthedocs.io/en/latest/#kill-process-tree
+def kill_proc_tree(pid, sig=signal.SIGTERM, include_parent=True,
+                   timeout=None, on_terminate=None):
+    """Kill a process tree (including grandchildren) with signal
+    "sig" and return a (gone, still_alive) tuple.
+    "on_terminate", if specified, is a callback function that is
+    called as soon as a child terminates.
+    """
+    assert pid != os.getpid(), "won't kill myself"
+    parent = psutil.Process(pid)
+    children = parent.children(recursive=True)
+    if include_parent:
+        children.append(parent)
+    for p in children:
+        p.send_signal(sig)
+    gone, alive = psutil.wait_procs(children, timeout=timeout,
+                                    callback=on_terminate)
+    return (gone, alive)
 
 
 def help_err():
