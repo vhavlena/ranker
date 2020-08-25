@@ -9,10 +9,16 @@
 #include <stdexcept>
 #include <array>
 #include <exception>
+#include <queue>
+#include <map>
+#include <set>
+
 #include <boost/algorithm/string.hpp>
 #include "BuchiAutomaton.h"
 
 using namespace std;
+
+template<typename State> using Relation = set<pair<State, State>>;
 
 class TimeoutException: public exception
 {
@@ -35,9 +41,16 @@ public:
 
   static string execCmd(string& cmd, int timeout = 1000);
 
+protected:
+  template<typename State, typename Symbol>
+  Relation<State> computeDirectCompl(BuchiAutomaton<State, Symbol>& ba);
+
 private:
   static RabitSimLine parseRabitRelLine(string& line);
   static void splitString(string& line, vector<string>& split);
+
+  template<typename State, typename Symbol>
+  Relation<State> directSimulation(BuchiAutomaton<State, Symbol>& ba);
 };
 
 #endif
