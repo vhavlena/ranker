@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
     cout << "State rename map " << endl;
     BuchiAutomaton<int, int> ren = ba.renameAut();
     for(auto t : ba.getRenameStateMap())
-      std::cout << t.first << " = " << t.second << std::endl;
+      std::cout << t.first << " = " << t.second << std::endl;
 
     cout << "Original BA (renamed): " << endl;
     cout << ren.toGraphwiz() << endl;

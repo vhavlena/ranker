@@ -13,6 +13,8 @@ import string
 import re
 import os
 import os.path
+import signal
+import psutil
 import resource
 import xml.etree.ElementTree as ET
 from enum import Enum
@@ -29,6 +31,7 @@ class ToolType(Enum):
     PITTERMAN = 3
     SCHEWE = 4
     HARD = 5
+    SIMTEST = 6
 
 
 
@@ -38,7 +41,7 @@ def main():
         help_err()
         sys.exit()
     try:
-        opts, args = getopt.getopt(sys.argv[3:], "tf:", ["tex", "aut=", "rnk", "safra", "piterman", "schewe", "hard"])
+        opts, args = getopt.getopt(sys.argv[3:], "tf:", ["tex", "aut=", "rnk", "safra", "piterman", "schewe", "hard", "simtest"])
     except getopt.GetoptError as err:
         help_err()
         sys.exit()
@@ -64,6 +67,8 @@ def main():
             tool = ToolType.SCHEWE
         if o in ("--hard"):
             tool = ToolType.HARD
+        if o in ("--simtest"):
+            tool = ToolType.SIMTEST
 
 
     if tool is None:
@@ -101,6 +106,11 @@ def main():
         parse_fnc = parse_output_hard
         args = []
         ext = ".ba"
+    elif tool == ToolType.SIMTEST:
+        print_fnc = print_output_hard
+        parse_fnc = parse_output_hard
+        args = []
+        ext = ".ba"
 
     #Experiments
 
@@ -117,16 +127,27 @@ def main():
         filename = os.path.join(formulafolder, eq_file)
 
         try:
-            output = subprocess.check_output([bin] + preargs + [filename]+ args, \
-                timeout=TIMEOUT, stderr=subprocess.STDOUT).decode("utf-8")
-            parse = parse_fnc(output)
-        except subprocess.TimeoutExpired:
-            parse = None, None, None
-        except subprocess.CalledProcessError as e:
-            if e.returncode == 2:
+            proc = subprocess.Popen([bin] + preargs + [filename]+ args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            output, errs = proc.communicate(timeout=TIMEOUT)
+            if proc.returncode == 0:
+                try:
+                    output = output.decode("utf-8")
+                except (UnicodeDecodeError, AttributeError):
+                    pass
+                parse = parse_fnc(output)
+            elif proc.returncode == 2:
                 parse = "MO", "MO", "MO"
             else:
                 parse = "Error", "Error", "Error"
+
+        except subprocess.TimeoutExpired:
+            #proc.terminate()
+            kill_proc_tree(proc.pid, sig=signal.SIGKILL, include_parent=True)
+            parse = None, None, None
+        except subprocess.CalledProcessError as e:
+            #proc.terminate()
+            kill_proc_tree(proc.pid, sig=signal.SIGKILL, include_parent=True)
+            parse = "MO", "MO", "MO"
 
         filename = os.path.basename(filename)
         print_fnc(filename, parse)
@@ -190,6 +211,26 @@ def toParseable(tree):
     t = ET.tostring(tree)
     t = t.lower()
     return ET.fromstring(t)
+
+
+# taken from https://psutil.readthedocs.io/en/latest/#kill-process-tree
+def kill_proc_tree(pid, sig=signal.SIGTERM, include_parent=True,
+                   timeout=None, on_terminate=None):
+    """Kill a process tree (including grandchildren) with signal
+    "sig" and return a (gone, still_alive) tuple.
+    "on_terminate", if specified, is a callback function that is
+    called as soon as a child terminates.
+    """
+    assert pid != os.getpid(), "won't kill myself"
+    parent = psutil.Process(pid)
+    children = parent.children(recursive=True)
+    if include_parent:
+        children.append(parent)
+    for p in children:
+        p.send_signal(sig)
+    gone, alive = psutil.wait_procs(children, timeout=timeout,
+                                    callback=on_terminate)
+    return (gone, alive)
 
 
 def help_err():

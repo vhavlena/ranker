@@ -19,7 +19,7 @@ BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAut(int start)
   std::map<State, int> mpstate;
   std::map<Symbol, int> mpsymbol;
   std::set<int> rstate;
-  std::map< std::pair<int, int>, std::set<int> > rtrans;
+  Delta<int, int> rtrans;
   std::set<int> rfin;
   std::set<int> rini;
   this->invRenameMap = std::vector<State>(this->states.size() + start);
@@ -80,7 +80,7 @@ BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAutDict(map<Symbol
   std::map<State, int> mpstate;
   //std::map<Symbol, int> mpsymbol;
   std::set<int> rstate;
-  std::map< std::pair<int, int>, std::set<int> > rtrans;
+  Delta<int, int> rtrans;
   std::set<int> rfin;
   std::set<int> rini;
   this->invRenameMap = std::vector<State>(this->states.size() + start);
@@ -1011,7 +1011,7 @@ vector<set<State>> BuchiAutomaton<State, Symbol>::getRunTree(vector<Symbol>& wor
 
 
 template <typename State, typename Symbol>
-std::map<std::pair<State, Symbol>, set<State>> BuchiAutomaton<State, Symbol>::getReverseTransitions()
+Delta<State, Symbol> BuchiAutomaton<State, Symbol>::getReverseTransitions()
 {
   Transitions prev;
   for(const State& s : this->getStates())
@@ -1027,6 +1027,13 @@ std::map<std::pair<State, Symbol>, set<State>> BuchiAutomaton<State, Symbol>::ge
   return prev;
 }
 
+
+template <typename State, typename Symbol>
+BuchiAutomaton<State, Symbol> BuchiAutomaton<State, Symbol>::reverseBA()
+{
+  Transitions rev = this->getReverseTransitions();
+  return BuchiAutomaton(this->getStates(), this->getInitials(), this->getFinals(), rev, this->getAlphabet());
+}
 
 
 template class BuchiAutomaton<int, int>;

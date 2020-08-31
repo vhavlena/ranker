@@ -33,6 +33,8 @@ struct LabelState {
   int label;
 };
 
+template<typename State, typename Symbol> using Delta = std::map<std::pair<State, Symbol>, std::set<State>>;
+
 template <typename State, typename Symbol>
 class BuchiAutomaton {
 
@@ -43,7 +45,7 @@ public:
   typedef std::vector<LabelState<State>* > VecLabelStatesPtr;
   typedef std::vector<LabelState<State>> VecLabelStates;
   typedef std::set<Symbol> SetSymbols;
-  typedef std::map<std::pair<State, Symbol>, SetStates> Transitions;
+  typedef Delta<State, Symbol> Transitions;
   typedef std::set<std::pair<State, State> > StateRelation;
 
 private:
@@ -51,7 +53,7 @@ private:
   SetStates finals;
   SetStates initials;
   SetSymbols alph;
-  Transitions trans;
+  Delta<State, Symbol> trans;
 
   StateRelation directSim;
   StateRelation oddRankSim;
@@ -190,9 +192,10 @@ public:
   BuchiAutomaton<State, Symbol> unionBA(BuchiAutomaton<State, Symbol>& other);
   void singleInitial(State init);
 
-  vector<set<State>> getRunTree(vector<Symbol>& word);
+  BuchiAutomaton<State, Symbol> reverseBA();
+  Delta<State, Symbol> getReverseTransitions();
 
-  Transitions getReverseTransitions();
+  vector<set<State>> getRunTree(vector<Symbol>& word);
 };
 
 #endif

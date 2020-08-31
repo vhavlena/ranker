@@ -3,10 +3,10 @@ CPPFLAGS=-std=c++17 -O2 -Wall -Wextra #-Wl,-no_pie
 OBJ=obj
 GCC=g++
 
-complement: rnk-red-complement
+complement: ranker
 
 test: test-parser test-kv-compl test-sch-compl test-process test-nfa-prop \
-	test-sch-red-compl test-sch-hard
+	test-sch-red-compl test-sch-hard test-simulation
 
 test-parser: units/test-parser.cpp $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomatonSpec.o $(OBJ)/RankFunc.o \
@@ -48,7 +48,17 @@ test-process: units/test-process.cpp $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/AutGraph.o $(OBJ)/Simulations.o $(OBJ)/AuxFunctions.o
 	$(GCC) $(CPPFLAGS) -o units/$@ $?
 
-rnk-red-complement: rnk-red-complement.cpp $(OBJ)/BuchiAutomataParser.o \
+test-simulation: units/test-simulation.cpp $(OBJ)/BuchiAutomataParser.o \
+	$(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomatonSpec.o $(OBJ)/RankFunc.o \
+	$(OBJ)/AutGraph.o $(OBJ)/Simulations.o $(OBJ)/AuxFunctions.o
+	$(GCC) $(CPPFLAGS) -o units/$@ $?
+
+ranker: ranker.cpp $(OBJ)/BuchiAutomataParser.o \
+	$(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomatonSpec.o $(OBJ)/RankFunc.o \
+	$(OBJ)/AutGraph.o $(OBJ)/Simulations.o $(OBJ)/AuxFunctions.o
+	$(GCC) $(CPPFLAGS) -o $@ $?
+
+ranker-sim: ranker-sim.cpp $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomatonSpec.o $(OBJ)/RankFunc.o \
 	$(OBJ)/AutGraph.o $(OBJ)/Simulations.o $(OBJ)/AuxFunctions.o
 	$(GCC) $(CPPFLAGS) -o $@ $?
@@ -64,8 +74,8 @@ $(OBJ)/BuchiAutomaton.o: BuchiAutomaton.cpp BuchiAutomaton.h RankFunc.h \
 $(OBJ)/RankFunc.o: RankFunc.cpp RankFunc.h
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 
-$(OBJ)/Simulations.o: Simulations.cpp Simulations.h
-	$(GCC) $(CPPFLAGS) -c -o $@ $<
+$(OBJ)/Simulations.o: $(OBJ)/BuchiAutomaton.o Simulations.cpp Simulations.h
+	$(GCC) $(CPPFLAGS) -c Simulations.cpp -o $@
 
 $(OBJ)/AutGraph.o: AutGraph.cpp AutGraph.h
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
@@ -80,4 +90,5 @@ $(OBJ)/BuchiAutomatonSpec.o: $(OBJ)/BuchiAutomaton.o $(OBJ)/RankFunc.o \
 
 clean:
 	rm -f obj/*.o units/test-parser units/test-kv-compl units/test-sch-red-compl \
-	units/test-sch-compl units/test-nfa-prop units/test-process
+	units/test-sch-compl units/test-nfa-prop units/test-process units/test-simulation\
+	ranker
