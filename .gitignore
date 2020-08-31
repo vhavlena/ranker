@@ -12,6 +12,7 @@ src/units/test-sch-hard
 src/units/test-simulation
 src/rnk-red-complement
 src/ranker
+src/ranker-sim
 
 src/units/tmp*
 src/units/all.ba

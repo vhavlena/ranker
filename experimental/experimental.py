@@ -31,6 +31,7 @@ class ToolType(Enum):
     PITTERMAN = 3
     SCHEWE = 4
     HARD = 5
+    SIMTEST = 6
 
 
 
@@ -40,7 +41,7 @@ def main():
         help_err()
         sys.exit()
     try:
-        opts, args = getopt.getopt(sys.argv[3:], "tf:", ["tex", "aut=", "rnk", "safra", "piterman", "schewe", "hard"])
+        opts, args = getopt.getopt(sys.argv[3:], "tf:", ["tex", "aut=", "rnk", "safra", "piterman", "schewe", "hard", "simtest"])
     except getopt.GetoptError as err:
         help_err()
         sys.exit()
@@ -66,6 +67,8 @@ def main():
             tool = ToolType.SCHEWE
         if o in ("--hard"):
             tool = ToolType.HARD
+        if o in ("--simtest"):
+            tool = ToolType.SIMTEST
 
 
     if tool is None:
@@ -99,6 +102,11 @@ def main():
         preargs = ["complement", "-m", "rank", "-tr", "-ro", "-r"]
         ext = ".gff"
     elif tool == ToolType.HARD:
+        print_fnc = print_output_hard
+        parse_fnc = parse_output_hard
+        args = []
+        ext = ".ba"
+    elif tool == ToolType.SIMTEST:
         print_fnc = print_output_hard
         parse_fnc = parse_output_hard
         args = []

@@ -33,18 +33,23 @@ int main(int argc, char *argv[])
     string cmd = "java -jar " + RABITEXE + " " + filename + " " + filename + " -dirsim";
     Simulations sim;
     istringstream strr(Simulations::execCmd(cmd));
-    
-    cout << "Rabit Direct Simulation: " << endl;
-    for(const auto& t : sim.parseRabitRelation(strr))
-    {
-      cout << t.first << " : " << t.second << endl;
-    }
 
-    cout << endl << "Direct Simulation: " << endl;
-    for(const auto& t : sim.directSimulation<string, string>(ba, "-1"))
-    {
-      cout << t.first << " : " << t.second << endl;
-    }
+    auto rabsim = sim.parseRabitRelation(strr);
+    // cout << "Rabit Direct Simulation: " << endl;
+    // for(const auto& t : rabsim)
+    // {
+    //   cout << t.first << " : " << t.second << endl;
+    // }
+
+    auto ranksim = sim.directSimulation<string, string>(ba, "-1");
+    // cout << endl << "Direct Simulation: " << endl;
+    // for(const auto& t : ranksim)
+    // {
+    //   cout << t.first << " : " << t.second << endl;
+    // }
+
+    cout << std::boolalpha;
+    cout << (rabsim == ranksim) << endl;
   }
   os.close();
   return 0;
