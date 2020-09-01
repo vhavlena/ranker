@@ -127,7 +127,7 @@ int main(int argc, char *argv[])
       string cmdCheck = "java -jar " + RABITEXE + " all.ba " + TMPNAME + " -de";
       try
       {
-        checkRes = Simulations::execCmd(cmdCheck, 25);
+        checkRes = Simulations::execCmdTO(cmdCheck, 25);
         checkRes = renProd.isEmpty() && checkRes == "Included.\n" ? "true" : "false";
       }
       catch(const TimeoutException &)

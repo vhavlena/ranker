@@ -43,7 +43,8 @@ private:
 
 public:
   BuchiAutomaton<std::string, std::string>::StateRelation parseRabitRelation(istringstream & os);
-  static string execCmd(string& cmd, int timeout = 1000);
+  static string execCmdTO(string& cmd, int timeout = 1000);
+  static string execCmd(string& cmd);
 
   template<typename State, typename Symbol>
   Relation<State> directSimulation(BuchiAutomaton<State, Symbol>& ba, State sink)

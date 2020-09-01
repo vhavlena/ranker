@@ -90,5 +90,6 @@ $(OBJ)/BuchiAutomatonSpec.o: $(OBJ)/BuchiAutomaton.o $(OBJ)/RankFunc.o \
 
 clean:
 	rm -f obj/*.o units/test-parser units/test-kv-compl units/test-sch-red-compl \
-	units/test-sch-compl units/test-nfa-prop units/test-process units/test-simulation\
-	ranker
+	units/test-sch-compl units/test-nfa-prop units/test-sch-hard \
+	units/test-simulation units/test-process units/test-simulation ranker \
+	ranker-sim
