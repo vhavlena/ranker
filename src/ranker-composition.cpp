@@ -148,8 +148,7 @@ bool suitCase(BuchiAutomatonSpec& sp)
 
   for(auto t : comp.getCycleClosingStates(slIgnore))
   {
-    if((t.S.size() >= 13 && rankBound[t.S] >= 3) || (t.S.size() >= 10 && rankBound[t.S] >= 4) ||
-      (t.S.size() >= 9 && rankBound[t.S] >= 5) || (t.S.size() >= 8 && rankBound[t.S] >= 6))
+    if((t.S.size() >= 9 && rankBound[t.S] >= 5) || (t.S.size() >= 8 && rankBound[t.S] >= 6))
     {
       return false;
     }
