@@ -8,11 +8,11 @@
 #include <iomanip>
 
 #include "Compl-config.h"
-#include "BuchiAutomaton.h"
-#include "Simulations.h"
-#include "BuchiAutomatonSpec.h"
-#include "BuchiAutomataParser.h"
-#include "Options.h"
+#include "Complement/Options.h"
+#include "Complement/BuchiAutomatonSpec.h"
+#include "Automata/BuchiAutomaton.h"
+#include "Automata/BuchiAutomataParser.h"
+#include "Algorithms/Simulations.h"
 
 using namespace std;
 

@@ -3,9 +3,9 @@
 #include <set>
 #include <map>
 #include <fstream>
-#include "../BuchiAutomaton.h"
-#include "../BuchiAutomatonSpec.h"
-#include "../BuchiAutomataParser.h"
+#include "../Automata/BuchiAutomaton.h"
+#include "../Complement/BuchiAutomatonSpec.h"
+#include "../Automata/BuchiAutomataParser.h"
 
 using namespace std;
 

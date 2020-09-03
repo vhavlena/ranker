@@ -10,9 +10,9 @@
 #include <array>
 
 #include "units-config.h"
-#include "../BuchiAutomaton.h"
-#include "../BuchiAutomataParser.h"
-#include "../Simulations.h"
+#include "../Automata/BuchiAutomaton.h"
+#include "../Automata/BuchiAutomataParser.h"
+#include "../Algorithms/Simulations.h"
 
 using namespace std;
 

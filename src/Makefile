@@ -68,30 +68,33 @@ ranker-composition: ranker-composition.cpp $(OBJ)/AuxFunctions.o \
 	$(OBJ)/Simulations.o   $(OBJ)/AutGraph.o  $(OBJ)/BuchiAutomatonSpec.o
 	$(GCC) $(CPPFLAGS) -o $@ $^
 
-$(OBJ)/BuchiAutomataParser.o: BuchiAutomataParser.cpp BuchiAutomataParser.h \
+$(OBJ)/BuchiAutomataParser.o: Automata/BuchiAutomataParser.cpp \
+	Automata/BuchiAutomataParser.h $(OBJ)/BuchiAutomaton.o
+	$(GCC) $(CPPFLAGS) -c -o $@ $<
+
+$(OBJ)/BuchiAutomaton.o: Automata/BuchiAutomaton.cpp Automata/BuchiAutomaton.h \
+	Complement/StateSch.h Complement/StateKV.h Complement/RankFunc.h \
+	$(OBJ)/AutGraph.o $(OBJ)/AuxFunctions.o
+	$(GCC) $(CPPFLAGS) -c -o $@ $<
+
+$(OBJ)/RankFunc.o: Complement/RankFunc.cpp Complement/RankFunc.h
+	$(GCC) $(CPPFLAGS) -c -o $@ $<
+
+$(OBJ)/Simulations.o: Algorithms/Simulations.cpp Algorithms/Simulations.h \
 	$(OBJ)/BuchiAutomaton.o
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 
-$(OBJ)/BuchiAutomaton.o: BuchiAutomaton.cpp BuchiAutomaton.h StateSch.h \
-	StateKV.h RankFunc.h $(OBJ)/AutGraph.o $(OBJ)/AuxFunctions.o
+$(OBJ)/AutGraph.o: Automata/AutGraph.cpp Automata/AutGraph.h
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 
-$(OBJ)/RankFunc.o: RankFunc.cpp RankFunc.h
+$(OBJ)/AuxFunctions.o: Algorithms/AuxFunctions.cpp Algorithms/AuxFunctions.h
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 
-$(OBJ)/Simulations.o: Simulations.cpp Simulations.h $(OBJ)/BuchiAutomaton.o
+$(OBJ)/BuchiAutomatonSpec.o: Complement/BuchiAutomatonSpec.cpp \
+	Automata/BuchiAutomaton.h Complement/StateKV.h Complement/StateSch.h \
+	Complement/BuchiAutomatonSpec.h Complement/Options.h $(OBJ)/RankFunc.o \
+	$(OBJ)/AuxFunctions.o $(OBJ)/BuchiAutomaton.o
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
-
-$(OBJ)/AutGraph.o: AutGraph.cpp AutGraph.h
-	$(GCC) $(CPPFLAGS) -c -o $@ $<
-
-$(OBJ)/AuxFunctions.o: AuxFunctions.cpp AuxFunctions.h
-	$(GCC) $(CPPFLAGS) -c -o $@ $<
-
-$(OBJ)/BuchiAutomatonSpec.o: $(OBJ)/RankFunc.o $(OBJ)/AuxFunctions.o \
-	$(OBJ)/BuchiAutomaton.o BuchiAutomatonSpec.cpp BuchiAutomaton.h \
-	StateKV.h StateSch.h BuchiAutomatonSpec.h Options.h
-	$(GCC) $(CPPFLAGS) -c BuchiAutomatonSpec.cpp -o $@
 
 clean:
 	rm -f obj/*.o units/test-parser units/test-kv-compl units/test-sch-red-compl \

@@ -10,10 +10,10 @@
 #include <iostream>
 #include <algorithm>
 
-#include "RankFunc.h"
-#include "AuxFunctions.h"
-#include "BuchiAutomaton.h"
+#include "../Algorithms/AuxFunctions.h"
+#include "../Automata/BuchiAutomaton.h"
 #include "StateKV.h"
+#include "RankFunc.h"
 #include "StateSch.h"
 #include "Options.h"
 

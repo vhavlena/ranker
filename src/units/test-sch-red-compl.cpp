@@ -7,11 +7,11 @@
 #include <iomanip>
 
 #include "units-config.h"
-#include "../BuchiAutomaton.h"
-#include "../Simulations.h"
-#include "../BuchiAutomatonSpec.h"
-#include "../BuchiAutomataParser.h"
-#include "../Options.h"
+#include "../Automata/BuchiAutomaton.h"
+#include "../Algorithms/Simulations.h"
+#include "../Complement/BuchiAutomatonSpec.h"
+#include "../Automata/BuchiAutomataParser.h"
+#include "../Complement/Options.h"
 
 using namespace std;
 

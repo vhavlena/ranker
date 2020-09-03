@@ -8,7 +8,7 @@
 #include <string>
 #include <iostream>
 #include <string>
-#include "AuxFunctions.h"
+#include "../Algorithms/AuxFunctions.h"
 
 #include <boost/dynamic_bitset.hpp>
 

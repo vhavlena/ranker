@@ -15,7 +15,7 @@
 #include <string>
 
 #include <boost/algorithm/string.hpp>
-#include "BuchiAutomaton.h"
+#include "../Automata/BuchiAutomaton.h"
 
 using namespace std;
 

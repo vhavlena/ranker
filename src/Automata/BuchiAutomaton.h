@@ -12,9 +12,9 @@
 #include <functional>
 
 #include "AutGraph.h"
-#include "StateKV.h"
-#include "StateSch.h"
-#include "AuxFunctions.h"
+#include "../Complement/StateKV.h"
+#include "../Complement/StateSch.h"
+#include "../Algorithms/AuxFunctions.h"
 
 using std::tuple;
 
