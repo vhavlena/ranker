@@ -216,6 +216,61 @@ std::string BuchiAutomaton<int, int>::toGff()
   return toGffWith(f1, f2);
 }
 
+template <>
+std::string BuchiAutomaton<int, int>::toHOA()
+{
+	// TODO: enter correct symbols (now not retained while doing renameAut)
+	std::string res;
+	size_t alph_size = this->alph.size();
+	res += "HOA: v1\n";
+	res += "States: " + std::to_string(this->states.size()) + "\n";
+	for (auto st : this->initials) {
+		res += "Start: " + std::to_string(st) + "\n";
+	}
+	res += "acc-name: Buchi\n";
+	res += "Acceptance: 1 Inf(0)\n";
+	res += "AP: " + std::to_string(alph_size);
+	std::map<int, size_t> symb_to_pos;
+	size_t symb_cnt = 0;
+	for (auto symb : this->alph) {
+		res += " \"a" +  std::to_string(symb) + "\"";
+		symb_to_pos.insert({symb, symb_cnt++});
+	}
+	res += "\n--BODY--\n";
+	for (auto st : this->states) {
+		res += "State: " + std::to_string(st);
+		if (this->finals.find(st) != this->finals.end()) {
+			res += " {0}";
+		}
+		res += "\n";
+
+		for (auto symb : this->alph) {
+			auto it = this->trans.find({st, symb});
+			if (it == this->trans.end() || it->second.empty()) continue;
+
+			// construct the string for the symbol first (composed of atomic propositions)
+			std::string symb_str;
+			symb_str += "[";
+			bool first = true;
+			for (size_t i = 0; i < alph_size; ++i) {
+				if (first) first = false;
+				else symb_str += " & ";
+
+				if (symb_to_pos[symb] != i) symb_str += "!";
+				symb_str += std::to_string(i);
+			}
+			symb_str += "]";
+
+			for (auto dst : it->second) {
+				res += symb_str + " " + std::to_string(dst) + "\n";
+			}
+		}
+	}
+
+	res += "--END--\n";
+
+	return res;
+}
 
 template <typename State, typename Symbol>
 std::string BuchiAutomaton<State, Symbol>::toGraphwizWith(std::function<std::string(State)>& stateStr,
