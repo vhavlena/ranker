@@ -7,11 +7,11 @@
 #include <iomanip>
 
 #include "units-config.h"
-#include "../BuchiAutomaton.h"
-#include "../Simulations.h"
-#include "../BuchiAutomatonSpec.h"
-#include "../BuchiAutomataParser.h"
-#include "../Options.h"
+#include "../Automata/BuchiAutomaton.h"
+#include "../Algorithms/Simulations.h"
+#include "../Complement/BuchiAutomatonSpec.h"
+#include "../Automata/BuchiAutomataParser.h"
+#include "../Complement/Options.h"
 
 using namespace std;
 
@@ -127,7 +127,7 @@ int main(int argc, char *argv[])
       string cmdCheck = "java -jar " + RABITEXE + " all.ba " + TMPNAME + " -de";
       try
       {
-        checkRes = Simulations::execCmd(cmdCheck, 25);
+        checkRes = Simulations::execCmdTO(cmdCheck, 25);
         checkRes = renProd.isEmpty() && checkRes == "Included.\n" ? "true" : "false";
       }
       catch(const TimeoutException &)

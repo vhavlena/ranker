@@ -8,27 +8,43 @@
 #include <iomanip>
 
 #include "Compl-config.h"
-#include "BuchiAutomaton.h"
-#include "Simulations.h"
-#include "BuchiAutomatonSpec.h"
-#include "BuchiAutomataParser.h"
-#include "Options.h"
+#include "Complement/Options.h"
+#include "Complement/BuchiAutomatonSpec.h"
+#include "Automata/BuchiAutomaton.h"
+#include "Automata/BuchiAutomataParser.h"
+#include "Algorithms/Simulations.h"
 
 using namespace std;
+
+struct Params
+{
+  string output;
+  string input;
+};
 
 int main(int argc, char *argv[])
 {
   BuchiAutomataParser parser;
+  Params params = { .output = "", .input = ""};
   ifstream os;
 
-  if(argc != 2)
+  if(argc == 2)
   {
-    cerr << "Bad arguments" << endl;
+    params.input = string(argv[1]);
+  }
+  else if(argc == 4 && strcmp(argv[2], "-o") == 0)
+  {
+    params.input = string(argv[1]);
+    params.output = string(argv[3]);
+  }
+  else
+  {
+    cerr << "Unrecognized arguments" << endl;
     return 1;
   }
-  string filename(argv[1]);
-  os.open(argv[1]);
 
+  string filename(params.input);
+  os.open(params.input);
   if(os)
   {
     const char* rabitpath_cstr = std::getenv("RABITEXE");
@@ -72,6 +88,19 @@ int main(int argc, char *argv[])
     BuchiAutomaton<int, int> renCompl = comp.renameAutDict(id);
     renCompl.removeUseless();
     cerr << "States: " << renCompl.getStates().size() << "\nTransitions: " << renCompl.getTransitions().size() << endl;
+
+    if(params.output != "")
+    {
+      ofstream ch;
+      ch.open(params.output);
+      if(!ch)
+      {
+        cerr << "Cannot open the output file" << endl;
+        return 1;
+      }
+      ch << renCompl.toString();
+      ch.close();
+    }
 
     cerr << std::fixed;
     cerr << std::setprecision(2);

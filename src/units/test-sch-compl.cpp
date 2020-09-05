@@ -5,10 +5,10 @@
 #include <fstream>
 
 #include "units-config.h"
-#include "../BuchiAutomaton.h"
-#include "../Simulations.h"
-#include "../BuchiAutomatonSpec.h"
-#include "../BuchiAutomataParser.h"
+#include "../Automata/BuchiAutomaton.h"
+#include "../Algorithms/Simulations.h"
+#include "../Complement/BuchiAutomatonSpec.h"
+#include "../Automata/BuchiAutomataParser.h"
 
 using namespace std;
 

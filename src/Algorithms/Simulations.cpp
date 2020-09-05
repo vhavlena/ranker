@@ -45,7 +45,7 @@ BuchiAutomaton<std::string, std::string>::StateRelation Simulations::parseRabitR
 }
 
 
-string Simulations::execCmd(string& cmd, int timeout)
+string Simulations::execCmdTO(string& cmd, int timeout)
 {
   array<char, 128> buffer;
   string result = "";
@@ -65,5 +65,23 @@ string Simulations::execCmd(string& cmd, int timeout)
   {
     throw TimeoutException();
   }
+  return result;
+}
+
+
+string Simulations::execCmd(string& cmd)
+{
+  array<char, 128> buffer;
+  string result = "";
+  auto pipe = popen(cmd.c_str(), "r");
+  if (!pipe)
+  {
+    throw "Process failed";
+  }
+  while (fgets(buffer.data(), buffer.size(), pipe) != nullptr)
+  {
+    result += buffer.data();
+  }
+  pclose(pipe);
   return result;
 }

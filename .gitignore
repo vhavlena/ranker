@@ -13,6 +13,7 @@ src/units/test-simulation
 src/rnk-red-complement
 src/ranker
 src/ranker-sim
+src/ranker-composition
 
 src/units/tmp*
 src/units/all.ba
