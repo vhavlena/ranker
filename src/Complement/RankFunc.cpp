@@ -84,8 +84,8 @@ vector<RankFunc> RankFunc::cartTightProductMap(vector<RankFunc>& s1, vector<std:
         continue;
       tmp.setReachRestr(maxRank);
 
-      if(!RankFunc::checkDirectBackRel(v2, tmp, rel))
-        continue;
+      // if(!RankFunc::checkDirectBackRel(v2, tmp, rel))
+      //   continue;
       if(!RankFunc::checkOddBackRel(v2, tmp, oddRel))
         continue;
       ret.push_back(tmp);
