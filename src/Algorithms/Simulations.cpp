@@ -49,7 +49,8 @@ string Simulations::execCmdTO(string& cmd, int timeout)
 {
   array<char, 128> buffer;
   string result = "";
-  string toutCmd = "gtimeout " + std::to_string(timeout) + "s " + cmd;
+  // string toutCmd = "gtimeout " + std::to_string(timeout) + "s " + cmd;
+  string toutCmd = cmd;
   auto pipe = popen(toutCmd.c_str(), "r");
   if (!pipe)
   {

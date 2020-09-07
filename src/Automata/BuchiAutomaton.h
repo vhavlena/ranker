@@ -110,6 +110,7 @@ public:
   std::string toString();
   std::string toGraphwiz();
   std::string toGff();
+  std::string toHOA();
   BuchiAutomaton<int, int> renameAut(int start = 0);
   BuchiAutomaton<int, int> renameAutDict(map<Symbol, int>& mpsymbol, int start = 0);
 

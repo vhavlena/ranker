@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
     auto t2 = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
 
-    cout << "Generated states: " << comp.getStates().size() << "\nGenerated trans: " << comp.getTransitions().size() << endl;
+    cerr << "Generated states: " << comp.getStates().size() << "\nGenerated trans: " << comp.getTransitions().size() << endl;
 
     map<int, int> id;
     for(auto al : comp.getAlphabet())
@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
 
     BuchiAutomaton<int, int> renCompl = comp.renameAutDict(id);
     renCompl.removeUseless();
-    cout << "States: " << renCompl.getStates().size() << "\nTransitions: " << renCompl.getTransitions().size() << endl;
+    cerr << "States: " << renCompl.getStates().size() << "\nTransitions: " << renCompl.getTransitions().size() << endl;
 
     if(params.output != "")
     {
@@ -102,9 +102,11 @@ int main(int argc, char *argv[])
       ch.close();
     }
 
-    cout << std::fixed;
-    cout << std::setprecision(2);
-    cout << "Time: " << (float)(duration/1000.0) << std::endl;
+    cerr << std::fixed;
+    cerr << std::setprecision(2);
+    cerr << "Time: " << (float)(duration/1000.0) << std::endl;
+
+    cout << renCompl.toHOA();
   }
   os.close();
   return 0;
