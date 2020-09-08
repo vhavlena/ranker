@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
     }
     else
     {
-      ComplOptions opt = { .cutPoint = false, .succEmptyCheck = true, .ROMinState = 8, .ROMinRank = 6, .CacheMaxState = 6, .CacheMaxRank = 8 };
+      ComplOptions opt = { .cutPoint = true, .succEmptyCheck = true, .ROMinState = 8, .ROMinRank = 6, .CacheMaxState = 6, .CacheMaxRank = 8 };
       sp.setComplOptions(opt);
       BuchiAutomaton<StateSch, int> comp;
       try
