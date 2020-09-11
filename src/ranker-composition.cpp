@@ -74,19 +74,23 @@ int main(int argc, char *argv[])
 
     if(!suitCase(sp))
     {
-      ofstream ch;
-      ch.open(GFFTMPNAME);
-      if(!ch)
-      {
-        cerr << "Opening file error" << endl;
-        os.close();
-        ch.close();
-        return 1;
-      }
-      ch << ren.toGff();
-      ch.close();
+      const char* tmpf_name = nullptr;
+      std::FILE* tmpf = nullptr;
 
-      cmd = goalpath + " complement -m piterman -r " + GFFTMPNAME;
+      // open for writing and fail if already exists (the "wx",
+      // see https://en.cppreference.com/w/cpp/io/c/fopen).
+      // This is used to atomically create a file and get its name.
+      while (nullptr == (tmpf = std::fopen(tmpf_name, "wx"))) {
+        #pragma GCC diagnostic push   // tmpnam is deprecated
+        #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+        tmpf_name = std::tmpnam(nullptr);
+        #pragma GCC diagnostic pop
+      }
+
+      std::fputs(ren.toGff().c_str(), tmpf);
+      std::fflush(tmpf);
+
+      cmd = goalpath + " complement -m piterman -r " + tmpf_name;
       string ret = Simulations::execCmd(cmd);
       BuchiAutomaton<string, string> bagff = parser.parseGffFormat(ret);
       renCompl = bagff.renameAut();
