@@ -4,8 +4,7 @@
 
 #include <string>
 
-std::string RABITEXE = "../../ba-complement/rabit/RABIT.jar";
-std::string GOALEXE = "";
-std::string GFFTMPNAME = "tmp124232.gff";
+std::string RABITEXE = "./rabit/RABIT.jar";
+std::string GOALEXE = "./gc";
 
 #endif
