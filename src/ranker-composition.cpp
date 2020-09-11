@@ -45,9 +45,14 @@ int main(int argc, char *argv[])
     return 1;
   }
 
-  string filename(params.input);
-  os.open(params.input);
-  if(os)
+  string filename = params.input;
+  os.open(filename);
+  if(!os)
+  {
+    std::cerr << "Cannot open file " << filename << "\n";
+    return EXIT_FAILURE;
+  }
+  else
   {
     const char* rabitpath_cstr = std::getenv("RABITEXE");
     std::string rabitpath = (nullptr == rabitpath_cstr)? RABITEXE : rabitpath_cstr;
@@ -85,6 +90,7 @@ int main(int argc, char *argv[])
       string ret = Simulations::execCmd(cmd);
       BuchiAutomaton<string, string> bagff = parser.parseGffFormat(ret);
       renCompl = bagff.renameAut();
+      cerr << "Engine: GOAL\n";
     }
     else
     {
@@ -105,11 +111,13 @@ int main(int argc, char *argv[])
       map<int, int> id;
       for(auto al : ren.getAlphabet())
         id[al] = al;
+      cerr << "Generated states: " << comp.getStates().size() << "\nGenerated trans: " << comp.getTransitions().size() << endl;
+      cerr << "Engine: Ranker\n";
       renCompl = comp.renameAutDict(id);
       renCompl.removeUseless();
     }
 
-    cout << "States: " << renCompl.getStates().size() << "\nTransitions: " << renCompl.getTransitions().size() << endl;
+    cerr << "States: " << renCompl.getStates().size() << "\nTransitions: " << renCompl.getTransitions().size() << endl;
 
     if(params.output != "")
     {
@@ -123,6 +131,8 @@ int main(int argc, char *argv[])
       ch << renCompl.toString();
       ch.close();
     }
+
+    cout << renCompl.toHOA();
   }
   os.close();
   return 0;
