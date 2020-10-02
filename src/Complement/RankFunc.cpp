@@ -464,3 +464,71 @@ vector<RankFunc> RankFunc::getRORanks(int ranks, std::set<int>& states, std::set
   }
   return ret;
 }
+
+
+vector<RankFunc> RankFunc::cartTightProductMapPure(vector<RankFunc>& s1, vector<std::pair<int, int> >& s2,
+    int rem, BackRel& rel, BackRel& oddRel, int max, map<int, int>& reachRes, int reachMax, bool useInverse)
+{
+  vector<RankFunc> ret;
+  int maxRank;
+  for(const auto& v1 : s1)
+  {
+    for(const auto& v2 : s2)
+    {
+      RankFunc tmp(v1);
+      tmp.addPair(v2, useInverse);
+      if(rem < tmp.remTightCount())
+        continue;
+      if(max != -1 && rem == 0 && tmp.getMaxRank() != max)
+        continue;
+
+      maxRank = std::min(tmp.getReachRestr(), v2.second + 2*(reachMax - reachRes[v2.first]));
+      if(maxRank < tmp.getMaxRank())
+        continue;
+      tmp.setReachRestr(maxRank);
+
+      if(!RankFunc::checkDirectBackRel(v2, tmp, rel))
+        continue;
+      if(!RankFunc::checkOddBackRel(v2, tmp, oddRel))
+        continue;
+      ret.push_back(tmp);
+    }
+  }
+  return ret;
+}
+
+
+vector<RankFunc> RankFunc::cartTightProductMapListPure(RankConstr slist, BackRel& rel, BackRel& oddRel,
+    int max, map<int, int>& reachRes, int reachMax, bool useInverse)
+{
+  vector<RankFunc> ret;
+  if(slist.size() == 0)
+    return ret;
+
+  for(auto p : slist[0])
+  {
+    RankFunc sing(map<int, int>({p}), useInverse);
+    sing.setReachRestr(p.second + 2*(reachMax - reachRes[p.first]));
+    ret.push_back(sing);
+  }
+  for(int i = 1; i < (int)slist.size(); i++)
+  {
+    ret = RankFunc::cartTightProductMap(ret, slist[i], slist.size() - i - 1, rel, oddRel,
+      max, reachRes, reachMax, useInverse);
+  }
+  return ret;
+}
+
+
+vector<RankFunc> RankFunc::tightFromRankConstrPure(RankConstr constr, BackRel& rel, BackRel& oddRel,
+    map<int, int>& reachRes, int reachMax, bool useInverse)
+{
+  return RankFunc::cartTightProductMapListPure(constr, rel, oddRel, -1, reachRes, reachMax, useInverse);
+}
+
+
+vector<RankFunc> RankFunc::tightSuccFromRankConstrPure(RankConstr constr, BackRel& rel, BackRel& oddRel,
+    int max, map<int, int>& reachRes, int reachMax, bool useInverse)
+{
+  return RankFunc::cartTightProductMapListPure(constr, rel, oddRel, max, reachRes, reachMax, useInverse);
+}

@@ -49,6 +49,13 @@ private:
   static vector<RankFunc> cartTightProductMapListOdd(RankConstr slist, BackRel& rel, BackRel& oddRel,
       int max, map<int, int>& reachRes, int reachMax, bool useInverse);
 
+
+  static vector<RankFunc> cartTightProductMapPure(vector<RankFunc>& s1, vector<std::pair<int, int> >& s2, int rem,
+      BackRel& rel, BackRel& oddRel, int max, map<int, int>& reachRes, int reachMax, bool useInverse);
+  static vector<RankFunc> cartTightProductMapListPure(RankConstr slist, BackRel& rel, BackRel& oddRel, int max,
+      map<int, int>& reachRes, int reachMax, bool useInverse);
+
+
 public:
   RankFunc() : map<int,int>(), oddStates(), inverse(), ranks(), tight()
   {
@@ -111,6 +118,9 @@ public:
   static vector<RankFunc> tightFromRankConstr(RankConstr constr, BackRel& rel, BackRel& oddRel, map<int, int>& reachRes, int reachMax, bool useInverse);
   static vector<RankFunc> tightFromRankConstrOdd(RankConstr constr, BackRel& rel, BackRel& oddRel, map<int, int>& reachRes, int reachMax, bool useInverse);
   static vector<RankFunc> tightSuccFromRankConstr(RankConstr constr, BackRel& rel, BackRel& oddRel, int max, map<int, int>& reachRes, int reachMax, bool useInverse);
+
+  static vector<RankFunc> tightFromRankConstrPure(RankConstr constr, BackRel& rel, BackRel& oddRel, map<int, int>& reachRes, int reachMax, bool useInverse);
+  static vector<RankFunc> tightSuccFromRankConstrPure(RankConstr constr, BackRel& rel, BackRel& oddRel, int max, map<int, int>& reachRes, int reachMax, bool useInverse);
 
   static vector<RankFunc> getRORanks(int ranks, std::set<int>& states, std::set<int>& fin, bool useInverse);
 };

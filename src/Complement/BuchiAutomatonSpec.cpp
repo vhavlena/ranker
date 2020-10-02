@@ -1182,3 +1182,290 @@ map<int, int> BuchiAutomatonSpec::getMaxReachSizeInd()
   }
   return ret;
 }
+
+
+void BuchiAutomatonSpec::getSchRanksTightOpt(vector<RankFunc>& out, vector<int>& max,
+    set<int>& states, StateSch& macrostate,
+    map<int, int> reachCons, int reachMax, BackRel& dirRel, BackRel& oddRel)
+{
+  RankConstr constr;
+  map<int, int> sngmap;
+
+  set<int> fin = getFinals();
+  for(int st : states)
+  {
+    vector<std::pair<int, int> > singleConst;
+    if(fin.find(st) == fin.end())
+    {
+      for(int i = 0; i < max[st]; i+= 1)
+        singleConst.push_back(std::make_pair(st, i));
+    }
+    else
+    {
+      for(int i = 0; i < max[st]; i+= 2)
+        singleConst.push_back(std::make_pair(st, i));
+    }
+
+    sngmap[st] = max[st];
+    singleConst.push_back(std::make_pair(st, max[st]));
+    constr.push_back(singleConst);
+  }
+
+  out = RankFunc::tightSuccFromRankConstrPure(constr, dirRel, oddRel, macrostate.f.getMaxRank(),
+    reachCons, reachMax, true);
+}
+
+
+vector<StateSch> BuchiAutomatonSpec::succSetSchTightOpt(StateSch& state, int symbol,
+    map<int, int> reachCons, map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel)
+{
+  vector<StateSch> ret;
+  set<int> sprime;
+  set<int> oprime;
+  int iprime;
+  vector<int> maxRank(getStates().size(), state.f.getMaxRank());
+  map<int, set<int> > succ;
+  auto fin = getFinals();
+
+  for(int st : state.S)
+  {
+    set<int> dst = getTransitions()[std::make_pair(st, symbol)];
+    for(int d : dst)
+    {
+      maxRank[d] = std::min(maxRank[d], state.f[st]);
+    }
+    sprime.insert(dst.begin(), dst.end());
+    if(fin.find(st) == fin.end())
+      succ[st] = dst;
+
+    if(state.f.find(st)->second == 0 && reachCons[st] > 0)
+    {
+      return ret;
+    }
+    if(dst.size() == 0 && state.f.find(st)->second != 0)
+    {
+      return ret;
+    }
+  }
+
+  if(this->rankBound[state.S]*2-1 < state.f.getMaxRank() || this->rankBound[sprime]*2-1 < state.f.getMaxRank())
+  {
+    return ret;
+  }
+
+  vector<int> rnkBnd;
+  for(int i : sprime)
+  {
+    rnkBnd.push_back(maxRank[i]);
+  }
+
+  for(int st : sprime)
+  {
+    if(fin.find(st) != fin.end() && maxRank[st] % 2 != 0)
+      maxRank[st] -= 1;
+  }
+  if(state.O.size() == 0)
+  {
+    iprime = (state.i + 2) % (state.f.getMaxRank() + 1);
+  }
+  else
+  {
+    iprime = state.i;
+    oprime = succSet(state.O, symbol);
+  }
+
+  int maxReachAct = maxReach[sprime];
+  vector<RankFunc> ranks;
+  vector<RankFunc> tmp;
+  set<int> inverseRank;
+
+  if(!getRankSuccCache(tmp, state, symbol))
+  {
+    getSchRanksTightOpt(tmp, maxRank, sprime, state,
+        reachCons, maxReachAct, dirRel, oddRel);
+    this->rankCache[{state.S, symbol, state.f.getMaxRank()}].push_back({state.f, tmp});
+  }
+
+  for (auto& r : tmp)
+  {
+    if(!r.isSuccValid(state.f, succ) ||  !r.isMaxRankValid(rnkBnd))
+      continue;
+    set<int> oprime_tmp;
+    inverseRank = r.inverseRank(iprime);
+    if (state.O.size() == 0)
+      oprime_tmp = inverseRank;
+    else
+      std::set_intersection(oprime.begin(),oprime.end(),inverseRank.begin(),
+        inverseRank.end(), std::inserter(oprime_tmp, oprime_tmp.begin()));
+    ret.push_back({sprime, oprime_tmp, r, iprime, true});
+  }
+  return ret;
+}
+
+
+
+vector<StateSch> BuchiAutomatonSpec::succSetSchStartOpt(set<int>& state, int rankBound,
+    map<int, int> reachCons, map<DFAState, int> maxReach, BackRel& dirRel,
+    BackRel& oddRel)
+{
+  vector<StateSch> ret;
+  set<int> sprime = state;
+  set<int> schfinal;
+  set<int> fin = getFinals();
+  std::set_difference(sprime.begin(),sprime.end(),fin.begin(),
+    fin.end(), std::inserter(schfinal, schfinal.begin()));
+  int m = std::min((int)(2*schfinal.size() - 1), 2*rankBound - 1);
+  vector<int> maxRank(getStates().size(), m);
+
+  for(int st : sprime)
+  {
+    if(fin.find(st) != fin.end() && maxRank[st] % 2 != 0)
+      maxRank[st] -= 1;
+  }
+
+  int reachMaxAct = maxReach[sprime];
+  RankConstr constr = rankConstr(maxRank, sprime);
+  for(const RankFunc& item : RankFunc::tightFromRankConstrPure(constr, dirRel, oddRel, reachCons, reachMaxAct, true))
+  {
+    ret.push_back({sprime, set<int>(), item, 0, true});
+  }
+  return ret;
+}
+
+
+
+
+BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchOpt()
+{
+  std::stack<StateSch> stack;
+  set<StateSch> comst;
+  set<StateSch> initials;
+  set<StateSch> finals;
+  vector<StateSch> succ;
+  set<int> alph = getAlphabet();
+  map<std::pair<StateSch, int>, set<StateSch> > mp;
+  map<std::pair<StateSch, int>, vector<StateSch> > mpVect;
+  map<std::pair<StateSch, int>, set<StateSch> >::iterator it;
+
+  // NFA part of the Schewe construction
+  BuchiAutomaton<StateSch, int> comp = this->complementSchNFA(this->getInitials());
+  map<std::pair<StateSch, int>, set<StateSch>> prev = comp.getReverseTransitions();
+  //std::cout << comp.toGraphwiz() << std::endl;
+
+  set<StateSch> slIgnore = this->nfaSlAccept(comp);
+  set<pair<DFAState,int>> slNonEmpty = this->nfaSingleSlNoAccept(comp);
+  set<StateSch> ignoreAll;
+  for(const auto& t : slNonEmpty)
+    ignoreAll.insert({t.first, set<int>(), RankFunc(), 0, false});
+  ignoreAll.insert(slIgnore.begin(), slIgnore.end());
+  set<StateSch> nfaStates = comp.getStates();
+  comst.insert(nfaStates.begin(), nfaStates.end());
+
+  // Compute reachability restrictions
+  map<int, int> reachCons = this->getMinReachSize();
+  map<DFAState, int> maxReach = this->getMaxReachSize(comp, slIgnore);
+
+  mp.insert(comp.getTransitions().begin(), comp.getTransitions().end());
+  finals = set<StateSch>(comp.getFinals());
+  // Compute states necessary to generate in the tight part
+  set<StateSch> tightStart = comp.getCycleClosingStates(ignoreAll);
+  for(const StateSch& tmp : tightStart)
+  {
+    if(tmp.S.size() > 0)
+    {
+      stack.push(tmp);
+    }
+  }
+
+  int newState = this->getTransitions().size(); //Assumes numbered states: from 0, no gaps
+  map<pair<DFAState,int>, StateSch> slTrans;
+  for(const auto& pr : slNonEmpty)
+  {
+    //std::cout << StateSch::printSet(pr.first) << std::endl;
+    StateSch ns = { set<int>({newState}), set<int>(), RankFunc(), 0, false };
+    StateSch src = { pr.first, set<int>(), RankFunc(), 0, false };
+    slTrans[pr] = ns;
+    mp[{ns,pr.second}] = set<StateSch>({ns});
+    mp[{src, pr.second}].insert(ns);
+    finals.insert(ns);
+    comst.insert(ns);
+    newState++;
+  }
+
+
+  // Compute rank upper bound on the macrostates
+  this->rankBound = this->getRankBound(comp, ignoreAll, maxReach, reachCons);
+
+  StateSch init = {getInitials(), set<int>(), RankFunc(), 0, false};
+  initials.insert(init);
+
+  set<int> cl;
+  this->computeRankSim(cl);
+
+  BackRel dirRel = createBackRel(this->getDirectSim());
+  BackRel oddRel = createBackRel(this->getOddRankSim());
+
+  bool cnt = true;
+
+  while(stack.size() > 0)
+  {
+    StateSch st = stack.top();
+    stack.pop();
+    if(isSchFinal(st))
+      finals.insert(st);
+    cnt = true;
+
+    for(int sym : alph)
+    {
+      auto pr = std::make_pair(st, sym);
+      set<StateSch> dst;
+      if(st.tight)
+      {
+        succ = succSetSchTightOpt(st, sym, reachCons, maxReach, dirRel, oddRel);
+      }
+      else
+      {
+        succ = succSetSchStartOpt(st.S, rankBound[st.S], reachCons, maxReach, dirRel, oddRel);
+        //cout << st.toString() << " : " << succ.size() << endl;
+        cnt = false;
+      }
+      for (const StateSch& s : succ)
+      {
+        dst.insert(s);
+        if(comst.find(s) == comst.end())
+        {
+          stack.push(s);
+          comst.insert(s);
+        }
+      }
+
+      auto it = slTrans.find({st.S, sym});
+      if(it != slTrans.end())
+      {
+        dst.insert(it->second);
+      }
+      if(!st.tight)
+      {
+        if(!cnt)
+        {
+          for(const auto& a : this->getAlphabet())
+          {
+            for(const auto& d : prev[{st, a}])
+              mp[{d,a}].insert(dst.begin(), dst.end());
+          }
+        }
+        else
+        {
+          mp[pr].insert(dst.begin(), dst.end());
+        }
+      }
+      else
+        mp[pr] = dst;
+      if(!cnt) break;
+    }
+    //std::cout << comst.size() << " : " << stack.size() << std::endl;
+  }
+
+  return BuchiAutomaton<StateSch, int>(comst, finals,
+    initials, mp, alph);
+}

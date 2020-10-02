@@ -64,6 +64,15 @@ protected:
 
   bool acceptSl(StateSch& state, vector<int>& alp);
 
+
+  void getSchRanksTightOpt(vector<RankFunc>& out, vector<int>& max,
+      set<int>& states, StateSch& macrostate,
+      map<int, int> reachCons, int reachMax, BackRel& dirRel, BackRel& oddRel);
+  vector<StateSch> succSetSchStartOpt(set<int>& state, int rankBound, map<int, int> reachCons,
+      map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel);
+  vector<StateSch> succSetSchTightOpt(StateSch& state, int symbol, map<int, int> reachCons,
+      map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel);
+
 public:
   BuchiAutomatonSpec(BuchiAutomaton<int, int> &t) : BuchiAutomaton<int, int>(t), rankBound(), rankCache()
   {
@@ -74,6 +83,7 @@ public:
   BuchiAutomaton<StateSch, int> complementSch();
   BuchiAutomaton<StateSch, int> complementSchReduced();
   BuchiAutomaton<StateSch, int> complementSchNFA(set<int>& start);
+  BuchiAutomaton<StateSch, int> complementSchOpt();
 
   set<StateSch> nfaSlAccept(BuchiAutomaton<StateSch, int>& nfaSchewe);
   set<pair<DFAState,int>> nfaSingleSlNoAccept(BuchiAutomaton<StateSch, int>& nfaSchewe);
