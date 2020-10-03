@@ -73,6 +73,11 @@ ranker-composition: ranker-composition.cpp $(OBJ)/AuxFunctions.o \
 	$(OBJ)/Simulations.o   $(OBJ)/AutGraph.o  $(OBJ)/BuchiAutomatonSpec.o
 	$(GCC) $(CPPFLAGS) -o $@ $^
 
+ranker-tight: ranker-tight.cpp $(OBJ)/AuxFunctions.o \
+	$(OBJ)/RankFunc.o $(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomataParser.o \
+	$(OBJ)/Simulations.o   $(OBJ)/AutGraph.o  $(OBJ)/BuchiAutomatonSpec.o
+	$(GCC) $(CPPFLAGS) -o $@ $^
+
 $(OBJ)/BuchiAutomataParser.o: Automata/BuchiAutomataParser.cpp \
 	Automata/BuchiAutomataParser.h $(OBJ)/BuchiAutomaton.o
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
