@@ -3,7 +3,7 @@ CPPFLAGS=-std=c++17 -O2 -Wall -Wextra #-Wl,-no_pie
 OBJ=obj
 GCC=g++
 
-complement: ranker ranker-tight
+complement: ranker ranker-tight ranker-composition
 
 test: test-parser test-kv-compl test-sch-compl test-process test-nfa-prop \
 	test-sch-red-compl test-sch-hard test-simulation
