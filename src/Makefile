@@ -3,7 +3,7 @@ CPPFLAGS=-std=c++17 -O2 -Wall -Wextra #-Wl,-no_pie
 OBJ=obj
 GCC=g++
 
-complement: ranker rankercomposition
+complement: ranker ranker-tight ranker-composition
 
 test: test-parser test-kv-compl test-sch-compl test-process test-nfa-prop \
 	test-sch-red-compl test-sch-hard test-simulation
@@ -68,7 +68,7 @@ ranker-sim: ranker-sim.cpp $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/RankFunc.o $(OBJ)/AutGraph.o $(OBJ)/AuxFunctions.o
 	$(GCC) $(CPPFLAGS) -o $@ $^
 
-rankercomposition: ranker-composition.cpp $(OBJ)/AuxFunctions.o \
+ranker-composition: ranker-composition.cpp $(OBJ)/AuxFunctions.o \
 	$(OBJ)/RankFunc.o $(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/Simulations.o   $(OBJ)/AutGraph.o  $(OBJ)/BuchiAutomatonSpec.o
 	$(GCC) $(CPPFLAGS) -o ranker-composition $^
