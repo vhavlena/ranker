@@ -47,15 +47,17 @@ int main(int argc, char *argv[])
   os.open(params.input);
   if(os)
   {
-    const char* rabitpath_cstr = std::getenv("RABITEXE");
-    std::string rabitpath = (nullptr == rabitpath_cstr)? RABITEXE : rabitpath_cstr;
+    // const char* rabitpath_cstr = std::getenv("RABITEXE");
+    // std::string rabitpath = (nullptr == rabitpath_cstr)? RABITEXE : rabitpath_cstr;
 
     BuchiAutomaton<string, string> ba = parser.parseBaFormat(os);
-    string cmd = "java -jar " + rabitpath + " " + filename + " " + filename + " -dirsim";
+    //string cmd = "java -jar " + rabitpath + " " + filename + " " + filename + " -dirsim";
     Simulations sim;
-    istringstream strr(Simulations::execCmd(cmd));
-
-    ba.setDirectSim(sim.parseRabitRelation(strr));
+    // istringstream strr(Simulations::execCmd(cmd));
+    //
+    // ba.setDirectSim(sim.parseRabitRelation(strr));
+    auto ranksim = sim.directSimulation<string, string>(ba, "-1");
+    ba.setDirectSim(ranksim);
     auto cl = set<std::string>();
     auto t1 = std::chrono::high_resolution_clock::now();
 
