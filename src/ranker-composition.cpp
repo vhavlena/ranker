@@ -54,17 +54,19 @@ int main(int argc, char *argv[])
   }
   else
   {
-    const char* rabitpath_cstr = std::getenv("RABITEXE");
-    std::string rabitpath = (nullptr == rabitpath_cstr)? RABITEXE : rabitpath_cstr;
+    // const char* rabitpath_cstr = std::getenv("RABITEXE");
+    // std::string rabitpath = (nullptr == rabitpath_cstr)? RABITEXE : rabitpath_cstr;
     const char* goalpath_cstr = std::getenv("GOALEXE");
     std::string goalpath = (nullptr == goalpath_cstr)? GOALEXE : goalpath_cstr;
 
     BuchiAutomaton<string, string> ba = parser.parseBaFormat(os);
-    string cmd = "java -jar " + rabitpath + " " + filename + " " + filename + " -dirsim";
+    //string cmd = "java -jar " + rabitpath + " " + filename + " " + filename + " -dirsim";
     Simulations sim;
-    istringstream strr(Simulations::execCmd(cmd));
-
-    ba.setDirectSim(sim.parseRabitRelation(strr));
+    // istringstream strr(Simulations::execCmd(cmd));
+    //
+    // ba.setDirectSim(sim.parseRabitRelation(strr));
+    auto ranksim = sim.directSimulation<string, string>(ba, "-1");
+    ba.setDirectSim(ranksim);
     auto cl = set<std::string>();
 
     ba.computeRankSim(cl);
@@ -90,7 +92,7 @@ int main(int argc, char *argv[])
       std::fputs(ren.toGff().c_str(), tmpf);
       std::fflush(tmpf);
 
-      cmd = goalpath + " complement -m piterman -r " + tmpf_name;
+      string cmd = goalpath + " complement -m piterman -r " + tmpf_name;
       string ret = Simulations::execCmd(cmd);
       BuchiAutomaton<string, string> bagff = parser.parseGffFormat(ret);
       renCompl = bagff.renameAut();
