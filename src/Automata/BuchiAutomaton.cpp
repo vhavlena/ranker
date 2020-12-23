@@ -254,7 +254,7 @@ std::string BuchiAutomaton<int, int>::toHOA()
   for (auto st : this->states) {
     size_t seq_st = state_to_seq[st];
     res += "State: " + std::to_string(seq_st);
-    if (this->finals.find(seq_st) != this->finals.end()) {
+    if (this->finals.find(st) != this->finals.end()) {
       res += " {0}";
     }
     res += "\n";
