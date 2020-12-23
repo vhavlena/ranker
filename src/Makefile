@@ -83,7 +83,7 @@ $(OBJ)/BuchiAutomataParser.o: Automata/BuchiAutomataParser.cpp \
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 
 $(OBJ)/BuchiAutomaton.o: Automata/BuchiAutomaton.cpp Automata/BuchiAutomaton.h \
-	Complement/StateSch.h Complement/StateKV.h Complement/RankFunc.h \
+	Complement/StateSch.h Complement/StateKV.h Complement/RankFunc.h Automata/APSymbol.h \
 	$(OBJ)/AutGraph.o $(OBJ)/AuxFunctions.o
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 

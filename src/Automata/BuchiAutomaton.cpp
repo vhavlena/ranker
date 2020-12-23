@@ -1111,3 +1111,4 @@ template class BuchiAutomaton<tuple<int, int, bool>, int>;
 template class BuchiAutomaton<std::string, std::string>;
 template class BuchiAutomaton<StateKV, int>;
 template class BuchiAutomaton<StateSch, int>;
+template class BuchiAutomaton<APSymbol, int>;

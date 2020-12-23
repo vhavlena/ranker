@@ -15,6 +15,7 @@
 #include "../Complement/StateKV.h"
 #include "../Complement/StateSch.h"
 #include "../Algorithms/AuxFunctions.h"
+#include "APSymbol.h"
 
 using std::tuple;
 

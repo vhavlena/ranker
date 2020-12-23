@@ -161,3 +161,39 @@ Transition<string, string> BuchiAutomataParser::parseGffTransition(pt::ptree& tr
   }
   return ret;
 }
+
+BuchiAutomaton<int, APSymbol> BuchiAutomataParser::parseHoaFormat(ifstream & os)
+{
+  set<int> states;
+  set<int> ini;
+  set<int> fins;
+  BuchiAutomaton<int, APSymbol>::Transitions trans;
+  set<APSymbol> syms;
+
+  string line;
+  while(getline (os, line))
+  {
+    if(line.rfind("States:", 0) == 0)
+    {
+      //states
+    }
+    else if(line.rfind("Start:", 0) == 0)
+    {
+      //initial states
+    }
+    else if(line.rfind("AP:", 0) == 0)
+    {
+      //alphabet
+    }
+    else if(line.rfind("Acceptance:", 0) == 0)
+    {
+      //acceptance set
+    }
+    else if(line.rfind("acc-name:", 0) == 0)
+    {
+      //type of automaton
+    }
+  }
+
+  return BuchiAutomaton<int, APSymbol>(states, fins, ini, trans, syms);
+}
