@@ -8,6 +8,9 @@ struct APSymbol
 {
   boost::dynamic_bitset<> ap;
 
+  APSymbol() : ap() {};
+  APSymbol(int cnt) : ap(cnt) {};
+
   bool operator==(const APSymbol other) const
   {
     return ap == other.ap;

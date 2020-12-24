@@ -193,7 +193,127 @@ BuchiAutomaton<int, APSymbol> BuchiAutomataParser::parseHoaFormat(ifstream & os)
     {
       //type of automaton
     }
+    else if(line.rfind("--BODY--", 0) == 0)
+    {
+
+    }
   }
 
   return BuchiAutomaton<int, APSymbol>(states, fins, ini, trans, syms);
+}
+
+
+Transition<int, APSymbol> BuchiAutomataParser::parseHoaTransition(int srcstate, int states, string& line)
+{
+  boost::regex e("\\[([!&\\|\\s0-9]+)\\]\\s+([0-9]+)");
+  boost::smatch what;
+  if(boost::regex_match(line, what, e))
+  {
+    for(unsigned int i = 0; i < what.size(); ++i)
+      cout << what[i] << endl;
+
+    string tr = what[1];
+    int dest = std::stoi(what[2]);
+    return {srcstate, dest, parseHoaExpression(tr, states)};
+  }
+  else
+  {
+    throw ParserException("Unsupported format of transitions");
+  }
+}
+
+
+Delta<int, APSymbol> BuchiAutomataParser::parseHoaBody(int states, ifstream & os, vector<int>& fin)
+{
+  Delta<int, APSymbol> trans;
+  int src;
+  string line;
+  while(getline (os, line))
+  {
+    if(line.rfind("--END--", 0) == 0)
+    {
+      return trans;
+    }
+    else if(line.rfind("State:", 0) == 0)
+    {
+      vector<string> tokens;
+      boost::split(tokens, string(line.begin()+7, line.end()), boost::is_any_of("\n\t "));
+      bool first = true;
+      for(const string& t : tokens)
+      {
+        if(t.size() == 0)
+          continue;
+
+        if(first)
+        {
+          first = false;
+          src = std::stoi(t);
+        }
+        else if(t == "{0}")
+        {
+          fin.push_back(src);
+        }
+        else
+        {
+          throw ParserException("Unsupported state format");
+        }
+      }
+    }
+    else
+    {
+      Transition<int, APSymbol> tr = parseHoaTransition(src, states, line);
+      auto pr = std::make_pair(src, tr.symbol);
+      if(trans.find(pr) == trans.end())
+      {
+        trans[pr] = {tr.to};
+      }
+      else
+      {
+        trans[pr].insert(tr.to);
+      }
+    }
+  }
+  return trans;
+}
+
+
+APSymbol BuchiAutomataParser::parseHoaExpression(string& line, int states)
+{
+  //remove whitespaces
+  line.erase(remove_if(line.begin(), line.end(), ::isspace), line.end());
+  if(line.find("|") != string::npos)
+  {
+    throw ParserException("Only transitions containing & are allowed");
+  }
+
+  APSymbol symbol(states);
+  vector<char> symvar(states, 0);
+  int stateid;
+  vector<string> tokens;
+  boost::split(tokens, line, boost::is_any_of("&"));
+  for(const string& t : tokens)
+  {
+    if(t.size() == 0)
+      continue;
+    if(t[0] == '!')
+    {
+      string statestr(t.begin()+1, t.end());
+      stateid = stoi(statestr);
+      symvar[stateid] = 2;
+    }
+    else
+    {
+      stateid = stoi(t);
+      symvar[stateid] = 1;
+    }
+  }
+
+  for(unsigned int i = 0; i < symvar.size(); i++)
+  {
+    if(symvar[i] == 0)
+      throw ParserException("Only simple transitions are allowed");
+    if(symvar[i] == 1)
+      symbol.ap.set(i);
+  }
+  return symbol;
 }

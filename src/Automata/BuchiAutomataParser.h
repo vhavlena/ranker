@@ -6,10 +6,13 @@
 #include <string>
 #include <streambuf>
 #include <exception>
+#include <algorithm>
+
 #include <boost/algorithm/string.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/optional/optional.hpp>
+#include <boost/regex.hpp>
 
 #include "BuchiAutomaton.h"
 #include "APSymbol.h"
@@ -40,6 +43,10 @@ private:
   Transition<string, string> parseBATransition(string line);
   Transition<string, string> parseGffTransition(pt::ptree& tr);
   BuchiAutomaton<string, string> parseGffTree(pt::ptree& tr);
+
+  Transition<int, APSymbol> parseHoaTransition(int srcstate, int states, string& line);
+  Delta<int, APSymbol> parseHoaBody(int states, ifstream & os, vector<int>& fin);
+  APSymbol parseHoaExpression(string & line, int states);
 
 };
 

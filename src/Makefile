@@ -2,6 +2,7 @@
 CPPFLAGS=-std=c++17 -O2 -Wall -Wextra #-Wl,-no_pie
 OBJ=obj
 GCC=g++
+SUFF=-lboost_regex
 
 complement: ranker ranker-tight ranker-composition
 
@@ -11,72 +12,72 @@ test: test-parser test-kv-compl test-sch-compl test-process test-nfa-prop \
 test-parser: units/test-parser.cpp $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomatonSpec.o $(OBJ)/RankFunc.o \
 	$(OBJ)/AutGraph.o $(OBJ)/Simulations.o $(OBJ)/AuxFunctions.o
-	$(GCC) $(CPPFLAGS) -o units/$@ $^
+	$(GCC) $(CPPFLAGS) -o units/$@ $^ $(SUFF)
 
 test-kv-compl: units/test-kv-compl.cpp $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomatonSpec.o $(OBJ)/RankFunc.o \
 	$(OBJ)/AutGraph.o $(OBJ)/Simulations.o $(OBJ)/AuxFunctions.o
-	$(GCC) $(CPPFLAGS) -o units/$@ $^
+	$(GCC) $(CPPFLAGS) -o units/$@ $^ $(SUFF)
 
 test-sch-compl: units/test-sch-compl.cpp $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomatonSpec.o $(OBJ)/RankFunc.o \
 	$(OBJ)/AutGraph.o $(OBJ)/Simulations.o $(OBJ)/AuxFunctions.o
-	$(GCC) $(CPPFLAGS) -o units/$@ $^
+	$(GCC) $(CPPFLAGS) -o units/$@ $^ $(SUFF)
 
 compl-check: units/compl-check.cpp $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomatonSpec.o $(OBJ)/RankFunc.o \
 	$(OBJ)/AutGraph.o $(OBJ)/Simulations.o $(OBJ)/AuxFunctions.o
-	$(GCC) $(CPPFLAGS) -o units/$@ $^
+	$(GCC) $(CPPFLAGS) -o units/$@ $^ $(SUFF)
 
 test-sch-hard: units/test-sch-hard.cpp $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomatonSpec.o $(OBJ)/RankFunc.o \
 	$(OBJ)/AutGraph.o $(OBJ)/Simulations.o $(OBJ)/AuxFunctions.o
-	$(GCC) $(CPPFLAGS) -o units/$@ $^
+	$(GCC) $(CPPFLAGS) -o units/$@ $^ $(SUFF)
 
 test-sch-red-compl: units/test-sch-red-compl.cpp $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomatonSpec.o $(OBJ)/RankFunc.o \
 	$(OBJ)/AutGraph.o $(OBJ)/Simulations.o $(OBJ)/AuxFunctions.o
-	$(GCC) $(CPPFLAGS) -o units/$@ $^
+	$(GCC) $(CPPFLAGS) -o units/$@ $^ $(SUFF)
 
 test-sch-opt-compl: units/test-sch-opt-compl.cpp $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomatonSpec.o $(OBJ)/RankFunc.o \
 	$(OBJ)/AutGraph.o $(OBJ)/Simulations.o $(OBJ)/AuxFunctions.o
-	$(GCC) $(CPPFLAGS) -o units/$@ $^
+	$(GCC) $(CPPFLAGS) -o units/$@ $^ $(SUFF)
 
 test-nfa-prop: units/test-nfa-prop.cpp $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomatonSpec.o $(OBJ)/RankFunc.o \
 	$(OBJ)/AutGraph.o $(OBJ)/Simulations.o $(OBJ)/AuxFunctions.o
-	$(GCC) $(CPPFLAGS) -o units/$@ $^
+	$(GCC) $(CPPFLAGS) -o units/$@ $^ $(SUFF)
 
 test-process: units/test-process.cpp $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomatonSpec.o $(OBJ)/RankFunc.o \
 	$(OBJ)/AutGraph.o $(OBJ)/Simulations.o $(OBJ)/AuxFunctions.o
-	$(GCC) $(CPPFLAGS) -o units/$@ $^
+	$(GCC) $(CPPFLAGS) -o units/$@ $^ $(SUFF)
 
 test-simulation: units/test-simulation.cpp $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomatonSpec.o $(OBJ)/RankFunc.o \
 	$(OBJ)/AutGraph.o $(OBJ)/Simulations.o $(OBJ)/AuxFunctions.o
-	$(GCC) $(CPPFLAGS) -o units/$@ $^
+	$(GCC) $(CPPFLAGS) -o units/$@ $^ $(SUFF)
 
 ranker: ranker.cpp $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomatonSpec.o $(OBJ)/RankFunc.o \
 	$(OBJ)/AutGraph.o $(OBJ)/Simulations.o $(OBJ)/AuxFunctions.o
-	$(GCC) $(CPPFLAGS) -o $@ $^
+	$(GCC) $(CPPFLAGS) -o $@ $^ $(SUFF)
 
 ranker-sim: ranker-sim.cpp $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/BuchiAutomaton.o  $(OBJ)/Simulations.o $(OBJ)/BuchiAutomatonSpec.o \
 	$(OBJ)/RankFunc.o $(OBJ)/AutGraph.o $(OBJ)/AuxFunctions.o
-	$(GCC) $(CPPFLAGS) -o $@ $^
+	$(GCC) $(CPPFLAGS) -o $@ $^ $(SUFF)
 
 ranker-composition: ranker-composition.cpp $(OBJ)/AuxFunctions.o \
 	$(OBJ)/RankFunc.o $(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/Simulations.o   $(OBJ)/AutGraph.o  $(OBJ)/BuchiAutomatonSpec.o
-	$(GCC) $(CPPFLAGS) -o ranker-composition $^
+	$(GCC) $(CPPFLAGS) -o ranker-composition $^ $(SUFF)
 
 ranker-tight: ranker-tight.cpp $(OBJ)/AuxFunctions.o \
 	$(OBJ)/RankFunc.o $(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/Simulations.o   $(OBJ)/AutGraph.o  $(OBJ)/BuchiAutomatonSpec.o
-	$(GCC) $(CPPFLAGS) -o $@ $^
+	$(GCC) $(CPPFLAGS) -o $@ $^ $(SUFF)
 
 $(OBJ)/BuchiAutomataParser.o: Automata/BuchiAutomataParser.cpp \
 	Automata/BuchiAutomataParser.h $(OBJ)/BuchiAutomaton.o
