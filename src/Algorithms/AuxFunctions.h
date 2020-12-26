@@ -57,6 +57,18 @@ namespace Aux
     return ret;
   }
 
+
+  template<typename K, typename V>
+  map<V, K> reverseMap(map<K, V>& mp)
+  {
+    map<V, K> rev;
+    for(const auto &t : mp)
+    {
+      rev.insert({t.second, t.first});
+    }
+    return rev;
+  }
+
 }
 
 #endif

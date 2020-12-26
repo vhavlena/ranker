@@ -129,7 +129,7 @@ BuchiAutomaton<StateKV, int> BuchiAutomatonSpec::complementKV()
   }
 
   return BuchiAutomaton<StateKV, int>(comst, finals,
-    initials, mp, alph);
+    initials, mp, alph, getAPPattern());
 }
 
 
@@ -416,7 +416,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSch()
   }
 
   return BuchiAutomaton<StateSch, int>(comst, finals,
-    initials, mp, alph);
+    initials, mp, alph, getAPPattern());
 }
 
 
@@ -769,8 +769,6 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced()
 
   bool cnt = true;
 
-  cout << "here" << endl;
-
   while(stack.size() > 0)
   {
     StateSch st = stack.top();
@@ -831,7 +829,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced()
   }
 
   return BuchiAutomaton<StateSch, int>(comst, finals,
-    initials, mp, alph);
+    initials, mp, alph, getAPPattern());
 }
 
 
@@ -1488,5 +1486,5 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchOpt()
   }
 
   return BuchiAutomaton<StateSch, int>(comst, finals,
-    initials, mp, alph);
+    initials, mp, alph, getAPPattern());
 }

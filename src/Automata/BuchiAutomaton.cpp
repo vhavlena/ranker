@@ -56,6 +56,7 @@ BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAut(int start)
 
   auto ret = BuchiAutomaton<int, int>(rstate, rfin, rini, rtrans);
   this->renameStateMap = mpstate;
+  this->renameSymbolMap = mpsymbol;
 
   std::set<std::pair<int, int> > rdirSim, roddSim;
   for(auto item : this->directSim)
@@ -68,6 +69,7 @@ BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAut(int start)
   }
   ret.setDirectSim(rdirSim);
   ret.setOddRankSim(roddSim);
+  ret.setAPPattern(this->apsPattern);
   return ret;
 }
 
@@ -117,6 +119,7 @@ BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAutDict(map<Symbol
 
   auto ret = BuchiAutomaton<int, int>(rstate, rfin, rini, rtrans);
   this->renameStateMap = mpstate;
+  this->renameSymbolMap = mpsymbol;
 
   std::set<std::pair<int, int> > rdirSim, roddSim;
   for(auto item : this->directSim)
@@ -129,6 +132,7 @@ BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAutDict(map<Symbol
   }
   ret.setDirectSim(rdirSim);
   ret.setOddRankSim(roddSim);
+  ret.setAPPattern(this->apsPattern);
   return ret;
 }
 
@@ -217,7 +221,7 @@ std::string BuchiAutomaton<int, int>::toGff()
 }
 
 template <>
-std::string BuchiAutomaton<int, int>::toHOA()
+std::string BuchiAutomaton<int, string>::toHOA()
 {
   // TODO: enter correct symbols (now not retained while doing renameAut)
   std::string res;
@@ -242,10 +246,10 @@ std::string BuchiAutomaton<int, int>::toHOA()
   res += "AP: " + std::to_string(alph_size);
 
   // renumber symbols
-  std::map<int, size_t> symb_to_pos;
+  std::map<string, size_t> symb_to_pos;
   size_t symb_cnt = 0;
   for (auto symb : this->alph) {
-    res += " \"a" +  std::to_string(symb) + "\"";
+    res += " \"" + symb + "\"";
     symb_to_pos.insert({symb, symb_cnt++});
   }
 
@@ -1172,6 +1176,7 @@ BuchiAutomaton<State, Symbol> BuchiAutomaton<State, Symbol>::reverseBA()
 
 
 template class BuchiAutomaton<int, int>;
+template class BuchiAutomaton<int, string>;
 template class BuchiAutomaton<tuple<int, int, bool>, int>;
 template class BuchiAutomaton<std::string, std::string>;
 template class BuchiAutomaton<StateKV, int>;

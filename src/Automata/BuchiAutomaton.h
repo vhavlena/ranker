@@ -61,6 +61,7 @@ private:
   StateRelation oddRankSim;
 
   std::map<State, int> renameStateMap;
+  std::map<Symbol, int> renameSymbolMap;
   std::vector<State> invRenameMap;
 
 protected:
@@ -120,6 +121,7 @@ public:
     this->directSim = other.directSim;
     this->oddRankSim = other.oddRankSim;
     this->renameStateMap = other.renameStateMap;
+    this->renameSymbolMap = other.renameSymbolMap;
     this->invRenameMap = other.invRenameMap;
     this->apsPattern = other.apsPattern;
   }
@@ -131,6 +133,37 @@ public:
   std::string toHOA();
   BuchiAutomaton<int, int> renameAut(int start = 0);
   BuchiAutomaton<int, int> renameAutDict(map<Symbol, int>& mpsymbol, int start = 0);
+
+  template<typename NewSymbol>
+  BuchiAutomaton<State, NewSymbol> renameAlphabet(map<Symbol, NewSymbol>& mpsymbol)
+  {
+    std::set<NewSymbol> ralph;
+    Delta<int, NewSymbol> rtrans;
+    for(const auto& al : this->alph)
+    {
+      ralph.insert(mpsymbol[al]);
+    }
+    for(auto p : this->trans)
+    {
+      //auto it = mpsymbol.find(p.first.second);
+      NewSymbol val = mpsymbol[p.first.second];
+      // if(it == mpsymbol.end())
+      // {
+      //   val = symcnt;
+      //   mpsymbol[p.first.second] = symcnt++;
+      // }
+      // else
+      // {
+      //   val = it->second;
+      // }
+      rtrans.insert({std::make_pair(p.first.first, val), p.second});
+    }
+    auto ret = BuchiAutomaton<State, NewSymbol>(this->states, this->finals, this->initials, rtrans, ralph, this->apsPattern);
+    ret.setDirectSim(this->directSim);
+    ret.setOddRankSim(this->oddRankSim);
+    ret.setAPPattern(this->apsPattern);
+    return ret;
+  }
 
   SetStates& getStates()
   {
@@ -180,9 +213,19 @@ public:
     return this->renameStateMap;
   }
 
+  std::map<Symbol, int>& getRenameSymbolMap()
+  {
+    return this->renameSymbolMap;
+  }
+
   void setRenameStateMap(std::map<State, int> mp)
   {
     this->renameStateMap = mp;
+  }
+
+  vector<string> getAPPattern()
+  {
+    return this->apsPattern;
   }
 
   void setAPPattern(vector<string> aps)
