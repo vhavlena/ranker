@@ -47,6 +47,15 @@ BuchiAutomaton<int, int> parseRenameBA(ifstream& os, BuchiAutomaton<string, stri
 void complementAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<int, int>* complRes, Stat* stats);
 void printStat(Stat& st);
 
+/**
+ * @brief  Retrieves the help message
+ *
+ * @param[in]  progName  The name of the executable
+ *
+ * @returns  The help message
+ */
+std::string getHelpMsg(const std::string& progName);
+
 
 int main(int argc, char *argv[])
 {
@@ -55,23 +64,35 @@ int main(int argc, char *argv[])
 
   if(argc == 2)
   {
-    params.input = string(argv[1]);
+		if ((std::string(argv[1]) == "--help") || (std::string(argv[1]) == "-h")) {
+			cerr << getHelpMsg(argv[0]);
+			return 0;
+		} else {
+			params.input = string(argv[1]);
+		}
   }
   else if(argc == 3 && strcmp(argv[2], "--stats") == 0)
   {
     params.input = string(argv[1]);
     params.stats = true;
   }
+  else if(argc == 3 && strcmp(argv[1], "--stats") == 0)
+  {
+    params.input = string(argv[2]);
+    params.stats = true;
+  }
   else
   {
     cerr << "Unrecognized arguments" << endl;
+		cerr << "\n";
+		cerr << getHelpMsg(argv[0]);
     return 1;
   }
 
   string filename(params.input);
-  os.open(params.input);
+  os.open(filename);
   if(os)
-  {
+  { // file opened correctly
     InFormat fmt = parseRenamedAutomaton(os);
     auto t1 = std::chrono::high_resolution_clock::now();
     BuchiAutomaton<int, int> renCompl;
@@ -122,7 +143,10 @@ int main(int argc, char *argv[])
         printStat(stats);
       cout << outOrig.toHOA() << endl;
     }
-  }
+  } else { // file cannot be opened
+		std::cerr << "Cannot open file \"" + filename + "\"\n";
+		return 1;
+	}
   os.close();
   return 0;
 }
@@ -205,3 +229,8 @@ void printStat(Stat& st)
   cerr << std::setprecision(2);
   cerr << "Time: " << (float)(st.duration/1000.0) << std::endl;
 }
+
+std::string getHelpMsg(const std::string& progName)
+{
+	return "Usage: " + progName + " [--stats] INPUT\n";
+} // getHelpMsg
