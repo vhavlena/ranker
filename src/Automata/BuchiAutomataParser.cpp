@@ -169,52 +169,78 @@ BuchiAutomaton<int, APSymbol> BuchiAutomataParser::parseHoaFormat(ifstream & os)
   set<int> fins;
   BuchiAutomaton<int, APSymbol>::Transitions trans;
   set<APSymbol> syms;
+  int statesnum = 0;
+  vector<string> aps;
 
   string line;
+  string linecp;
   while(getline (os, line))
   {
     if(line.rfind("States:", 0) == 0)
     {
-      //states
+      linecp = string(line.begin() + 7, line.end());
+      boost::algorithm::trim_left(linecp);
+      statesnum = std::stoi(linecp);
+      for(int i = 0; i < statesnum; i++)
+        states.insert(i);
     }
     else if(line.rfind("Start:", 0) == 0)
     {
-      //initial states
+      linecp = string(line.begin() + 6, line.end());
+      boost::algorithm::trim_left(linecp);
+      ini.insert(std::stoi(linecp));
     }
     else if(line.rfind("AP:", 0) == 0)
     {
-      //alphabet
+      linecp = string(line.begin() + 3, line.end());
+      boost::algorithm::trim_left(linecp);
+      std::stringstream ss(linecp);
+      int count;
+      ss >> count;
+      string singleap;
+      for(int i = 0; i < count; i++)
+      {
+        ss >> std::quoted(singleap);
+        aps.push_back(singleap);
+      }
     }
     else if(line.rfind("Acceptance:", 0) == 0)
     {
-      //acceptance set
+      linecp = string(line.begin() + 11, line.end());
+      boost::algorithm::trim_left(linecp);
+      if(linecp.rfind("1 Inf(0)", 0) != 0)
+      {
+        throw ParserException("Unsupported acceptance condition");
+      }
     }
     else if(line.rfind("acc-name:", 0) == 0)
     {
-      //type of automaton
+      linecp = string(line.begin() + 9, line.end());
+      boost::algorithm::trim_left(linecp);
+      if(linecp.rfind("Buchi", 0) != 0)
+      {
+        throw ParserException("Unsupported automaton type");
+      }
     }
     else if(line.rfind("--BODY--", 0) == 0)
     {
-
+      trans = parseHoaBody(aps.size(), os, fins);
     }
   }
 
-  return BuchiAutomaton<int, APSymbol>(states, fins, ini, trans, syms);
+  return BuchiAutomaton<int, APSymbol>(states, fins, ini, trans, syms, aps);
 }
 
 
-Transition<int, APSymbol> BuchiAutomataParser::parseHoaTransition(int srcstate, int states, string& line)
+Transition<int, APSymbol> BuchiAutomataParser::parseHoaTransition(int srcstate, int apNum, string& line)
 {
   boost::regex e("\\[([!&\\|\\s0-9]+)\\]\\s+([0-9]+)");
   boost::smatch what;
   if(boost::regex_match(line, what, e))
   {
-    for(unsigned int i = 0; i < what.size(); ++i)
-      cout << what[i] << endl;
-
     string tr = what[1];
     int dest = std::stoi(what[2]);
-    return {srcstate, dest, parseHoaExpression(tr, states)};
+    return {srcstate, dest, parseHoaExpression(tr, apNum)};
   }
   else
   {
@@ -223,7 +249,7 @@ Transition<int, APSymbol> BuchiAutomataParser::parseHoaTransition(int srcstate, 
 }
 
 
-Delta<int, APSymbol> BuchiAutomataParser::parseHoaBody(int states, ifstream & os, vector<int>& fin)
+Delta<int, APSymbol> BuchiAutomataParser::parseHoaBody(int apNum, ifstream & os, set<int>& fin)
 {
   Delta<int, APSymbol> trans;
   int src;
@@ -251,7 +277,7 @@ Delta<int, APSymbol> BuchiAutomataParser::parseHoaBody(int states, ifstream & os
         }
         else if(t == "{0}")
         {
-          fin.push_back(src);
+          fin.insert(src);
         }
         else
         {
@@ -261,7 +287,7 @@ Delta<int, APSymbol> BuchiAutomataParser::parseHoaBody(int states, ifstream & os
     }
     else
     {
-      Transition<int, APSymbol> tr = parseHoaTransition(src, states, line);
+      Transition<int, APSymbol> tr = parseHoaTransition(src, apNum, line);
       auto pr = std::make_pair(src, tr.symbol);
       if(trans.find(pr) == trans.end())
       {
@@ -277,7 +303,7 @@ Delta<int, APSymbol> BuchiAutomataParser::parseHoaBody(int states, ifstream & os
 }
 
 
-APSymbol BuchiAutomataParser::parseHoaExpression(string& line, int states)
+APSymbol BuchiAutomataParser::parseHoaExpression(string& line, int apNum)
 {
   //remove whitespaces
   line.erase(remove_if(line.begin(), line.end(), ::isspace), line.end());
@@ -286,8 +312,8 @@ APSymbol BuchiAutomataParser::parseHoaExpression(string& line, int states)
     throw ParserException("Only transitions containing & are allowed");
   }
 
-  APSymbol symbol(states);
-  vector<char> symvar(states, 0);
+  APSymbol symbol(apNum);
+  vector<char> symvar(apNum, 0);
   int stateid;
   vector<string> tokens;
   boost::split(tokens, line, boost::is_any_of("&"));

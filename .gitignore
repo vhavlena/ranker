@@ -11,6 +11,7 @@ src/units/compl-check
 src/units/test-sch-hard
 src/units/test-simulation
 src/units/test-sch-opt-compl
+src/units/test-hoa-parser
 src/rnk-red-complement
 src/ranker
 src/ranker-sim

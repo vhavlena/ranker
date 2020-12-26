@@ -19,6 +19,11 @@ test-kv-compl: units/test-kv-compl.cpp $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/AutGraph.o $(OBJ)/Simulations.o $(OBJ)/AuxFunctions.o
 	$(GCC) $(CPPFLAGS) -o units/$@ $^ $(SUFF)
 
+test-hoa-parser: units/test-hoa-parser.cpp $(OBJ)/BuchiAutomataParser.o \
+	$(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomatonSpec.o $(OBJ)/RankFunc.o \
+	$(OBJ)/AutGraph.o $(OBJ)/Simulations.o $(OBJ)/AuxFunctions.o
+	$(GCC) $(CPPFLAGS) -o units/$@ $^ $(SUFF)
+
 test-sch-compl: units/test-sch-compl.cpp $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomatonSpec.o $(OBJ)/RankFunc.o \
 	$(OBJ)/AutGraph.o $(OBJ)/Simulations.o $(OBJ)/AuxFunctions.o

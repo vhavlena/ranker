@@ -20,6 +20,21 @@ struct APSymbol
   {
     return ap < other.ap;
   }
+
+  string toString() const
+  {
+    string ret;
+    for(unsigned int i = 0; i < ap.size(); i++)
+    {
+      if(ap[i])
+        ret += std::to_string(i);
+      else
+        ret += "!" + std::to_string(i);
+      if(i + 1 < ap.size())
+        ret += "&";
+    }
+    return ret;
+  }
 };
 
 #endif

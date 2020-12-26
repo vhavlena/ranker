@@ -44,9 +44,9 @@ private:
   Transition<string, string> parseGffTransition(pt::ptree& tr);
   BuchiAutomaton<string, string> parseGffTree(pt::ptree& tr);
 
-  Transition<int, APSymbol> parseHoaTransition(int srcstate, int states, string& line);
-  Delta<int, APSymbol> parseHoaBody(int states, ifstream & os, vector<int>& fin);
-  APSymbol parseHoaExpression(string & line, int states);
+  Transition<int, APSymbol> parseHoaTransition(int srcstate, int apNum, string& line);
+  Delta<int, APSymbol> parseHoaBody(int apNum, ifstream & os, set<int>& fin);
+  APSymbol parseHoaExpression(string & line, int apNum);
 
 };
 

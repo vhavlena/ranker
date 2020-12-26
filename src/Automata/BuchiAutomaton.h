@@ -55,6 +55,7 @@ private:
   SetStates initials;
   SetSymbols alph;
   Delta<State, Symbol> trans;
+  vector<string> apsPattern;
 
   StateRelation directSim;
   StateRelation oddRankSim;
@@ -81,6 +82,7 @@ public:
     this->trans = trans;
     this->initials = ini;
     this->alph = getAlph();
+    this->apsPattern = vector<string>();
   }
 
   BuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans, SetSymbols alp)
@@ -90,6 +92,20 @@ public:
     this->trans = trans;
     this->initials = ini;
     this->alph = alp;
+    this->apsPattern = vector<string>();
+  }
+
+  BuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans, SetSymbols alp, vector<string> aps)
+  {
+    this->states = st;
+    this->finals = fin;
+    this->trans = trans;
+    this->initials = ini;
+    if(alp.size() == 0)
+      this->alph = getAlph();
+    else
+      this->alph = alp;
+    this->apsPattern = aps;
   }
 
   BuchiAutomaton() : BuchiAutomaton({}, {}, {}, {}) {};
@@ -105,6 +121,7 @@ public:
     this->oddRankSim = other.oddRankSim;
     this->renameStateMap = other.renameStateMap;
     this->invRenameMap = other.invRenameMap;
+    this->apsPattern = other.apsPattern;
   }
 
   std::set<Symbol> getAlph();
@@ -166,6 +183,11 @@ public:
   void setRenameStateMap(std::map<State, int> mp)
   {
     this->renameStateMap = mp;
+  }
+
+  void setAPPattern(vector<string> aps)
+  {
+    this->apsPattern = aps;
   }
 
   vector<set<State> > reachableVector();

@@ -287,6 +287,62 @@ std::string BuchiAutomaton<int, int>::toHOA()
   return res;
 }
 
+
+template <>
+std::string BuchiAutomaton<int, APSymbol>::toHOA()
+{
+  // TODO: enter correct symbols (now not retained while doing renameAut)
+  std::string res;
+  //size_t alph_size = this->alph.size();
+  res += "HOA: v1\n";
+  res += "States: " + std::to_string(this->states.size()) + "\n";
+
+  // renumber states to be a continuous sequence
+  std::map<int, size_t> state_to_seq;
+  size_t state_cnt = 0;
+  for (auto st : this->states) {
+    state_to_seq.insert({st, state_cnt++});
+  }
+
+  // initial states
+  for (auto st : this->initials) {
+    res += "Start: " + std::to_string(state_to_seq[st]) + "\n";
+  }
+
+  res += "acc-name: Buchi\n";
+  res += "Acceptance: 1 Inf(0)\n";
+  res += "AP: " + std::to_string(this->apsPattern.size());
+
+  for (auto symb : this->apsPattern) {
+    res += " \"" +  symb + "\"";
+  }
+
+  // transitions
+  res += "\n--BODY--\n";
+  for (auto st : this->states) {
+    size_t seq_st = state_to_seq[st];
+    res += "State: " + std::to_string(seq_st);
+    if (this->finals.find(st) != this->finals.end()) {
+      res += " {0}";
+    }
+    res += "\n";
+
+    for (auto symb : this->alph) {
+      auto it = this->trans.find({st, symb});
+      if (it == this->trans.end() || it->second.empty()) continue;
+
+      for (auto dst : it->second) {
+        res += "[" + symb.toString() + "] " + std::to_string(state_to_seq[dst]) + "\n";
+      }
+    }
+  }
+
+  res += "--END--\n";
+
+  return res;
+}
+
+
 template <typename State, typename Symbol>
 std::string BuchiAutomaton<State, Symbol>::toGraphwizWith(std::function<std::string(State)>& stateStr,
   std::function<std::string(Symbol)>& symStr)
@@ -395,6 +451,15 @@ std::string BuchiAutomaton<StateSch, int>::toString()
 {
   std::function<std::string(StateSch)> f1 = [&] (StateSch x) {return x.toString();};
   std::function<std::string(int)> f2 = [=] (int x) {return std::to_string(x);};
+  return toStringWith(f1, f2);
+}
+
+
+template <>
+std::string BuchiAutomaton<int, APSymbol>::toString()
+{
+  std::function<std::string(int)> f1 = [=] (int x) {return std::to_string(x);};
+  std::function<std::string(APSymbol)> f2 = [&] (APSymbol x) {return x.toString();};
   return toStringWith(f1, f2);
 }
 
@@ -1111,4 +1176,4 @@ template class BuchiAutomaton<tuple<int, int, bool>, int>;
 template class BuchiAutomaton<std::string, std::string>;
 template class BuchiAutomaton<StateKV, int>;
 template class BuchiAutomaton<StateSch, int>;
-template class BuchiAutomaton<APSymbol, int>;
+template class BuchiAutomaton<int, APSymbol>;
