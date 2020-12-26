@@ -769,6 +769,8 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced()
 
   bool cnt = true;
 
+  cout << "here" << endl;
+
   while(stack.size() > 0)
   {
     StateSch st = stack.top();
@@ -978,31 +980,50 @@ map<DFAState, int> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSch, int
     fin.end(), std::inserter(nofin, nofin.begin()));
   vector<int> states(nofin.begin(), nofin.end());
   map<StateSch, int> rnkmap;
+  map<set<int>, int> classesMap;
+  int classes;
 
   for(const StateSch& s : nfaSchewe.getStates())
   {
     rnkmap[s] = 0;
   }
 
-  for(vector<int>& sub : Aux::getAllSubsets(states))
+  for(const StateSch& s : nfaSchewe.getStates())
   {
-    set<int> st(sub.begin(), sub.end());
-    this->computeRankSim(st);
-    int classes = Aux::countEqClasses(this->getStates().size(), st, this->getOddRankSim());
-    //cout << StateSch::printSet(st) << " : " << classes << endl;
-    for(const StateSch& s : nfaSchewe.getStates())
+    for(vector<int>& sub : Aux::getAllSubsets(vector<int>(s.S.begin(), s.S.end())))
     {
-      if(std::includes(s.S.begin(), s.S.end(), st.begin(), st.end()))
+      set<int> st(sub.begin(), sub.end());
+
+      if(classesMap.find(st) == classesMap.end())
       {
-        rnkmap[s] = std::max(rnkmap[s], classes);
+        this->computeRankSim(st);
+        classes = Aux::countEqClasses(this->getStates().size(), st, this->getOddRankSim());
       }
+      else
+      {
+        classes = classesMap[st];
+      }
+      rnkmap[s] = std::max(rnkmap[s], classes);
     }
   }
 
-  // for(const auto& k : rnkmap)
+
+  // cout << " : " << states.size() << endl;
+  // for(vector<int>& sub : Aux::getAllSubsets(states))
   // {
-  //   cout << k.first.toString() << " : " << k.second << std::endl;
+  //   set<int> st(sub.begin(), sub.end());
+  //   this->computeRankSim(st);
+  //   int classes = Aux::countEqClasses(this->getStates().size(), st, this->getOddRankSim());
+  //   //cout << StateSch::printSet(st) << " : " << classes << endl;
+  //   for(const StateSch& s : nfaSchewe.getStates())
+  //   {
+  //     if(std::includes(s.S.begin(), s.S.end(), st.begin(), st.end()))
+  //     {
+  //       rnkmap[s] = std::max(rnkmap[s], classes);
+  //     }
+  //   }
   // }
+  // cout << " end "  << endl;
 
 
   auto updMaxFnc = [&slignore] (LabelState<StateSch>* a, const std::vector<LabelState<StateSch>*> sts) -> int
