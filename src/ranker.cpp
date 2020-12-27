@@ -232,5 +232,20 @@ void printStat(Stat& st)
 
 std::string getHelpMsg(const std::string& progName)
 {
-	return "Usage: " + progName + " [--stats] INPUT\n";
+	std::string helpMsg;
+	helpMsg += "Usage: " + progName + " [--stats] INPUT\n";
+	helpMsg += "\n";
+	helpMsg += "Complements a (state-based acceptance condition) Buchi automaton.\n";
+	helpMsg += "\n";
+	helpMsg += "INPUT is the name of a file in the HOA (Hanoi Omega Automata) format\n";
+	helpMsg += "(see https://adl.github.io/hoaf/ ) with the following restrictions:\n";
+	helpMsg += "  * only state-based acceptance is supported\n";
+	helpMsg += "  * transitions need to have the form of a single conjunction with exactly\n";
+	helpMsg += "    one positive atomic proposition\n";
+	helpMsg += "  * no aliases or any other fancy features of HOA are supported\n";
+	helpMsg += "\n";
+	helpMsg += "Flags:\n";
+	helpMsg += "  --stats       Print summary statistics\n";
+
+	return helpMsg;
 } // getHelpMsg
