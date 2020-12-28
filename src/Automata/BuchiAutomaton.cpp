@@ -566,7 +566,7 @@ void BuchiAutomaton<State, Symbol>::complete(State trap, bool fin)
     {
       auto pr = std::make_pair(st, s);
       auto it = this->trans.find(pr);
-      if(it == this->trans.end() || it->second.empty())
+      if(it == this->trans.end())
       {
         modif = true;
         this->trans[pr] = trSet;
