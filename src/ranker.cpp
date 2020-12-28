@@ -122,7 +122,19 @@ int main(int argc, char *argv[])
     else if(fmt == HOA)
     {
       BuchiAutomaton<int, APSymbol> ba;
-      BuchiAutomaton<int, int> ren = parseRenameHOA(os, &ba);
+      BuchiAutomaton<int, int> ren;
+      try
+      {
+        ren = parseRenameHOA(os, &ba);
+      }
+      catch(const ParserException& e)
+      {
+        os.close();
+        cerr << "Parser error:" << endl;
+        cerr << "line " << e.getLine() << ": " << e.what() << endl;
+        return 2;
+      }
+
       try
       {
         complementAutWrap(ren, &renCompl, &stats);

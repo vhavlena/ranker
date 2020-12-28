@@ -174,8 +174,10 @@ BuchiAutomaton<int, APSymbol> BuchiAutomataParser::parseHoaFormat(ifstream & os)
 
   string line;
   string linecp;
+  this->line = 0;
   while(getline (os, line))
   {
+    this->line++;
     if(line.rfind("States:", 0) == 0)
     {
       linecp = string(line.begin() + 7, line.end());
@@ -207,10 +209,10 @@ BuchiAutomaton<int, APSymbol> BuchiAutomataParser::parseHoaFormat(ifstream & os)
     else if(line.rfind("Acceptance:", 0) == 0)
     {
       linecp = string(line.begin() + 11, line.end());
-      boost::algorithm::trim_left(linecp);
-      if(linecp.rfind("1 Inf(0)", 0) != 0)
+      linecp.erase(remove_if(linecp.begin(), linecp.end(), ::isspace), linecp.end());
+      if(linecp.rfind("1Inf(0)", 0) != 0)
       {
-        throw ParserException("Unsupported acceptance condition");
+        throw ParserException("Unsupported acceptance condition. Expected: \"1 Inf(0)\"", this->line);
       }
     }
     else if(line.rfind("acc-name:", 0) == 0)
@@ -219,7 +221,7 @@ BuchiAutomaton<int, APSymbol> BuchiAutomataParser::parseHoaFormat(ifstream & os)
       boost::algorithm::trim_left(linecp);
       if(linecp.rfind("Buchi", 0) != 0)
       {
-        throw ParserException("Unsupported automaton type");
+        throw ParserException("Unsupported automaton type. Expected: \"Buchi\"", this->line);
       }
     }
     else if(line.rfind("--BODY--", 0) == 0)
@@ -228,13 +230,14 @@ BuchiAutomaton<int, APSymbol> BuchiAutomataParser::parseHoaFormat(ifstream & os)
     }
   }
 
+  this->line = -1;
   return BuchiAutomaton<int, APSymbol>(states, fins, ini, trans, syms, aps);
 }
 
 
 Transition<int, APSymbol> BuchiAutomataParser::parseHoaTransition(int srcstate, int apNum, string& line)
 {
-  boost::regex e("\\[([!&\\|\\s0-9]+)\\]\\s+([0-9]+)");
+  boost::regex e("\\[([!&\\|\\s0-9]+)\\]\\s*([0-9]+)");
   boost::smatch what;
   if(boost::regex_match(line, what, e))
   {
@@ -244,7 +247,7 @@ Transition<int, APSymbol> BuchiAutomataParser::parseHoaTransition(int srcstate, 
   }
   else
   {
-    throw ParserException("Unsupported format of transitions");
+    throw ParserException("Unsupported format of transitions.", this->line);
   }
 }
 
@@ -256,33 +259,31 @@ Delta<int, APSymbol> BuchiAutomataParser::parseHoaBody(int apNum, ifstream & os,
   string line;
   while(getline (os, line))
   {
+    this->line++;
     if(line.rfind("--END--", 0) == 0)
     {
       return trans;
     }
     else if(line.rfind("State:", 0) == 0)
     {
-      vector<string> tokens;
-      boost::split(tokens, string(line.begin()+7, line.end()), boost::is_any_of("\n\t "));
-      bool first = true;
-      for(const string& t : tokens)
+      string linecp(line.begin()+7, line.end());
+      boost::regex e("([0-9]+)\\s*(\\{\\s*0\\s*\\})?");
+      boost::smatch what;
+      if(boost::regex_match(linecp, what, e))
       {
-        if(t.size() == 0)
-          continue;
-
-        if(first)
+        src = std::stoi(what[1]);
+        if(what.size() == 3)
         {
-          first = false;
-          src = std::stoi(t);
+          string v = what[2];
+          if(v.size() > 0)
+          {
+            fin.insert(src);
+          }
         }
-        else if(t == "{0}")
-        {
-          fin.insert(src);
-        }
-        else
-        {
-          throw ParserException("Unsupported state format");
-        }
+      }
+      else
+      {
+        throw ParserException("Unsupported state format. Expected \"State: INT {INT}?\"", this->line);
       }
     }
     else
@@ -309,7 +310,7 @@ APSymbol BuchiAutomataParser::parseHoaExpression(string& line, int apNum)
   line.erase(remove_if(line.begin(), line.end(), ::isspace), line.end());
   if(line.find("|") != string::npos)
   {
-    throw ParserException("Only transitions containing & are allowed");
+    throw ParserException("Only transitions containing & are allowed", this->line);
   }
 
   APSymbol symbol(apNum);
@@ -337,7 +338,7 @@ APSymbol BuchiAutomataParser::parseHoaExpression(string& line, int apNum)
   for(unsigned int i = 0; i < symvar.size(); i++)
   {
     if(symvar[i] == 0)
-      throw ParserException("Only simple transitions are allowed");
+      throw ParserException("Only simple transitions are allowed", this->line);
     if(symvar[i] == 1)
       symbol.ap.set(i);
   }

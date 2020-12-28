@@ -24,14 +24,19 @@ class ParserException : public exception
 {
 private:
   string msg;
+  int line;
 
 public:
-  ParserException(string info = "Parser exception") : msg(info) {}
+  ParserException(string info = "Parser exception", int ln = -1) : msg(info), line(ln) {}
 
   virtual const char* what() const throw () { return msg.c_str(); }
+  int getLine() const { return line; }
 };
 
 class BuchiAutomataParser {
+
+private:
+  int line;
 
 public:
   BuchiAutomaton<string, string> parseBaFormat(ifstream & os);
