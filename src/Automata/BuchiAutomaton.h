@@ -233,6 +233,16 @@ public:
     this->apsPattern = aps;
   }
 
+  int getTransCount() const
+  {
+    int cnt = 0;
+    for(const auto& t : this->trans)
+    {
+      cnt += t.second.size();
+    }
+    return cnt;
+  }
+
   vector<set<State> > reachableVector();
   void complete(State trap);
   void removeUseless();

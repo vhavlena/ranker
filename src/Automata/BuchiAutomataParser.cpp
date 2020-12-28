@@ -237,7 +237,7 @@ BuchiAutomaton<int, APSymbol> BuchiAutomataParser::parseHoaFormat(ifstream & os)
 
 Transition<int, APSymbol> BuchiAutomataParser::parseHoaTransition(int srcstate, int apNum, string& line)
 {
-  boost::regex e("\\[([!&\\|\\s0-9]+)\\]\\s*([0-9]+)");
+  boost::regex e("\\s*\\[([!&\\|\\s0-9]+)\\]\\s*([0-9]+)");
   boost::smatch what;
   if(boost::regex_match(line, what, e))
   {
