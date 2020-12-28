@@ -230,7 +230,6 @@ BuchiAutomaton<int, APSymbol> BuchiAutomataParser::parseHoaFormat(ifstream & os)
     }
   }
 
-  this->line = -1;
   return BuchiAutomaton<int, APSymbol>(states, fins, ini, trans, syms, aps);
 }
 

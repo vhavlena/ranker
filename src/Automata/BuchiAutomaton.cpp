@@ -549,7 +549,7 @@ void BuchiAutomaton<State, Symbol>::restriction(set<State>& st)
 
 
 template <typename State, typename Symbol>
-void BuchiAutomaton<State, Symbol>::complete(State trap)
+void BuchiAutomaton<State, Symbol>::complete(State trap, bool fin)
 {
   bool modif = false;
   set<State> trSet({trap});
@@ -573,7 +573,30 @@ void BuchiAutomaton<State, Symbol>::complete(State trap)
       this->trans[pr] = trSet;
     }
     this->states.insert(trap);
+    if(fin)
+      this->finals.insert(trap);
   }
+}
+
+
+template <>
+void BuchiAutomaton<int, APSymbol>::completeAPComplement()
+{
+  set<APSymbol> syms;
+  if(this->getAPPattern().size() > 0)
+  {
+    vector<int> cnum(this->getAPPattern().size());
+    std::iota(cnum.begin(), cnum.end(), 0);
+    for(const auto& s : Aux::getAllSubsets(cnum))
+    {
+      APSymbol sym(this->getAPPattern().size());
+      for(const int& t : s)
+        sym.ap.set(t);
+      syms.insert(sym);
+    }
+  }
+  this->setAlphabet(syms);
+  this->complete(this->getStates().size(), true);
 }
 
 

@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <tuple>
 #include <functional>
+#include <numeric>
 
 #include "AutGraph.h"
 #include "../Complement/StateKV.h"
@@ -190,6 +191,11 @@ public:
     return this->alph;
   }
 
+  void setAlphabet(SetSymbols st)
+  {
+    this->alph = st;
+  }
+
   StateRelation& getOddRankSim()
   {
     return this->oddRankSim;
@@ -244,7 +250,8 @@ public:
   }
 
   vector<set<State> > reachableVector();
-  void complete(State trap);
+  void complete(State trap, bool fin = false);
+  void completeAPComplement();
   void removeUseless();
   void restriction(set<State>& st);
 

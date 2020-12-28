@@ -141,6 +141,9 @@ int main(int argc, char *argv[])
       }
       map<int, APSymbol> symDict = Aux::reverseMap(ba.getRenameSymbolMap());
       BuchiAutomaton<int, APSymbol> outOrig = renCompl.renameAlphabet<APSymbol>(symDict);
+      outOrig.completeAPComplement();
+      stats.reachStates = outOrig.getStates().size();
+      stats.reachTrans = outOrig.getTransCount();
 
       stats.duration = NAN;
       if(params.stats)

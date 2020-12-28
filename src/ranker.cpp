@@ -111,6 +111,9 @@ int main(int argc, char *argv[])
       }
       map<int, APSymbol> symDict = Aux::reverseMap(ba.getRenameSymbolMap());
       BuchiAutomaton<int, APSymbol> outOrig = renCompl.renameAlphabet<APSymbol>(symDict);
+      outOrig.completeAPComplement();
+      stats.reachStates = outOrig.getStates().size();
+      stats.reachTrans = outOrig.getTransCount();
 
       auto t2 = std::chrono::high_resolution_clock::now();
       stats.duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
