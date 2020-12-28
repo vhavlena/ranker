@@ -427,6 +427,13 @@ std::string BuchiAutomaton<std::string, std::string>::toString()
   return toStringWith(f1, f2);
 }
 
+template <>
+std::string BuchiAutomaton<int, std::string>::toString()
+{
+  std::function<std::string(int)> f1 = [&] (int x) {return std::to_string(x);};
+  std::function<std::string(std::string)> f2 = [&] (std::string x) {return x;};
+  return toStringWith(f1, f2);
+}
 
 template <>
 std::string BuchiAutomaton<StateKV, int>::toString()
@@ -558,7 +565,8 @@ void BuchiAutomaton<State, Symbol>::complete(State trap, bool fin)
     for(Symbol s : this->alph)
     {
       auto pr = std::make_pair(st, s);
-      if(this->trans.find(pr) == this->trans.end())
+      auto it = this->trans.find(pr);
+      if(it == this->trans.end() || it->second.empty())
       {
         modif = true;
         this->trans[pr] = trSet;

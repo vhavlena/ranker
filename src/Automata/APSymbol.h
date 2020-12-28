@@ -35,6 +35,12 @@ struct APSymbol
     }
     return ret;
   }
+
+  friend std::ostream& operator<<(std::ostream& os, const APSymbol& symb)
+  {
+    os << symb.toString();
+    return os;
+  }
 };
 
 #endif
