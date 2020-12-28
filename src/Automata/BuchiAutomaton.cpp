@@ -558,7 +558,7 @@ void BuchiAutomaton<State, Symbol>::complete(State trap, bool fin)
     for(Symbol s : this->alph)
     {
       auto pr = std::make_pair(st, s);
-      if(this->trans.find(pr) == this->trans.end())
+      if(this->trans.find(pr) == this->trans.end() || this->trans[pr].size() == 0)
       {
         modif = true;
         this->trans[pr] = trSet;
@@ -582,7 +582,7 @@ void BuchiAutomaton<State, Symbol>::complete(State trap, bool fin)
 template <>
 void BuchiAutomaton<int, APSymbol>::completeAPComplement()
 {
-  set<APSymbol> syms;
+  set<APSymbol> allsyms;
   if(this->getAPPattern().size() > 0)
   {
     vector<int> cnum(this->getAPPattern().size());
@@ -592,10 +592,10 @@ void BuchiAutomaton<int, APSymbol>::completeAPComplement()
       APSymbol sym(this->getAPPattern().size());
       for(const int& t : s)
         sym.ap.set(t);
-      syms.insert(sym);
+      allsyms.insert(sym);
     }
   }
-  this->setAlphabet(syms);
+  this->setAlphabet(allsyms);
   this->complete(this->getStates().size(), true);
 }
 
