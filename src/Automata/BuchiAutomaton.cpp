@@ -582,6 +582,7 @@ void BuchiAutomaton<State, Symbol>::complete(State trap, bool fin)
 template <>
 void BuchiAutomaton<int, APSymbol>::completeAPComplement()
 {
+  this->complete(this->getStates().size(), false);
   set<APSymbol> allsyms;
   if(this->getAPPattern().size() > 0)
   {
