@@ -22,6 +22,7 @@ BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAut(int start)
   Delta<int, int> rtrans;
   std::set<int> rfin;
   std::set<int> rini;
+  set<int> rsym;
   this->invRenameMap = std::vector<State>(this->states.size() + start);
 
   for(auto st : this->states)
@@ -32,6 +33,11 @@ BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAut(int start)
     {
       mpstate[st] = stcnt++;
     }
+  }
+  for(const auto& a : this->alph)
+  {
+    rsym.insert(symcnt);
+    mpsymbol[a] = symcnt++;
   }
 
   rstate = Aux::mapSet(mpstate, this->states);
@@ -54,7 +60,7 @@ BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAut(int start)
     rtrans.insert({std::make_pair(mpstate[p.first.first], val), to});
   }
 
-  auto ret = BuchiAutomaton<int, int>(rstate, rfin, rini, rtrans);
+  auto ret = BuchiAutomaton<int, int>(rstate, rfin, rini, rtrans, rsym);
   this->renameStateMap = mpstate;
   this->renameSymbolMap = mpsymbol;
 
@@ -85,6 +91,7 @@ BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAutDict(map<Symbol
   Delta<int, int> rtrans;
   std::set<int> rfin;
   std::set<int> rini;
+  set<int> rsym;
   this->invRenameMap = std::vector<State>(this->states.size() + start);
 
   for(auto st : this->states)
@@ -95,6 +102,10 @@ BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAutDict(map<Symbol
     {
       mpstate[st] = stcnt++;
     }
+  }
+  for(const auto& t : this->alph)
+  {
+    rsym.insert(mpsymbol[t]);
   }
 
   rstate = Aux::mapSet(mpstate, this->states);
@@ -117,7 +128,7 @@ BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAutDict(map<Symbol
     rtrans.insert({std::make_pair(mpstate[p.first.first], val), to});
   }
 
-  auto ret = BuchiAutomaton<int, int>(rstate, rfin, rini, rtrans);
+  auto ret = BuchiAutomaton<int, int>(rstate, rfin, rini, rtrans, rsym);
   this->renameStateMap = mpstate;
   this->renameSymbolMap = mpsymbol;
 
@@ -572,6 +583,14 @@ void BuchiAutomaton<State, Symbol>::complete(State trap, bool fin)
 {
   bool modif = false;
   set<State> trSet({trap});
+
+  if(this->states.empty())
+  {
+
+    modif = true;
+    this->initials.insert(trap);
+  }
+
   for(State st : this->states)
   {
     for(Symbol s : this->alph)
@@ -581,6 +600,7 @@ void BuchiAutomaton<State, Symbol>::complete(State trap, bool fin)
       {
         modif = true;
         this->trans[pr] = trSet;
+
       }
     }
   }
