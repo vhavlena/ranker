@@ -51,6 +51,8 @@ void complementScheweAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<int, 
 void complementAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<int, int>* complRes, Stat* stats);
 void printStat(Stat& st);
 
+BuchiAutomaton<int, int> createBA(vector<int>& loop);
+
 /**
  * @brief  Retrieves the help message
  *

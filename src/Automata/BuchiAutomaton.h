@@ -280,6 +280,8 @@ public:
   Delta<State, Symbol> getReverseTransitions();
 
   vector<set<State>> getRunTree(vector<Symbol>& word);
+
+  BuchiAutomaton<StateSch, int> getComplStructure(std::map<int, StateSch>& mpst);
 };
 
 #endif
