@@ -409,6 +409,18 @@ std::string BuchiAutomaton<tuple<int, int, bool>, int>::toGraphwiz()
   return toGraphwizWith(f1, f2);
 }
 
+template <>
+std::string BuchiAutomaton<tuple<StateSch, int, bool>, int>::toGraphwiz()
+{
+  std::function<std::string(tuple<StateSch, int, bool>)> f1 = [&] (tuple<StateSch, int, bool> x)
+  {
+    return "(" + std::get<0>(x).toString() + " " +
+      std::to_string(std::get<1>(x)) + " " + std::to_string(std::get<2>(x)) + ")";
+  };
+  std::function<std::string(int)> f2 = [=] (int x) {return std::to_string(x);};
+  return toGraphwizWith(f1, f2);
+}
+
 
 template <>
 std::string BuchiAutomaton<int, int>::toString()
@@ -1205,10 +1217,74 @@ BuchiAutomaton<State, Symbol> BuchiAutomaton<State, Symbol>::reverseBA()
   return BuchiAutomaton(this->getStates(), this->getInitials(), this->getFinals(), rev, this->getAlphabet());
 }
 
+template <>
+BuchiAutomaton<StateSch, int> BuchiAutomaton<int, int>::getComplStructure(std::map<int, StateSch>& mpst)
+{
+  //int stcnt = start;
+  //int symcnt = 0;
+  // std::map<State, int> mpstate;
+  // std::map<Symbol, int> mpsymbol;
+  std::set<StateSch> rstate;
+  Delta<StateSch, int> rtrans;
+  std::set<StateSch> rfin;
+  std::set<StateSch> rini;
+  // this->invRenameMap = std::vector<State>(this->states.size() + start);
+
+  // for(auto st : this->states)
+  // {
+  //   auto it = mpstate.find(st);
+  //   this->invRenameMap[stcnt] = st;
+  //   if(it == mpstate.end())
+  //   {
+  //     mpstate[st] = stcnt++;
+  //   }
+  // }
+
+  rstate = Aux::mapSet(mpst, this->states);
+  rini = Aux::mapSet(mpst, this->initials);
+  rfin = Aux::mapSet(mpst, this->finals);
+  for(auto p : this->trans)
+  {
+    // auto it = mpsymbol.find(p.first.second);
+    // int val;
+    // if(it == mpsymbol.end())
+    // {
+    //   val = symcnt;
+    //   mpsymbol[p.first.second] = symcnt++;
+    // }
+    // else
+    // {
+    //   val = it->second;
+    // }
+    std::set<StateSch> to = Aux::mapSet(mpst, p.second);
+    rtrans.insert({std::make_pair(mpst[p.first.first], p.first.second), to});
+  }
+
+  auto ret = BuchiAutomaton<StateSch, int>(rstate, rfin, rini, rtrans);
+  // this->renameStateMap = mpstate;
+  // this->renameSymbolMap = mpsymbol;
+
+  // std::set<std::pair<int, int> > rdirSim, roddSim;
+  // for(auto item : this->directSim)
+  // {
+  //   rdirSim.insert({mpstate[item.first], mpstate[item.second]});
+  // }
+  // for(auto item : this->oddRankSim)
+  // {
+  //   roddSim.insert({mpstate[item.first], mpstate[item.second]});
+  // }
+  // ret.setDirectSim(rdirSim);
+  // ret.setOddRankSim(roddSim);
+  // ret.setAPPattern(this->apsPattern);
+  return ret;
+}
+
 
 template class BuchiAutomaton<int, int>;
 template class BuchiAutomaton<int, string>;
 template class BuchiAutomaton<tuple<int, int, bool>, int>;
+template class BuchiAutomaton<tuple<StateSch, int, bool>, int>;
+template class BuchiAutomaton<tuple<int, int, bool>, APSymbol>;
 template class BuchiAutomaton<std::string, std::string>;
 template class BuchiAutomaton<StateKV, int>;
 template class BuchiAutomaton<StateSch, int>;

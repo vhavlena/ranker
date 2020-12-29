@@ -63,6 +63,35 @@ void complementAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<int, int>* 
     id[al] = al;
   BuchiAutomaton<int, int> renCompl = comp.renameAutDict(id);
   renCompl.removeUseless();
+  renCompl = renCompl.renameAutDict(id);
+
+  // cout << renCompl.getStates().size();
+  // map<int, StateSch> symDict = Aux::reverseMap(comp.getRenameStateMap());
+  // auto tmp = renCompl.getComplStructure(symDict);
+  //cout << tmp.toGraphwiz() << endl;
+
+  // auto prod = renCompl.productBA(ren);
+  // BuchiAutomaton<int, int> renProd = prod.renameAutDict(id);
+  // if(!renProd.isEmpty())
+  //   cout << "FALSE" << endl;
+  // else
+  //   cout << "TRUE" << endl;
+
+  // vector<int> word = {0,0,0,0,0,0,0,1,0,0,1};
+  // auto wb = createBA(word);
+  // cout << "HERE" << endl;
+  // cout << wb.toGraphwiz() << endl << endl;
+  // auto a = tmp.productBA(wb);
+  // cout << a.toGraphwiz() << endl;
+  // //set<int> fin = renCompl.getFinals();
+  // for(auto t : tmp.getRunTree(word))
+  // {
+  //   for(auto m : t)
+  //   {
+  //     cout << m.toString() << " ";
+  //   }
+  //   cout << endl;
+  // }
 
   stats->reachStates = renCompl.getStates().size();
   stats->reachTrans = renCompl.getTransCount();
@@ -92,6 +121,27 @@ void complementScheweAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<int, 
   stats->reachTrans = renCompl.getTransCount();
   stats->engine = "Ranker";
   *complRes = renCompl;
+}
+
+BuchiAutomaton<int, int> createBA(vector<int>& loop)
+{
+  set<int> states = {0};
+  set<int> ini = {0};
+  set<int> fins = {0};
+  BuchiAutomaton<int, int>::Transitions trans;
+  for(int i = 0; i < (int)loop.size(); i++)
+  {
+    if(i == (int)loop.size() - 1)
+    {
+      trans[{i, loop[i]}] = set<int>({0});
+    }
+    else
+    {
+      trans[{i, loop[i]}] = set<int>({i+1});
+      states.insert(i+1);
+    }
+  }
+  return BuchiAutomaton<int, int>(states, fins, ini, trans);
 }
 
 

@@ -661,7 +661,9 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchStartReduced(set<int>& state, int
   vector<RankFunc> maxRanks;
 
   if(state.size() >= this->opt.ROMinState && m >= this->opt.ROMinRank)
+  {
     maxRanks = RankFunc::getRORanks(rankBound, state, fin, this->opt.cutPoint);
+  }
   else
   {
     int reachMaxAct = maxReach[sprime];
@@ -739,7 +741,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced()
     }
   }
 
-  int newState = this->getTransitions().size(); //Assumes numbered states: from 0, no gaps
+  int newState = this->getStates().size(); //Assumes numbered states: from 0, no gaps
   map<pair<DFAState,int>, StateSch> slTrans;
   for(const auto& pr : slNonEmpty)
   {
