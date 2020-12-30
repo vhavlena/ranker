@@ -1293,6 +1293,39 @@ BuchiAutomaton<StateSch, int> BuchiAutomaton<int, int>::getComplStructure(std::m
 }
 
 
+template <typename State, typename Symbol>
+bool BuchiAutomaton<State, Symbol>::isReachDeterministic(set<State>& start)
+{
+  set<State> visited(start.begin(), start.end());
+  stack<State> stack;
+  for(const auto& t : start)
+    stack.push(t);
+
+  while(stack.size() > 0)
+  {
+    State act = stack.top();
+    stack.pop();
+
+    for(const Symbol& sym : this->alph)
+    {
+      set<State> dest = this->trans[{act, sym}];
+      if(dest.size() > 1)
+        return false;
+      if(dest.size() == 1)
+      {
+        auto item = dest.begin();
+        if(visited.find(*item) == visited.end())
+        {
+          stack.push(*item);
+          visited.insert(*item);
+        }
+      }
+    }
+  }
+  return true;
+}
+
+
 template class BuchiAutomaton<int, int>;
 template class BuchiAutomaton<int, string>;
 template class BuchiAutomaton<tuple<int, int, bool>, int>;

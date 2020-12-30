@@ -76,6 +76,8 @@ protected:
     StateRelation& rel,StateRelation& nw);
   void transitiveClosure(StateRelation& rel, SetStates& cl);
 
+  bool isReachDeterministic(set<State>& start);
+
 public:
   BuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans)
   {
@@ -271,6 +273,8 @@ public:
   bool reachWithRestriction(const State& from, const State& to, SetStates& restr, SetStates& high);
 
   bool isEmpty();
+  bool isDeterministic() { return this->initials.size() <= 1 && isReachDeterministic(this->initials); }
+  bool isSemiDeterministic() { return isReachDeterministic(this->finals); }
 
   BuchiAutomaton<tuple<State, int, bool>, Symbol> productBA(BuchiAutomaton<int, Symbol>& other);
   BuchiAutomaton<State, Symbol> unionBA(BuchiAutomaton<State, Symbol>& other);
