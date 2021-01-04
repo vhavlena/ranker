@@ -50,7 +50,8 @@ BuchiAutomaton<int, int> parseRenameBA(ifstream& os, BuchiAutomaton<string, stri
 void complementAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<int, int>* complRes, Stat* stats)
 {
   BuchiAutomatonSpec sp(ren);
-  ComplOptions opt = { .cutPoint = true, .succEmptyCheck = true, .ROMinState = 8, .ROMinRank = 6, .CacheMaxState = 6, .CacheMaxRank = 8 };
+  ComplOptions opt = { .cutPoint = true, .succEmptyCheck = true, .ROMinState = 8,
+      .ROMinRank = 6, .CacheMaxState = 6, .CacheMaxRank = 8, .semidetOpt = false };
   sp.setComplOptions(opt);
   BuchiAutomaton<StateSch, int> comp;
   comp = sp.complementSchReduced();
@@ -103,7 +104,8 @@ void complementAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<int, int>* 
 void complementScheweAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<int, int>* complRes, Stat* stats)
 {
   BuchiAutomatonSpec sp(ren);
-  ComplOptions opt = { .cutPoint = true, .CacheMaxState = 6, .CacheMaxRank = 8 };
+  ComplOptions opt = { .cutPoint = true, .CacheMaxState = 6, .CacheMaxRank = 8,
+      .semidetOpt = false };
   sp.setComplOptions(opt);
   BuchiAutomaton<StateSch, int> comp;
   comp = sp.complementSchOpt();

@@ -983,6 +983,10 @@ map<DFAState, int> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSch, int
   map<set<int>, int> classesMap;
   int classes;
 
+  bool sd = false;
+  if(this->opt.semidetOpt && this->isSemiDeterministic())
+    sd = true;
+
   for(const StateSch& s : nfaSchewe.getStates())
   {
     rnkmap[s] = 0;
@@ -1004,6 +1008,10 @@ map<DFAState, int> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSch, int
         classes = classesMap[st];
       }
       rnkmap[s] = std::max(rnkmap[s], classes);
+      if(sd)
+      {
+        rnkmap[s] = std::min(rnkmap[s], 3);
+      }
     }
   }
 
