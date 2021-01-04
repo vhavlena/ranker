@@ -1,6 +1,11 @@
 
 #include "BuchiAutomaton.h"
 
+/*
+ * Get all symbols occuring within the transitions (requires iterating over all
+ * transitions).
+ * @return Set of symbols
+ */
 template <typename State, typename Symbol>
 std::set<Symbol> BuchiAutomaton<State, Symbol>::getAlph()
 {
@@ -11,6 +16,11 @@ std::set<Symbol> BuchiAutomaton<State, Symbol>::getAlph()
 }
 
 
+/*
+ * Rename states and symbols of the automaton (to consecutive numbers).
+ * @param start Starting number for states
+ * @return Renamed automaton
+ */
 template <typename State, typename Symbol>
 BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAut(int start)
 {
@@ -80,6 +90,13 @@ BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAut(int start)
 }
 
 
+/*
+ * Rename states and symbols of the automaton to numbers (symbols are renamed
+ * by the explicit map).
+ * @param mpsymbol Explicit map assigning numbers to original symbols
+ * @param start Starting number for states
+ * @return Renamed automaton
+ */
 template <typename State, typename Symbol>
 BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAutDict(map<Symbol, int>& mpsymbol, int start)
 {
@@ -148,6 +165,12 @@ BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAutDict(map<Symbol
 }
 
 
+/*
+ * Abstract function converting the automaton to string.
+ * @param stateStr Function converting a state to string
+ * @param symStr Function converting a symbol to string
+ * @return String representation of the automaton
+ */
 template <typename State, typename Symbol>
 std::string BuchiAutomaton<State, Symbol>::toStringWith(std::function<std::string(State)>& stateStr,
   std::function<std::string(Symbol)>& symStr)
@@ -170,6 +193,12 @@ std::string BuchiAutomaton<State, Symbol>::toStringWith(std::function<std::strin
 }
 
 
+/*
+ * Abstract function converting the automaton to gff format.
+ * @param stateStr Function converting a state to string
+ * @param symStr Function converting a symbol to string
+ * @return Gff representation of the automaton
+ */
 template <typename State, typename Symbol>
 std::string BuchiAutomaton<State, Symbol>::toGffWith(std::function<std::string(State)>& stateStr,
   std::function<std::string(Symbol)>& symStr)
@@ -214,6 +243,10 @@ std::string BuchiAutomaton<State, Symbol>::toGffWith(std::function<std::string(S
 }
 
 
+/*
+ * Function converting the automaton <string, string> to gff format.
+ * @return Gff representation of the automaton
+ */
 template <>
 std::string BuchiAutomaton<std::string, std::string>::toGff()
 {
@@ -223,6 +256,10 @@ std::string BuchiAutomaton<std::string, std::string>::toGff()
 }
 
 
+/*
+ * Function converting the automaton <int, int> to gff format.
+ * @return Gff representation of the automaton
+ */
 template <>
 std::string BuchiAutomaton<int, int>::toGff()
 {
@@ -231,6 +268,11 @@ std::string BuchiAutomaton<int, int>::toGff()
   return toGffWith(f1, f2);
 }
 
+
+/*
+ * Function converting the automaton <int, string> to hoa format.
+ * @return Hoa representation of the automaton
+ */
 template <>
 std::string BuchiAutomaton<int, string>::toHOA()
 {
@@ -303,6 +345,10 @@ std::string BuchiAutomaton<int, string>::toHOA()
 }
 
 
+/*
+ * Function converting the automaton <int, APSymbol> to hoa format.
+ * @return Hoa representation of the automaton
+ */
 template <>
 std::string BuchiAutomaton<int, APSymbol>::toHOA()
 {
@@ -358,6 +404,12 @@ std::string BuchiAutomaton<int, APSymbol>::toHOA()
 }
 
 
+/*
+ * Abstract function converting the automaton to graphwiz format.
+ * @param stateStr Function converting a state to string
+ * @param symStr Function converting a symbol to string
+ * @return Graphwiz representation of the automaton
+ */
 template <typename State, typename Symbol>
 std::string BuchiAutomaton<State, Symbol>::toGraphwizWith(std::function<std::string(State)>& stateStr,
   std::function<std::string(Symbol)>& symStr)
@@ -383,6 +435,10 @@ std::string BuchiAutomaton<State, Symbol>::toGraphwizWith(std::function<std::str
 }
 
 
+/*
+ * Function converting the automaton <int, int> to graphwiz format.
+ * @return Graphwiz representation of the automaton
+ */
 template <>
 std::string BuchiAutomaton<int, int>::toGraphwiz()
 {
@@ -391,6 +447,11 @@ std::string BuchiAutomaton<int, int>::toGraphwiz()
   return toGraphwizWith(f1, f2);
 }
 
+
+/*
+ * Function converting the automaton <StateSch, int> to graphwiz format.
+ * @return Graphwiz representation of the automaton
+ */
 template <>
 std::string BuchiAutomaton<StateSch, int>::toGraphwiz()
 {
@@ -399,6 +460,11 @@ std::string BuchiAutomaton<StateSch, int>::toGraphwiz()
   return toGraphwizWith(f1, f2);
 }
 
+
+/*
+ * Function converting the automaton <string, string> to graphwiz format.
+ * @return Graphwiz representation of the automaton
+ */
 template <>
 std::string BuchiAutomaton<std::string, std::string>::toGraphwiz()
 {
@@ -408,6 +474,10 @@ std::string BuchiAutomaton<std::string, std::string>::toGraphwiz()
 }
 
 
+/*
+ * Function converting the automaton <tuple<int, int, bool>, int> to graphwiz format.
+ * @return Graphwiz representation of the automaton
+ */
 template <>
 std::string BuchiAutomaton<tuple<int, int, bool>, int>::toGraphwiz()
 {
@@ -420,6 +490,11 @@ std::string BuchiAutomaton<tuple<int, int, bool>, int>::toGraphwiz()
   return toGraphwizWith(f1, f2);
 }
 
+
+/*
+ * Function converting the automaton <tuple<StateSch, int, bool>, int> to graphwiz format.
+ * @return Graphwiz representation of the automaton
+ */
 template <>
 std::string BuchiAutomaton<tuple<StateSch, int, bool>, int>::toGraphwiz()
 {
@@ -433,6 +508,10 @@ std::string BuchiAutomaton<tuple<StateSch, int, bool>, int>::toGraphwiz()
 }
 
 
+/*
+ * Function converting the automaton <int, int> to string.
+ * @return String representation of the automaton
+ */
 template <>
 std::string BuchiAutomaton<int, int>::toString()
 {
@@ -442,6 +521,10 @@ std::string BuchiAutomaton<int, int>::toString()
 }
 
 
+/*
+ * Function converting the automaton <string, string> to string.
+ * @return String representation of the automaton
+ */
 template <>
 std::string BuchiAutomaton<std::string, std::string>::toString()
 {
@@ -451,6 +534,10 @@ std::string BuchiAutomaton<std::string, std::string>::toString()
 }
 
 
+/*
+ * Function converting the automaton <StateKV, int> to string.
+ * @return String representation of the automaton
+ */
 template <>
 std::string BuchiAutomaton<StateKV, int>::toString()
 {
@@ -460,6 +547,10 @@ std::string BuchiAutomaton<StateKV, int>::toString()
 }
 
 
+/*
+ * Function converting the automaton <tuple<int, int, bool>, int> to string.
+ * @return String representation of the automaton
+ */
 template <>
 std::string BuchiAutomaton<tuple<int, int, bool>, int>::toString()
 {
@@ -473,6 +564,10 @@ std::string BuchiAutomaton<tuple<int, int, bool>, int>::toString()
 }
 
 
+/*
+ * Function converting the automaton <StateSch, int> to string.
+ * @return String representation of the automaton
+ */
 template <>
 std::string BuchiAutomaton<StateSch, int>::toString()
 {
@@ -482,6 +577,10 @@ std::string BuchiAutomaton<StateSch, int>::toString()
 }
 
 
+/*
+ * Function converting the automaton <int, APSymbol> to string.
+ * @return String representation of the automaton
+ */
 template <>
 std::string BuchiAutomaton<int, APSymbol>::toString()
 {

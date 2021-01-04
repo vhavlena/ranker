@@ -137,6 +137,12 @@ public:
   BuchiAutomaton<int, int> renameAut(int start = 0);
   BuchiAutomaton<int, int> renameAutDict(map<Symbol, int>& mpsymbol, int start = 0);
 
+
+  /*
+   * Rename symbols of the automaton.
+   * @param mpsymbol Map assigning to each original state a new state
+   * @return Renamed automaton
+   */
   template<typename NewSymbol>
   BuchiAutomaton<State, NewSymbol> renameAlphabet(map<Symbol, NewSymbol>& mpsymbol)
   {
@@ -168,79 +174,147 @@ public:
     return ret;
   }
 
+  /*
+   * Get automaton states.
+   * @return Set of states
+   */
   SetStates& getStates()
   {
     return this->states;
   }
 
+  /*
+   * Get automaton final states.
+   * @return Set of final states
+   */
   SetStates& getFinals()
   {
     return this->finals;
   }
 
+  /*
+   * Get automaton initial states.
+   * @return Set of initial states
+   */
   SetStates& getInitials()
   {
     return this->initials;
   }
 
+  /*
+   * Get automaton transitions.
+   * @return Transitions: map<pair<State, Symbol>, Set<States>>
+   */
   Transitions& getTransitions()
   {
     return this->trans;
   }
 
+  /*
+   * Get automaton alphabet.
+   * @return Set of symbols
+   */
   SetSymbols& getAlphabet()
   {
     return this->alph;
   }
 
+  /*
+   * Set automaton alphabet.
+   * @params st New set of symbols
+   */
   void setAlphabet(SetSymbols st)
   {
     this->alph = st;
   }
 
+  /*
+   * Get odd rank simulation (aka rank simulation) between states
+   * @return Set of pairs of states
+   */
   StateRelation& getOddRankSim()
   {
     return this->oddRankSim;
   }
+
+  /*
+   * Set odd rank simulation (aka rank simulation) between states
+   * @param rl Relation between states
+   */
   void setOddRankSim(StateRelation rl)
   {
     this->oddRankSim = rl;
   }
 
+  /*
+   * Set direct simulation between states
+   * @param rl Relation between states
+   */
   void setDirectSim(StateRelation rl)
   {
     this->directSim = rl;
   }
+
+  /*
+   * Get direct simulation between states
+   * @return Set of pairs of states
+   */
   StateRelation& getDirectSim()
   {
     return this->directSim;
   }
 
+  /*
+   * Get mapping used for renaming states of the automaton (created by calling
+   * of renameAut(dict) method)
+   * @return Mapping of states to int
+   */
   std::map<State, int>& getRenameStateMap()
   {
     return this->renameStateMap;
   }
 
+  /*
+   * Get mapping used for renaming symbols of the automaton (created by calling
+   * of renameAut method)
+   * @return Mapping of symbols to int
+   */
   std::map<Symbol, int>& getRenameSymbolMap()
   {
     return this->renameSymbolMap;
   }
 
+  /*
+   * Set mapping used for renaming states of the automaton.
+   * @param mp Mapping of states to int
+   */
   void setRenameStateMap(std::map<State, int> mp)
   {
     this->renameStateMap = mp;
   }
 
+  /*
+   * Get atomic propositions
+   * @return Vector of atomic propositions
+   */
   vector<string> getAPPattern()
   {
     return this->apsPattern;
   }
 
+  /*
+   * Set atomic propositions
+   * @param aps Vector of atomic propositions
+   */
   void setAPPattern(vector<string> aps)
   {
     this->apsPattern = aps;
   }
 
+  /*
+   * Get the number of simple transitions
+   * @return Transitions count
+   */
   int getTransCount() const
   {
     int cnt = 0;
@@ -273,8 +347,24 @@ public:
   bool reachWithRestriction(const State& from, const State& to, SetStates& restr, SetStates& high);
 
   bool isEmpty();
-  bool isDeterministic() { return this->initials.size() <= 1 && isReachDeterministic(this->initials); }
-  bool isSemiDeterministic() { return isReachDeterministic(this->finals); }
+
+  /*
+   * Is the automaton deterministic
+   * @return True deterministic, false otherwise
+   */
+  bool isDeterministic()
+  {
+    return this->initials.size() <= 1 && isReachDeterministic(this->initials);
+  }
+
+  /*
+   * Is the automaton semideterministic
+   * @return True semieterministic, false otherwise
+   */
+  bool isSemiDeterministic()
+  {
+    return isReachDeterministic(this->finals);
+  }
 
   BuchiAutomaton<tuple<State, int, bool>, Symbol> productBA(BuchiAutomaton<int, Symbol>& other);
   BuchiAutomaton<State, Symbol> unionBA(BuchiAutomaton<State, Symbol>& other);
