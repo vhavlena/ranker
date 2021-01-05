@@ -22,6 +22,9 @@ using std::tuple;
 
 class AutGraph;
 
+/*
+ * Single transition
+ */
 template <typename State, typename Symbol>
 struct Transition {
   State from;
@@ -29,12 +32,18 @@ struct Transition {
   Symbol symbol;
 };
 
+/*
+ * States extended with labels
+ */
 template <typename State>
 struct LabelState {
   State state;
   int label;
 };
 
+/*
+ * Transition function
+ */
 template<typename State, typename Symbol> using Delta = std::map<std::pair<State, Symbol>, std::set<State>>;
 
 template <typename State, typename Symbol>
