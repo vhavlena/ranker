@@ -15,6 +15,12 @@ namespace Aux
   vector< vector<int> > getAllSubsets(vector<int> set);
   string printVector(vector<int> st);
 
+  /*
+   * Cartesian product of two n-ary relations
+   * @param s1 First vector
+   * @param s2 Second vector
+   * @return Cartesian product of s1 and s2
+   */
   template <typename T>
   std::set<std::vector<T> > cartProduct(std::set<std::vector<T> > s1, std::set<std::vector<T> > s2)
   {
@@ -32,6 +38,11 @@ namespace Aux
   }
 
 
+  /*
+   * Cartesian product of a vector of n-ary relations
+   * @param slist Vector of relations
+   * @return Cartesian product of s1 and s2
+   */
   template <typename T>
   std::set<std::vector<T> > cartProductList(std::vector<std::set<std::vector<T> > > slist)
   {
@@ -48,6 +59,12 @@ namespace Aux
   }
 
 
+  /*
+   * Apply mapping on all items of a set
+   * @param mp Mapping to be applied
+   * @param st Set of elements to be transformed
+   * @return mp(st)
+   */
   template <typename T, typename S>
   std::set<S> mapSet(std::map<T, S>& mp, std::set<T>& st)
   {
@@ -58,6 +75,11 @@ namespace Aux
   }
 
 
+  /*
+   * Reverse a given mapping (assume it is a bijection)
+   * @param mp Mapping to be reversed
+   * @return Reversed map (switched key, value pairs)
+   */
   template<typename K, typename V>
   map<V, K> reverseMap(map<K, V>& mp)
   {

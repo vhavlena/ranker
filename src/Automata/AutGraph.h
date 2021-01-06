@@ -16,6 +16,9 @@ using std::vector;
 using std::string;
 using std::stack;
 
+/*
+ * Vertex with additional information for Tarjan
+ */
 struct VertItem {
   int label;
   int index;
@@ -56,11 +59,19 @@ public:
   set<int> reachableVertices(set<int>& from);
   static set<int> reachableVertices(AdjList &lst, set<int>& from);
 
+  /*
+   * Get SCCs containing at least one final state
+   * @return Vector of SCCs (set of vertices)
+   */
   SCCs& getFinalComponents()
   {
     return this->finalComponents;
   }
 
+  /*
+   * Get all SCCs
+   * @return Vector of SCCs (set of vertices)
+   */
   SCCs& getAllComponents()
   {
     return this->allComponents;

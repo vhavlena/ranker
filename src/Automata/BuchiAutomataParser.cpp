@@ -1,6 +1,11 @@
 
 #include "BuchiAutomataParser.h"
 
+/*
+ * Parse automaton in BA format
+ * @param os Input stream
+ * @return BA <string, string>
+ */
 BuchiAutomaton<string, string> BuchiAutomataParser::parseBaFormat(ifstream & os)
 {
   set<string> states;
@@ -45,6 +50,12 @@ BuchiAutomaton<string, string> BuchiAutomataParser::parseBaFormat(ifstream & os)
   return BuchiAutomaton<string, string>(states, fins, ini, trans, syms);
 }
 
+
+/*
+ * Parse transition in BA format
+ * @param line File line
+ * @return Parsed transition
+ */
 Transition<string, string> BuchiAutomataParser::parseBATransition(string line)
 {
   Transition<string, string> tr;
@@ -79,6 +90,11 @@ Transition<string, string> BuchiAutomataParser::parseBATransition(string line)
 }
 
 
+/*
+ * Parse automaton in GFF format
+ * @param str String with the automaton in GFF format
+ * @return Parsed BA <string, string>
+ */
 BuchiAutomaton<string, string> BuchiAutomataParser::parseGffFormat(string& str)
 {
   boost::algorithm::to_lower(str);
@@ -90,6 +106,11 @@ BuchiAutomaton<string, string> BuchiAutomataParser::parseGffFormat(string& str)
 }
 
 
+/*
+ * Parse automaton in GFF format
+ * @param os Input stream
+ * @return BA <string, string>
+ */
 BuchiAutomaton<string, string> BuchiAutomataParser::parseGffFormat(ifstream& is)
 {
   std::string str((std::istreambuf_iterator<char>(is)),
@@ -98,6 +119,11 @@ BuchiAutomaton<string, string> BuchiAutomataParser::parseGffFormat(ifstream& is)
 }
 
 
+/*
+ * Parse automaton from GFF XML tree
+ * @param tree Boost XML tree
+ * @return BA <string, string>
+ */
 BuchiAutomaton<string, string> BuchiAutomataParser::parseGffTree(pt::ptree& tree)
 {
   set<string> alph;
@@ -144,6 +170,11 @@ BuchiAutomaton<string, string> BuchiAutomataParser::parseGffTree(pt::ptree& tree
 }
 
 
+/*
+ * Parse GFF transition
+ * @param tree Boost XML tree corresponding to a single transition
+ * @return Transition
+ */
 Transition<string, string> BuchiAutomataParser::parseGffTransition(pt::ptree& tr)
 {
   Transition<string, string> ret;
@@ -162,6 +193,12 @@ Transition<string, string> BuchiAutomataParser::parseGffTransition(pt::ptree& tr
   return ret;
 }
 
+
+/*
+ * Parse automaton in HOA format
+ * @param os Input stream
+ * @return BA <int, APSymbol>
+ */
 BuchiAutomaton<int, APSymbol> BuchiAutomataParser::parseHoaFormat(ifstream & os)
 {
   set<int> states;
@@ -233,7 +270,13 @@ BuchiAutomaton<int, APSymbol> BuchiAutomataParser::parseHoaFormat(ifstream & os)
   return BuchiAutomaton<int, APSymbol>(states, fins, ini, trans, syms, aps);
 }
 
-
+/*
+ * Parse single transition in HOA format
+ * @param srcstate Source state
+ * @param apNum Number of APs
+ * @param line String with the transition
+ * @return Transition
+ */
 Transition<int, APSymbol> BuchiAutomataParser::parseHoaTransition(int srcstate, int apNum, string& line)
 {
   boost::regex e("\\s*\\[([!&\\|\\s0-9]+)\\]\\s*([0-9]+)");
@@ -251,6 +294,13 @@ Transition<int, APSymbol> BuchiAutomataParser::parseHoaTransition(int srcstate, 
 }
 
 
+/*
+ * Parse HOA body (transition function with accepting states)
+ * @param apNum Number of APs
+ * @param os Input stream
+ * @param fin Final states (out parameter)
+ * @return Transition function
+ */
 Delta<int, APSymbol> BuchiAutomataParser::parseHoaBody(int apNum, ifstream & os, set<int>& fin)
 {
   Delta<int, APSymbol> trans;
@@ -303,6 +353,12 @@ Delta<int, APSymbol> BuchiAutomataParser::parseHoaBody(int apNum, ifstream & os,
 }
 
 
+/*
+ * Parse HOA expression
+ * @param line String with an expression
+ * @param apNum Number of APs
+ * @return APSymbol corresponding to the model of given expression
+ */
 APSymbol BuchiAutomataParser::parseHoaExpression(string& line, int apNum)
 {
   //remove whitespaces

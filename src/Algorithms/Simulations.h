@@ -19,8 +19,14 @@
 
 using namespace std;
 
+/*
+ * Relation type
+ */
 template<typename State> using Relation = set<pair<State, State>>;
 
+/*
+ * Timeout expired exception
+ */
 class TimeoutException: public exception
 {
   virtual const char* what() const throw()
@@ -29,6 +35,9 @@ class TimeoutException: public exception
   }
 };
 
+/*
+ * Rabit relation element
+ */
 struct RabitSimLine
 {
   pair<string, string> rel;
@@ -46,6 +55,12 @@ public:
   static string execCmdTO(string& cmd, int timeout = 1000);
   static string execCmd(string& cmd);
 
+  /*
+   * Compute direct simulation
+   * @param ba Buchi automaton
+   * @param sink Sink state
+   * @return Direct simulation
+   */
   template<typename State, typename Symbol>
   Relation<State> directSimulation(BuchiAutomaton<State, Symbol>& ba, State sink)
   {
@@ -66,6 +81,12 @@ public:
   };
 
 protected:
+
+  /*
+   * Compute complement of direct simulation
+   * @param ba Buchi automaton
+   * @return Complement of direct simulation
+   */
   template<typename State, typename Symbol>
   Relation<State> computeDirectCompl(BuchiAutomaton<State, Symbol>& ba)
   {
