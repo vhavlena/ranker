@@ -1,6 +1,12 @@
 
 #include "BuchiAutomatonSpec.h"
 
+/*
+ * Set of all successors.
+ * @param states Set of states to get successors
+ * @param symbol Symbol
+ * @return Set of successors over symbol
+ */
 set<int> BuchiAutomatonSpec::succSet(set<int>& states, int symbol)
 {
   set<int> ret;
@@ -13,6 +19,12 @@ set<int> BuchiAutomatonSpec::succSet(set<int>& states, int symbol)
 }
 
 
+/*
+ * Set of all successors in KV construction.
+ * @param state State
+ * @param symbol Symbol
+ * @return Set of successors over symbol in KV construction
+ */
 set<StateKV> BuchiAutomatonSpec::succSetKV(StateKV& state, int symbol)
 {
   set<StateKV> ret;
@@ -55,6 +67,12 @@ set<StateKV> BuchiAutomatonSpec::succSetKV(StateKV& state, int symbol)
   return ret;
 }
 
+/*
+ * Compute rank restriction for the generation of all possible ranks
+ * @param max Vector of maximal ranks (indexed by states)
+ * @param states Set of states in a macrostate (the S-set)
+ * @return Rank restriction
+ */
 RankConstr BuchiAutomatonSpec::rankConstr(vector<int>& max, set<int>& states)
 {
   RankConstr constr;
@@ -76,6 +94,12 @@ RankConstr BuchiAutomatonSpec::rankConstr(vector<int>& max, set<int>& states)
 }
 
 
+/*
+ * Get all ranks in KV construction
+ * @param max Vector of maximal ranks (indexed by states)
+ * @param states Set of states in a macrostate (the S-set)
+ * @return All ranks fulfilling the max constraint
+ */
 vector<RankFunc> BuchiAutomatonSpec::getKVRanks(vector<int>& max, set<int>& states)
 {
   RankConstr constr = rankConstr(max, states);
@@ -83,6 +107,10 @@ vector<RankFunc> BuchiAutomatonSpec::getKVRanks(vector<int>& max, set<int>& stat
 }
 
 
+/*
+ * KV complementation proceudre
+ * @return Complemented automaton
+ */
 BuchiAutomaton<StateKV, int> BuchiAutomatonSpec::complementKV()
 {
   std::stack<StateKV> stack;
@@ -133,6 +161,17 @@ BuchiAutomaton<StateKV, int> BuchiAutomatonSpec::complementKV()
 }
 
 
+/*
+ * Get all tight ranks
+ * @param out Out parameter to store tight ranks
+ * @param max Vector of maximal ranks (indexed by states)
+ * @param states Set of states in a macrostate (the S-set)
+ * @param macrostate Current macrostate
+ * @param reachCons SuccRank restriction
+ * @param reachMax Maximum reachable macrostate
+ * @param dirRel Direct simulation
+ * @param oddRel Rank simulation
+ */
 void BuchiAutomatonSpec::getSchRanksTight(vector<RankFunc>& out, vector<int>& max,
     set<int>& states, StateSch& macrostate,
     map<int, int> reachCons, int reachMax, BackRel& dirRel, BackRel& oddRel)
@@ -172,6 +211,18 @@ void BuchiAutomatonSpec::getSchRanksTight(vector<RankFunc>& out, vector<int>& ma
   }
 }
 
+
+/*
+ * Get starting states of the tight part
+ * @param state DFA macrostate
+ * @param rankBound Maximum rank
+ * @param macrostate Current macrostate
+ * @param reachCons SuccRank restriction
+ * @param reachMax Maximum reachable macrostate
+ * @param dirRel Direct simulation
+ * @param oddRel Rank simulation
+ * @return Set of first states in the tight part
+ */
 vector<StateSch> BuchiAutomatonSpec::succSetSchStart(set<int>& state, int rankBound,
     map<int, int> reachCons, map<DFAState, int> maxReach, BackRel& dirRel,
     BackRel& oddRel)
@@ -201,6 +252,13 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchStart(set<int>& state, int rankBo
 }
 
 
+/*
+ * Get all ranking functions (use cache memory)
+ * @param out Out parameter to store tight ranks
+ * @param state Schewe state (macrostate)
+ * @param symbol Symbol
+ * @return Is successor found in cache?
+ */
 bool BuchiAutomatonSpec::getRankSuccCache(vector<RankFunc>& out, StateSch& state, int symbol)
 {
   auto it = this->rankCache.find({state.S, symbol, state.f.getMaxRank()});
@@ -223,6 +281,16 @@ bool BuchiAutomatonSpec::getRankSuccCache(vector<RankFunc>& out, StateSch& state
 }
 
 
+/*
+ * Get all Schewe successros
+ * @param state Schewe state
+ * @param symbol Symbol
+ * @param reachCons SuccRank restriction
+ * @param reachMax Maximum reachable macrostate
+ * @param dirRel Direct simulation
+ * @param oddRel Rank simulation
+ * @return Set of all successors
+ */
 vector<StateSch> BuchiAutomatonSpec::succSetSchTight(StateSch& state, int symbol,
     map<int, int> reachCons, map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel)
 {
@@ -315,6 +383,11 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTight(StateSch& state, int symbol
 }
 
 
+/*
+ * Create backward relation from a relation (special representation)
+ * @param rel Relation between states
+ * @return Backward representation of rel
+ */
 BackRel BuchiAutomatonSpec::createBackRel(BuchiAutomaton<int, int>::StateRelation& rel)
 {
   BackRel bRel(this->getStates().size());
@@ -331,6 +404,10 @@ BackRel BuchiAutomatonSpec::createBackRel(BuchiAutomaton<int, int>::StateRelatio
 }
 
 
+/*
+ * Schewe complementation proceudre
+ * @return Complemented automaton
+ */
 BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSch()
 {
   std::stack<StateSch> stack;
@@ -420,6 +497,17 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSch()
 }
 
 
+/*
+ * Get all tight ranks in optimized Schewe construction
+ * @param out Out parameter to store tight ranks
+ * @param max Vector of maximal ranks (indexed by states)
+ * @param states Set of states in a macrostate (the S-set)
+ * @param macrostate Current macrostate
+ * @param reachCons SuccRank restriction
+ * @param reachMax Maximum reachable macrostate
+ * @param dirRel Direct simulation
+ * @param oddRel Rank simulation
+ */
 void BuchiAutomatonSpec::getSchRanksTightReduced(vector<RankFunc>& out, vector<int>& max,
     set<int>& states, int symbol, StateSch& macrostate,
     map<int, int> reachCons, int reachMax, BackRel& dirRel, BackRel& oddRel)
@@ -482,6 +570,16 @@ void BuchiAutomatonSpec::getSchRanksTightReduced(vector<RankFunc>& out, vector<i
 }
 
 
+/*
+ * Get all Schewe successros (optimized version)
+ * @param state Schewe state
+ * @param symbol Symbol
+ * @param reachCons SuccRank restriction
+ * @param reachMax Maximum reachable macrostate
+ * @param dirRel Direct simulation
+ * @param oddRel Rank simulation
+ * @return Set of all successors
+ */
 vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int symbol,
     map<int, int> reachCons, map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel)
 {
@@ -500,37 +598,11 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
     for(int d : dst)
     {
       maxRank[d] = std::min(maxRank[d], state.f[st]);
-      // auto it = pre.find(d);
-      // if(it != pre.end())
-      // {
-      //   if(fin.find(d) != fin.end())
-      //     pre[d] = true;
-      // }
-      // else
-      // {
-      //   if(fin.find(d) != fin.end())
-      //     pre[d] = true;
-      //   else
-      //     pre[d] = false;
-      // }
     }
     sprime.insert(dst.begin(), dst.end());
     if(fin.find(st) == fin.end())
       succ[st] = dst;
 
-    // BEWARE
-    // if(state.f.find(st)->second == 0)
-    // {
-    //   return ret;
-    // }
-    // if(state.f.find(st)->second == 0 && reachCons[st] > 0)
-    // {
-    //   return ret;
-    // }
-    // if(dst.size() == 0 && state.f.find(st)->second != 0)
-    // {
-    //   return ret;
-    // }
   }
 
   if(this->rankBound[state.S]*2-1 < state.f.getMaxRank() || this->rankBound[sprime]*2-1 < state.f.getMaxRank())
@@ -639,6 +711,17 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
   return vector<StateSch>(retAll.begin(), retAll.end());
 }
 
+
+/*
+ * Get starting states of the tight part (optimized version)
+ * @param state DFA macrostate
+ * @param rankBound Maximum rank
+ * @param reachCons SuccRank restriction
+ * @param maxReach Maximum reachable macrostate
+ * @param dirRel Direct simulation
+ * @param oddRel Rank simulation
+ * @return Set of first states in the tight part (optimized version)
+ */
 vector<StateSch> BuchiAutomatonSpec::succSetSchStartReduced(set<int>& state, int rankBound,
     map<int, int> reachCons, map<DFAState, int> maxReach, BackRel& dirRel,
     BackRel& oddRel)
@@ -698,7 +781,10 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchStartReduced(set<int>& state, int
 }
 
 
-
+/*
+ * Optimized Schewe complementation procedure
+ * @return Complemented automaton
+ */
 BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced()
 {
   std::stack<StateSch> stack;
@@ -835,6 +921,10 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced()
 }
 
 
+/*
+ * Get deterministic part in Schewe construction
+ * @return Deterministic part (NFA part)
+ */
 BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchNFA(set<int>& start)
 {
   std::stack<StateSch> stack;
@@ -882,6 +972,12 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchNFA(set<int>& sta
 }
 
 
+/*
+ * Is the self-loop accepting?
+ * @param state Macrostate with selfloop
+ * @param alp Alphabet
+ * @return Is sl accepting
+ */
 bool BuchiAutomatonSpec::acceptSl(StateSch& state, vector<int>& alp)
 {
   set<int> rel;
@@ -936,6 +1032,11 @@ bool BuchiAutomatonSpec::acceptSl(StateSch& state, vector<int>& alp)
 }
 
 
+/*
+ * Get macrostates with accepting self-loop
+ * @param nfaSchewe Deterministic part
+ * @return Set of accepting self-loops
+ */
 set<StateSch> BuchiAutomatonSpec::nfaSlAccept(BuchiAutomaton<StateSch, int>& nfaSchewe)
 {
   vector<int> alph;
@@ -954,6 +1055,11 @@ set<StateSch> BuchiAutomatonSpec::nfaSlAccept(BuchiAutomaton<StateSch, int>& nfa
 }
 
 
+/*
+ * Get macrostates with self-loop over single symbol not accepting
+ * @param nfaSchewe Deterministic part
+ * @return Set of not accepting self-loops with symbols
+ */
 set<pair<DFAState,int>> BuchiAutomatonSpec::nfaSingleSlNoAccept(BuchiAutomaton<StateSch, int>& nfaSchewe)
 {
   vector<int> alph;
@@ -972,6 +1078,14 @@ set<pair<DFAState,int>> BuchiAutomatonSpec::nfaSingleSlNoAccept(BuchiAutomaton<S
 }
 
 
+/*
+ * Get rank bound for each macrostate
+ * @param nfaSchewe Deterministic part
+ * @param slignore Self-loops to be ignored
+ * @param maxReachSize Maximum reachable macrostate
+ * @param minReachSize Minimum reachable macrostate
+ * @return Rank bound for each macrostate
+ */
 map<DFAState, int> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSch, int>& nfaSchewe, set<StateSch>& slignore, map<DFAState, int>& maxReachSize, map<int, int>& minReachSize)
 {
   set<int> nofin;
@@ -1098,6 +1212,12 @@ map<DFAState, int> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSch, int
 }
 
 
+/*
+ * Get maximum reachable macrostate for each macrostate
+ * @param nfaSchewe Deterministic part
+ * @param slignore Self-loops to be ignored
+ * @return Maximum reachable macrostate for each macrostate
+ */
 map<DFAState, int> BuchiAutomatonSpec::getMaxReachSize(BuchiAutomaton<StateSch, int>& nfaSchewe, set<StateSch>& slIgnore)
 {
   auto updMaxFnc = [&slIgnore] (LabelState<StateSch>* a, const std::vector<LabelState<StateSch>*> sts) -> int
@@ -1125,6 +1245,10 @@ map<DFAState, int> BuchiAutomatonSpec::getMaxReachSize(BuchiAutomaton<StateSch, 
 }
 
 
+/*
+ * Get maximum reachable macrostate for each state of the original automaton
+ * @return Maximum reachable macrostate for each state
+ */
 map<int, int> BuchiAutomatonSpec::getMinReachSize()
 {
   set<StateSch> slIgnore;
@@ -1169,6 +1293,10 @@ map<int, int> BuchiAutomatonSpec::getMinReachSize()
 }
 
 
+/*
+ * Get maximum reachable macrostate for each state
+ * @return Maximum reachable macrostate for each state
+ */
 map<int, int> BuchiAutomatonSpec::getMaxReachSizeInd()
 {
   set<StateSch> slIgnore;
@@ -1213,6 +1341,17 @@ map<int, int> BuchiAutomatonSpec::getMaxReachSizeInd()
 }
 
 
+/*
+ * Get all tight ranks (with RankRestr)
+ * @param out Out parameter to store tight ranks
+ * @param max Vector of maximal ranks (indexed by states)
+ * @param states Set of states in a macrostate (the S-set)
+ * @param macrostate Current macrostate
+ * @param reachCons SuccRank restriction
+ * @param reachMax Maximum reachable macrostate
+ * @param dirRel Direct simulation
+ * @param oddRel Rank simulation
+ */
 void BuchiAutomatonSpec::getSchRanksTightOpt(vector<RankFunc>& out, vector<int>& max,
     set<int>& states, StateSch& macrostate,
     map<int, int> reachCons, int reachMax, BackRel& dirRel, BackRel& oddRel)
@@ -1245,6 +1384,16 @@ void BuchiAutomatonSpec::getSchRanksTightOpt(vector<RankFunc>& out, vector<int>&
 }
 
 
+/*
+ * Get all Schewe successros (with RankRestr)
+ * @param state Schewe state
+ * @param symbol Symbol
+ * @param reachCons SuccRank restriction
+ * @param maxReach Maximum reachable macrostate
+ * @param dirRel Direct simulation
+ * @param oddRel Rank simulation
+ * @return Set of all successors
+ */
 vector<StateSch> BuchiAutomatonSpec::succSetSchTightOpt(StateSch& state, int symbol,
     map<int, int> reachCons, map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel)
 {
@@ -1332,7 +1481,17 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightOpt(StateSch& state, int sym
 }
 
 
-
+/*
+ * Get starting states of the tight part (with RankRestr)
+ * @param state DFA macrostate
+ * @param rankBound Maximum rank
+ * @param macrostate Current macrostate
+ * @param reachCons SuccRank restriction
+ * @param maxReach Maximum reachable macrostate
+ * @param dirRel Direct simulation
+ * @param oddRel Rank simulation
+ * @return Set of first states in the tight part
+ */
 vector<StateSch> BuchiAutomatonSpec::succSetSchStartOpt(set<int>& state, int rankBound,
     map<int, int> reachCons, map<DFAState, int> maxReach, BackRel& dirRel,
     BackRel& oddRel)
@@ -1362,8 +1521,10 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchStartOpt(set<int>& state, int ran
 }
 
 
-
-
+/*
+ * Schewe complementation proceudre (with RankRestr)
+ * @return Complemented automaton
+ */
 BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchOpt()
 {
   std::stack<StateSch> stack;

@@ -22,8 +22,14 @@ using std::set;
 using std::map;
 
 typedef set<int> DFAState;
+/*
+ * Successor cache data type
+ */
 typedef map<std::tuple<DFAState, int, int>, vector<std::pair<RankFunc,vector<RankFunc>>>> SuccRankCache;
 
+/*
+ * Specified Buchi automata with complementation
+ */
 class BuchiAutomatonSpec : public BuchiAutomaton<int, int>
 {
 private:
