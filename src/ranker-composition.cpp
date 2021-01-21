@@ -115,6 +115,7 @@ int main(int argc, char *argv[])
         symDictStrInt.insert({to_string(t.first), t.first});
       }
       BuchiAutomaton<int, APSymbol> outOrig = bagff.renameAutDict(symDictStrInt).renameAlphabet(symDict);
+      outOrig.completeAPComplement();
 
       stats.engine = "GOAL";
       stats.duration = NAN;
