@@ -12,6 +12,8 @@ struct ComplOptions
 
   unsigned CacheMaxState = 6;
   int CacheMaxRank = 8;
+
+  bool semidetOpt = false;
 };
 
 #endif

@@ -8,6 +8,9 @@
 
 #include "RankFunc.h"
 
+/*
+ * State of the KV construction
+ */
 struct StateKV {
   std::set<int> S;
   std::set<int> O;

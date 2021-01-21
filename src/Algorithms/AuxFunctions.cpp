@@ -3,7 +3,12 @@
 
 namespace Aux
 {
-
+/*
+ * Count equivalence classes in the maximal equivalence fragment of a give relation.
+ * @param n Number of elements of a set
+ * @param st Set of states
+ * @return Number of classes
+ */
 int countEqClasses(int n, set<int>& st, set<pair<int, int>>& rel)
 {
   vector<int> cl(n);
@@ -42,6 +47,11 @@ int countEqClasses(int n, set<int>& st, set<pair<int, int>>& rel)
 }
 
 
+/*
+ * Get all subsets of a given vector
+ * @param set Set represented as a vector
+ * @return All subsets
+ */
 vector< vector<int> > getAllSubsets(vector<int> set)
 {
   vector< vector<int> > subset;
@@ -60,6 +70,12 @@ vector< vector<int> > getAllSubsets(vector<int> set)
   return subset;
 }
 
+
+/*
+ * Convert to string the contents of a given vector
+ * @param st Vector to be converted to string
+ * @return String representation
+ */
 string printVector(vector<int> st)
 {
   string ret;

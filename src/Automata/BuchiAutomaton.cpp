@@ -1,6 +1,11 @@
 
 #include "BuchiAutomaton.h"
 
+/*
+ * Get all symbols occuring within the transitions (requires iterating over all
+ * transitions).
+ * @return Set of symbols
+ */
 template <typename State, typename Symbol>
 std::set<Symbol> BuchiAutomaton<State, Symbol>::getAlph()
 {
@@ -11,6 +16,11 @@ std::set<Symbol> BuchiAutomaton<State, Symbol>::getAlph()
 }
 
 
+/*
+ * Rename states and symbols of the automaton (to consecutive numbers).
+ * @param start Starting number for states
+ * @return Renamed automaton
+ */
 template <typename State, typename Symbol>
 BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAut(int start)
 {
@@ -80,6 +90,13 @@ BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAut(int start)
 }
 
 
+/*
+ * Rename states and symbols of the automaton to numbers (symbols are renamed
+ * by the explicit map).
+ * @param mpsymbol Explicit map assigning numbers to original symbols
+ * @param start Starting number for states
+ * @return Renamed automaton
+ */
 template <typename State, typename Symbol>
 BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAutDict(map<Symbol, int>& mpsymbol, int start)
 {
@@ -148,6 +165,12 @@ BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAutDict(map<Symbol
 }
 
 
+/*
+ * Abstract function converting the automaton to string.
+ * @param stateStr Function converting a state to string
+ * @param symStr Function converting a symbol to string
+ * @return String representation of the automaton
+ */
 template <typename State, typename Symbol>
 std::string BuchiAutomaton<State, Symbol>::toStringWith(std::function<std::string(State)>& stateStr,
   std::function<std::string(Symbol)>& symStr)
@@ -170,6 +193,12 @@ std::string BuchiAutomaton<State, Symbol>::toStringWith(std::function<std::strin
 }
 
 
+/*
+ * Abstract function converting the automaton to gff format.
+ * @param stateStr Function converting a state to string
+ * @param symStr Function converting a symbol to string
+ * @return Gff representation of the automaton
+ */
 template <typename State, typename Symbol>
 std::string BuchiAutomaton<State, Symbol>::toGffWith(std::function<std::string(State)>& stateStr,
   std::function<std::string(Symbol)>& symStr)
@@ -214,6 +243,10 @@ std::string BuchiAutomaton<State, Symbol>::toGffWith(std::function<std::string(S
 }
 
 
+/*
+ * Function converting the automaton <string, string> to gff format.
+ * @return Gff representation of the automaton
+ */
 template <>
 std::string BuchiAutomaton<std::string, std::string>::toGff()
 {
@@ -223,6 +256,10 @@ std::string BuchiAutomaton<std::string, std::string>::toGff()
 }
 
 
+/*
+ * Function converting the automaton <int, int> to gff format.
+ * @return Gff representation of the automaton
+ */
 template <>
 std::string BuchiAutomaton<int, int>::toGff()
 {
@@ -231,6 +268,11 @@ std::string BuchiAutomaton<int, int>::toGff()
   return toGffWith(f1, f2);
 }
 
+
+/*
+ * Function converting the automaton <int, string> to hoa format.
+ * @return Hoa representation of the automaton
+ */
 template <>
 std::string BuchiAutomaton<int, string>::toHOA()
 {
@@ -254,6 +296,7 @@ std::string BuchiAutomaton<int, string>::toHOA()
 
   res += "acc-name: Buchi\n";
   res += "Acceptance: 1 Inf(0)\n";
+  res += "properties: trans-labels explicit-labels state-acc\n";
   res += "AP: " + std::to_string(alph_size);
 
   // renumber symbols
@@ -303,6 +346,10 @@ std::string BuchiAutomaton<int, string>::toHOA()
 }
 
 
+/*
+ * Function converting the automaton <int, APSymbol> to hoa format.
+ * @return Hoa representation of the automaton
+ */
 template <>
 std::string BuchiAutomaton<int, APSymbol>::toHOA()
 {
@@ -326,6 +373,7 @@ std::string BuchiAutomaton<int, APSymbol>::toHOA()
 
   res += "acc-name: Buchi\n";
   res += "Acceptance: 1 Inf(0)\n";
+  res += "properties: trans-labels explicit-labels state-acc\n";
   res += "AP: " + std::to_string(this->apsPattern.size());
 
   for (auto symb : this->apsPattern) {
@@ -358,6 +406,12 @@ std::string BuchiAutomaton<int, APSymbol>::toHOA()
 }
 
 
+/*
+ * Abstract function converting the automaton to graphwiz format.
+ * @param stateStr Function converting a state to string
+ * @param symStr Function converting a symbol to string
+ * @return Graphwiz representation of the automaton
+ */
 template <typename State, typename Symbol>
 std::string BuchiAutomaton<State, Symbol>::toGraphwizWith(std::function<std::string(State)>& stateStr,
   std::function<std::string(Symbol)>& symStr)
@@ -383,6 +437,10 @@ std::string BuchiAutomaton<State, Symbol>::toGraphwizWith(std::function<std::str
 }
 
 
+/*
+ * Function converting the automaton <int, int> to graphwiz format.
+ * @return Graphwiz representation of the automaton
+ */
 template <>
 std::string BuchiAutomaton<int, int>::toGraphwiz()
 {
@@ -391,6 +449,11 @@ std::string BuchiAutomaton<int, int>::toGraphwiz()
   return toGraphwizWith(f1, f2);
 }
 
+
+/*
+ * Function converting the automaton <StateSch, int> to graphwiz format.
+ * @return Graphwiz representation of the automaton
+ */
 template <>
 std::string BuchiAutomaton<StateSch, int>::toGraphwiz()
 {
@@ -399,6 +462,11 @@ std::string BuchiAutomaton<StateSch, int>::toGraphwiz()
   return toGraphwizWith(f1, f2);
 }
 
+
+/*
+ * Function converting the automaton <string, string> to graphwiz format.
+ * @return Graphwiz representation of the automaton
+ */
 template <>
 std::string BuchiAutomaton<std::string, std::string>::toGraphwiz()
 {
@@ -408,6 +476,10 @@ std::string BuchiAutomaton<std::string, std::string>::toGraphwiz()
 }
 
 
+/*
+ * Function converting the automaton <tuple<int, int, bool>, int> to graphwiz format.
+ * @return Graphwiz representation of the automaton
+ */
 template <>
 std::string BuchiAutomaton<tuple<int, int, bool>, int>::toGraphwiz()
 {
@@ -420,6 +492,11 @@ std::string BuchiAutomaton<tuple<int, int, bool>, int>::toGraphwiz()
   return toGraphwizWith(f1, f2);
 }
 
+
+/*
+ * Function converting the automaton <tuple<StateSch, int, bool>, int> to graphwiz format.
+ * @return Graphwiz representation of the automaton
+ */
 template <>
 std::string BuchiAutomaton<tuple<StateSch, int, bool>, int>::toGraphwiz()
 {
@@ -433,6 +510,10 @@ std::string BuchiAutomaton<tuple<StateSch, int, bool>, int>::toGraphwiz()
 }
 
 
+/*
+ * Function converting the automaton <int, int> to string.
+ * @return String representation of the automaton
+ */
 template <>
 std::string BuchiAutomaton<int, int>::toString()
 {
@@ -442,6 +523,10 @@ std::string BuchiAutomaton<int, int>::toString()
 }
 
 
+/*
+ * Function converting the automaton <string, string> to string.
+ * @return String representation of the automaton
+ */
 template <>
 std::string BuchiAutomaton<std::string, std::string>::toString()
 {
@@ -458,6 +543,10 @@ std::string BuchiAutomaton<int, std::string>::toString()
   return toStringWith(f1, f2);
 }
 
+/*
+ * Function converting the automaton <StateKV, int> to string.
+ * @return String representation of the automaton
+ */
 template <>
 std::string BuchiAutomaton<StateKV, int>::toString()
 {
@@ -467,6 +556,10 @@ std::string BuchiAutomaton<StateKV, int>::toString()
 }
 
 
+/*
+ * Function converting the automaton <tuple<int, int, bool>, int> to string.
+ * @return String representation of the automaton
+ */
 template <>
 std::string BuchiAutomaton<tuple<int, int, bool>, int>::toString()
 {
@@ -480,6 +573,10 @@ std::string BuchiAutomaton<tuple<int, int, bool>, int>::toString()
 }
 
 
+/*
+ * Function converting the automaton <StateSch, int> to string.
+ * @return String representation of the automaton
+ */
 template <>
 std::string BuchiAutomaton<StateSch, int>::toString()
 {
@@ -489,6 +586,10 @@ std::string BuchiAutomaton<StateSch, int>::toString()
 }
 
 
+/*
+ * Function converting the automaton <int, APSymbol> to string.
+ * @return String representation of the automaton
+ */
 template <>
 std::string BuchiAutomaton<int, APSymbol>::toString()
 {
@@ -498,6 +599,13 @@ std::string BuchiAutomaton<int, APSymbol>::toString()
 }
 
 
+/*
+ * Function converting the automaton <int, int> to graph representation using
+ * list of adjacent vertices. Assumes automaton to have states numbered from 0
+ * (no gaps).
+ * @return adjList List of adjacent vertices
+ * @return vrt Vector of vertices
+ */
 template <>
 void BuchiAutomaton<int, int>::getAutGraphComponents(AdjList& adjList, Vertices& vrt)
 {
@@ -518,6 +626,10 @@ void BuchiAutomaton<int, int>::getAutGraphComponents(AdjList& adjList, Vertices&
 }
 
 
+/*
+ * Remove unreachable and nonaccepting states from the automaton (in place
+ * modification, assumes states numbered from 0 with no gaps).
+ */
 template <>
 void BuchiAutomaton<int, int>::removeUseless()
 {
@@ -550,6 +662,10 @@ void BuchiAutomaton<int, int>::removeUseless()
 }
 
 
+/*
+ * Restrict the automaton wrt given states (in place modification).
+ * @param st States that remain in the automaton
+ */
 template <typename State, typename Symbol>
 void BuchiAutomaton<State, Symbol>::restriction(set<State>& st)
 {
@@ -578,6 +694,11 @@ void BuchiAutomaton<State, Symbol>::restriction(set<State>& st)
 }
 
 
+/*
+ * Complete  the automaton (in place modification)
+ * @param trap New (possibly) trap state
+ * @param fin Should be the trap state final?
+ */
 template <typename State, typename Symbol>
 void BuchiAutomaton<State, Symbol>::complete(State trap, bool fin)
 {
@@ -618,6 +739,10 @@ void BuchiAutomaton<State, Symbol>::complete(State trap, bool fin)
 }
 
 
+/*
+ * Complete  the automaton wrt all subsets of atomic propositions (in
+ * place modification)
+ */
 template <>
 void BuchiAutomaton<int, APSymbol>::completeAPComplement()
 {
@@ -640,6 +765,11 @@ void BuchiAutomaton<int, APSymbol>::completeAPComplement()
 }
 
 
+/*
+ * For each state compute a set of reachable states (assumes numbered states
+ * from 0 with no gaps).
+ * @return Vector of sets of reachable states
+ */
 template <>
 vector<set<int> > BuchiAutomaton<int, int>::reachableVector()
 {
@@ -668,6 +798,10 @@ vector<set<int> > BuchiAutomaton<int, int>::reachableVector()
 }
 
 
+/*
+ * Compute the odd rank simulation (stores in this->oddRankSim)
+ * @param cl Closure of states
+ */
 template <typename State, typename Symbol>
 void BuchiAutomaton<State, Symbol>::computeRankSim(std::set<State>& cl)
 {
@@ -707,6 +841,10 @@ void BuchiAutomaton<State, Symbol>::computeRankSim(std::set<State>& cl)
 }
 
 
+/*
+ * Function checking wheather odd rank sim contains equivalent pairs.
+ * @param cl Closure of states
+ */
 template <typename State, typename Symbol>
 bool BuchiAutomaton<State, Symbol>::containsRankSimEq(std::set<State>& cl)
 {
@@ -722,6 +860,11 @@ bool BuchiAutomaton<State, Symbol>::containsRankSimEq(std::set<State>& cl)
 }
 
 
+/*
+ * Function computing transitive closure of give relation
+ * @param rel Relation (out parameter)
+ * @param cl Closure of states (for computation of odd rank simulation)
+ */
 template <typename State, typename Symbol>
 void BuchiAutomaton<State, Symbol>::transitiveClosure(
     BuchiAutomaton<State, Symbol>::StateRelation& rel, std::set<State>& cl)
@@ -746,6 +889,12 @@ void BuchiAutomaton<State, Symbol>::transitiveClosure(
 }
 
 
+/*
+ * Get constraints for two states wrt odd rank simulation
+ * @param st1 First state
+ * @param st2 Second state
+ * @param rel odd rank simulation
+ */
 template <typename State, typename Symbol>
 bool BuchiAutomaton<State, Symbol>::deriveRankConstr(State& st1, State& st2,
     BuchiAutomaton<State, Symbol>::StateRelation& rel)
@@ -781,6 +930,9 @@ bool BuchiAutomaton<State, Symbol>::deriveRankConstr(State& st1, State& st2,
 }
 
 
+/*
+ * Propagate odd rank sim values to successor states (obsolete)
+ */
 template <typename State, typename Symbol>
 void BuchiAutomaton<State, Symbol>::propagateFwd(State& st1, State& st2,
     std::set<State>& set1, std::set<State>& set2,
@@ -800,7 +952,13 @@ void BuchiAutomaton<State, Symbol>::propagateFwd(State& st1, State& st2,
 }
 
 
-
+/*
+ * Are all states of set1 bigger than all states of set2?
+ * @param set1 First set of states
+ * @param set2 Second set of states
+ * @param rel Rank simulation (or relation in general)
+ * @return set1 >=(forall, forall) sett2
+ */
 template <typename State, typename Symbol>
 bool BuchiAutomaton<State, Symbol>::isRankLeq(std::set<State>& set1, std::set<State>& set2,
     BuchiAutomaton<State, Symbol>::StateRelation& rel)
@@ -821,6 +979,13 @@ bool BuchiAutomaton<State, Symbol>::isRankLeq(std::set<State>& set1, std::set<St
 }
 
 
+/*
+ * Implementation of a simple data flow analysis. The values are iteratively
+ * propagated through graph of the automaton.
+ * @param updFnc Function updating values of the states
+ * @param initFnc Function assigning initial values to states
+ * @return Values assigned to each state after fixpoint
+ */
 template <typename State, typename Symbol>
 std::map<State, int> BuchiAutomaton<State, Symbol>::propagateGraphValues(
     const std::function<int(LabelState<State>*,VecLabelStatesPtr)>& updFnc, const std::function<int(const State&)>& initFnc)
@@ -870,6 +1035,11 @@ std::map<State, int> BuchiAutomaton<State, Symbol>::propagateGraphValues(
 }
 
 
+/*
+ * Get self-loops symbols for a given state
+ * @param state State for getting sl symbols
+ * @return Set of self-loop symbols
+ */
 template <typename State, typename Symbol>
 std::vector<Symbol> BuchiAutomaton<State, Symbol>::containsSelfLoop(State& state)
 {
@@ -886,6 +1056,10 @@ std::vector<Symbol> BuchiAutomaton<State, Symbol>::containsSelfLoop(State& state
 }
 
 
+/*
+ * Get all states containing self-loops
+ * @return Set of all self-loop
+ */
 template <typename State, typename Symbol>
 set<State> BuchiAutomaton<State, Symbol>::getSelfLoops()
 {
@@ -907,6 +1081,10 @@ set<State> BuchiAutomaton<State, Symbol>::getSelfLoops()
 }
 
 
+/*
+ * Get SCCs of the automaton
+ * @return Vector of SCCs (represented as a set of states)
+ */
 template <typename State, typename Symbol>
 vector<set<State>> BuchiAutomaton<State, Symbol>::getAutGraphSCCs()
 {
@@ -932,6 +1110,11 @@ vector<set<State>> BuchiAutomaton<State, Symbol>::getAutGraphSCCs()
 }
 
 
+/*
+ * Get eventually reachable states
+ * @params sls States containing self-loops over the whole alphabet
+ * @return Set of eventually reachable states
+ */
 template <typename State, typename Symbol>
 set<State> BuchiAutomaton<State, Symbol>::getEventReachable(set<State>& sls)
 {
@@ -974,6 +1157,11 @@ set<State> BuchiAutomaton<State, Symbol>::getEventReachable(set<State>& sls)
 }
 
 
+/*
+ * Get states closing a cycle in the automaton graph
+ * @params slignore States containing self-loops to be ignored
+ * @return Set of states closing a cycle
+ */
 template <typename State, typename Symbol>
 set<State> BuchiAutomaton<State, Symbol>::getCycleClosingStates(set<State>& slignore)
 {
@@ -1012,6 +1200,14 @@ set<State> BuchiAutomaton<State, Symbol>::getCycleClosingStates(set<State>& slig
 }
 
 
+/*
+ * Get reachable states wrt given restrictions
+ * @params from Initial state
+ * @params to Final state
+ * @params restr States to be taken into account
+ * @params high States closing cycle
+ * @return Is there is a path between from and to?
+ */
 template <typename State, typename Symbol>
 bool BuchiAutomaton<State, Symbol>::reachWithRestriction(const State& from, const State& to, set<State>& restr, set<State>& high)
 {
@@ -1045,6 +1241,10 @@ bool BuchiAutomaton<State, Symbol>::reachWithRestriction(const State& from, cons
 }
 
 
+/*
+ * Accept the automaton empty language (assumes states numbered from 0
+ * with no gaps).
+ */
 template <>
 bool BuchiAutomaton<int, int>::isEmpty()
 {
@@ -1072,6 +1272,11 @@ bool BuchiAutomaton<int, int>::isEmpty()
 }
 
 
+/*
+ * Compute intersection (product) with another BA
+ * @param other Other BA
+ * @return BA accepting intersection of both languages
+ */
 template <typename State, typename Symbol>
 BuchiAutomaton<tuple<State, int, bool>, Symbol> BuchiAutomaton<State, Symbol>::productBA(BuchiAutomaton<int, Symbol>& other)
 {
@@ -1147,6 +1352,11 @@ BuchiAutomaton<tuple<State, int, bool>, Symbol> BuchiAutomaton<State, Symbol>::p
 }
 
 
+/*
+ * Compute union (nondeterministic) with another BA
+ * @param other Other BA
+ * @return BA accepting intersection of both languages
+ */
 template <typename State, typename Symbol>
 BuchiAutomaton<State, Symbol> BuchiAutomaton<State, Symbol>::unionBA(BuchiAutomaton<State, Symbol>& other)
 {
@@ -1167,6 +1377,11 @@ BuchiAutomaton<State, Symbol> BuchiAutomaton<State, Symbol>::unionBA(BuchiAutoma
 }
 
 
+/*
+ * Convert the automaton into automaton with a single initial state (in
+ * place modification)
+ * @param init New unique initial state
+ */
 template <typename State, typename Symbol>
 void BuchiAutomaton<State, Symbol>::singleInitial(State init)
 {
@@ -1185,6 +1400,11 @@ void BuchiAutomaton<State, Symbol>::singleInitial(State init)
 }
 
 
+/*
+ * Get part of the determinized automaton wrt a single word
+ * @param word Word for determinization
+ * @return Vector of macrostates (set of states).
+ */
 template <typename State, typename Symbol>
 vector<set<State>> BuchiAutomaton<State, Symbol>::getRunTree(vector<Symbol>& word)
 {
@@ -1212,6 +1432,10 @@ vector<set<State>> BuchiAutomaton<State, Symbol>::getRunTree(vector<Symbol>& wor
 }
 
 
+/*
+ * Get reversed transition function (reverse directions of transitions)
+ * @return Reversed transition function
+ */
 template <typename State, typename Symbol>
 Delta<State, Symbol> BuchiAutomaton<State, Symbol>::getReverseTransitions()
 {
@@ -1230,6 +1454,11 @@ Delta<State, Symbol> BuchiAutomaton<State, Symbol>::getReverseTransitions()
 }
 
 
+/*
+ * Get reversed BA (reverse directions of transitions, initials became
+ * finals and vice versa)
+ * @return Reversed BA
+ */
 template <typename State, typename Symbol>
 BuchiAutomaton<State, Symbol> BuchiAutomaton<State, Symbol>::reverseBA()
 {
@@ -1237,66 +1466,69 @@ BuchiAutomaton<State, Symbol> BuchiAutomaton<State, Symbol>::reverseBA()
   return BuchiAutomaton(this->getStates(), this->getInitials(), this->getFinals(), rev, this->getAlphabet());
 }
 
+
+/*
+ * Get automaton with renamed states to StateSch (debug only)
+ * @param mpst Map assigning original (int) states back to StateSch
+ * @return Renamed BA
+ */
 template <>
 BuchiAutomaton<StateSch, int> BuchiAutomaton<int, int>::getComplStructure(std::map<int, StateSch>& mpst)
 {
-  //int stcnt = start;
-  //int symcnt = 0;
-  // std::map<State, int> mpstate;
-  // std::map<Symbol, int> mpsymbol;
   std::set<StateSch> rstate;
   Delta<StateSch, int> rtrans;
   std::set<StateSch> rfin;
   std::set<StateSch> rini;
-  // this->invRenameMap = std::vector<State>(this->states.size() + start);
-
-  // for(auto st : this->states)
-  // {
-  //   auto it = mpstate.find(st);
-  //   this->invRenameMap[stcnt] = st;
-  //   if(it == mpstate.end())
-  //   {
-  //     mpstate[st] = stcnt++;
-  //   }
-  // }
 
   rstate = Aux::mapSet(mpst, this->states);
   rini = Aux::mapSet(mpst, this->initials);
   rfin = Aux::mapSet(mpst, this->finals);
   for(auto p : this->trans)
   {
-    // auto it = mpsymbol.find(p.first.second);
-    // int val;
-    // if(it == mpsymbol.end())
-    // {
-    //   val = symcnt;
-    //   mpsymbol[p.first.second] = symcnt++;
-    // }
-    // else
-    // {
-    //   val = it->second;
-    // }
     std::set<StateSch> to = Aux::mapSet(mpst, p.second);
     rtrans.insert({std::make_pair(mpst[p.first.first], p.first.second), to});
   }
 
   auto ret = BuchiAutomaton<StateSch, int>(rstate, rfin, rini, rtrans);
-  // this->renameStateMap = mpstate;
-  // this->renameSymbolMap = mpsymbol;
-
-  // std::set<std::pair<int, int> > rdirSim, roddSim;
-  // for(auto item : this->directSim)
-  // {
-  //   rdirSim.insert({mpstate[item.first], mpstate[item.second]});
-  // }
-  // for(auto item : this->oddRankSim)
-  // {
-  //   roddSim.insert({mpstate[item.first], mpstate[item.second]});
-  // }
-  // ret.setDirectSim(rdirSim);
-  // ret.setOddRankSim(roddSim);
-  // ret.setAPPattern(this->apsPattern);
   return ret;
+}
+
+
+/*
+ * Is the automaton reachable from start deterministic?
+ * @param start Set of initial states
+ * @return Deterministic
+ */
+template <typename State, typename Symbol>
+bool BuchiAutomaton<State, Symbol>::isReachDeterministic(set<State>& start)
+{
+  set<State> visited(start.begin(), start.end());
+  stack<State> stack;
+  for(const auto& t : start)
+    stack.push(t);
+
+  while(stack.size() > 0)
+  {
+    State act = stack.top();
+    stack.pop();
+
+    for(const Symbol& sym : this->alph)
+    {
+      set<State> dest = this->trans[{act, sym}];
+      if(dest.size() > 1)
+        return false;
+      if(dest.size() == 1)
+      {
+        auto item = dest.begin();
+        if(visited.find(*item) == visited.end())
+        {
+          stack.push(*item);
+          visited.insert(*item);
+        }
+      }
+    }
+  }
+  return true;
 }
 
 

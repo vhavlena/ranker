@@ -25,6 +25,9 @@ typedef vector<vector<std::pair<int, int> > > RankConstr;
 typedef map<int, set<int> > RankInverse;
 typedef vector<vector<std::pair<int,bool> > > BackRel;
 
+/*
+ * Ranking function
+ */
 class RankFunc : public map<int,int>
 {
 private:
@@ -94,6 +97,9 @@ public:
 
   bool isAllLeq(const RankFunc& f);
 
+  /*
+   * Get number of remaining tight positions
+   */
   int remTightCount() const
   {
     return this->tight.size() - this->tight.count();

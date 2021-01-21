@@ -2,6 +2,11 @@
 #include "Simulations.h"
 
 
+/*
+ * Split string according to whitespaces
+ * @param line Input for splitting
+ * @param split Vector of strings (out)
+ */
 void Simulations::splitString(string& line, vector<string>& split)
 {
   istringstream stream(line);
@@ -14,6 +19,11 @@ void Simulations::splitString(string& line, vector<string>& split)
 }
 
 
+/*
+ * Parse relation line from Rabig
+ * @param line Input for parsing
+ * @return Pair of states with corresponding automata
+ */
 RabitSimLine Simulations::parseRabitRelLine(string& line)
 {
   vector<string> sp;
@@ -27,6 +37,11 @@ RabitSimLine Simulations::parseRabitRelLine(string& line)
 }
 
 
+/*
+ * Parse Rabit relation
+ * @param os Input stream
+ * @return Relation on states
+ */
 BuchiAutomaton<std::string, std::string>::StateRelation Simulations::parseRabitRelation(istringstream & os)
 {
   string line;
@@ -45,12 +60,18 @@ BuchiAutomaton<std::string, std::string>::StateRelation Simulations::parseRabitR
 }
 
 
+/*
+ * Execute a command
+ * @param cmd Command
+ * @param timeout Timeout
+ * @return Output
+ */
 string Simulations::execCmdTO(string& cmd, int timeout)
 {
   array<char, 128> buffer;
   string result = "";
-  // string toutCmd = "gtimeout " + std::to_string(timeout) + "s " + cmd;
-  string toutCmd = cmd;
+  string toutCmd = "gtimeout " + std::to_string(timeout) + "s " + cmd;
+  //string toutCmd = cmd;
   auto pipe = popen(toutCmd.c_str(), "r");
   if (!pipe)
   {
@@ -69,6 +90,11 @@ string Simulations::execCmdTO(string& cmd, int timeout)
 }
 
 
+/*
+ * Execute a command
+ * @param cmd Command
+ * @return Output
+ */
 string Simulations::execCmd(string& cmd)
 {
   array<char, 128> buffer;

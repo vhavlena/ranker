@@ -2,6 +2,11 @@
 #include "RankFunc.h"
 
 
+/*
+ * Constructor for the Ranking function
+ * @param mp Mapping representing the ranking function
+ * @param useInverse Use inverse mapping
+ */
 RankFunc::RankFunc(const map<int,int>& mp, bool useInverse) : map<int,int>(mp),
   oddStates(), inverse(), ranks(), tight()
 {
@@ -35,6 +40,11 @@ RankFunc::RankFunc(const map<int,int>& mp, bool useInverse) : map<int,int>(mp),
 }
 
 
+/*
+ * Add pair to the ranking function
+ * @param val Pair to be added
+ * @param useInverse Use inverse mapping
+ */
 void RankFunc::addPair(const std::pair<int, int>& val, bool useInverse)
 {
   this->maxRank = std::max(this->maxRank, val.second);
@@ -63,6 +73,17 @@ void RankFunc::addPair(const std::pair<int, int>& val, bool useInverse)
 }
 
 
+/*
+ * Cartesian product of a set of ranking functions and pairs to be added
+ * @param s1 Set of ranking funtions
+ * @param s2 Vector of pairs to be added to s1
+ * @param rem Number of remaining tight positions
+ * @param rel Direct simulation
+ * @param oddRel Rank simulation
+ * @param reachRes Reachability restriction (SuccRank)
+ * @param maxReach Maximum reachable macrostate
+ * @return Set of combinations of ranking functions with joined pairs
+ */
 vector<RankFunc> RankFunc::cartTightProductMap(vector<RankFunc>& s1, vector<std::pair<int, int> >& s2,
     int rem, BackRel& rel, BackRel& oddRel, int max, map<int, int>& reachRes, int reachMax, bool useInverse)
 {
@@ -94,6 +115,20 @@ vector<RankFunc> RankFunc::cartTightProductMap(vector<RankFunc>& s1, vector<std:
   return ret;
 }
 
+
+/*
+ * Cartesian product of a set of ranking functions and pairs to be added (odd variant)
+ * @param s1 Set of ranking funtions
+ * @param s2 Vector of pairs to be added to s1
+ * @param rem Number of remaining tight positions
+ * @param rel Direct simulation
+ * @param oddRel Rank simulation
+ * @param max Maximum rank
+ * @param reachRes Reachability restriction (SuccRank)
+ * @param maxReach Maximum reachable macrostate
+ * @param useInverse Use inverse function
+ * @return Set of combinations of ranking functions with joined pairs
+ */
 vector<RankFunc> RankFunc::cartTightProductMapOdd(vector<RankFunc>& s1, vector<std::pair<int, int> >& s2,
     int rem, BackRel& rel, BackRel& oddRel, int max, map<int, int>& reachRes, int reachMax, bool useInverse)
 {
@@ -135,6 +170,13 @@ vector<RankFunc> RankFunc::cartTightProductMapOdd(vector<RankFunc>& s1, vector<s
 }
 
 
+/*
+ * Check if combination or tmp with joined act fulfills direct simulation restr
+ * @param act Pair
+ * @param tmp Ranking function
+ * @param rel Direct simulation
+ * @return DirSim Compatibility
+ */
 bool RankFunc::checkDirectBackRel(const std::pair<int, int>& act, const RankFunc& tmp, BackRel& rel)
 {
   for(auto st : rel[act.first])
@@ -156,6 +198,13 @@ bool RankFunc::checkDirectBackRel(const std::pair<int, int>& act, const RankFunc
 }
 
 
+/*
+ * Check if combination or tmp with joined act fulfills rank simulation restr
+ * @param act Pair
+ * @param tmp Ranking function
+ * @param oddRel Direct simulation
+ * @return RankSim Compatibility
+ */
 bool RankFunc::checkOddBackRel(const std::pair<int, int>& act, const RankFunc& tmp, BackRel& oddRel)
 {
   if(act.second % 2 != 0)
@@ -182,6 +231,17 @@ bool RankFunc::checkOddBackRel(const std::pair<int, int>& act, const RankFunc& t
 }
 
 
+/*
+ * Generate all ranking functions based on restriction slist
+ * @param slist Restriction of ranking functions
+ * @param rel Direct simulation
+ * @param oddRel Rank simulation
+ * @param max Maximum rank
+ * @param reachRes Reachability restriction (SuccRank)
+ * @param reachMax Maximum reachable macrostate
+ * @param useInverse Use inverse function
+ * @return Set of all ranking functions
+ */
 vector<RankFunc> RankFunc::cartTightProductMapList(RankConstr slist, BackRel& rel, BackRel& oddRel,
     int max, map<int, int>& reachRes, int reachMax, bool useInverse)
 {
@@ -204,6 +264,17 @@ vector<RankFunc> RankFunc::cartTightProductMapList(RankConstr slist, BackRel& re
 }
 
 
+/*
+ * Generate all ranking functions based on restriction slist (odd version)
+ * @param slist Restriction of ranking functions
+ * @param rel Direct simulation
+ * @param oddRel Rank simulation
+ * @param max Maximum rank
+ * @param reachRes Reachability restriction (SuccRank)
+ * @param reachMax Maximum reachable macrostate
+ * @param useInverse Use inverse function
+ * @return Set of all ranking functions
+ */
 vector<RankFunc> RankFunc::cartTightProductMapListOdd(RankConstr slist, BackRel& rel, BackRel& oddRel,
     int max, map<int, int>& reachRes, int reachMax, bool useInverse)
 {
@@ -249,6 +320,11 @@ vector<RankFunc> RankFunc::cartTightProductMapListOdd(RankConstr slist, BackRel&
 }
 
 
+/*
+ * Generate all ranking functions based on restriction constr (basic version)
+ * @param constr Restriction of ranking functions
+ * @return Set of all ranking functions
+ */
 vector<RankFunc> RankFunc::fromRankConstr(RankConstr constr)
 {
   vector<vector<std::pair<int,bool> > > emp;
@@ -257,6 +333,16 @@ vector<RankFunc> RankFunc::fromRankConstr(RankConstr constr)
 }
 
 
+/*
+ * Generate all tight ranking functions based on restriction (no max rank, tight start)
+ * @param constr Restriction of ranking functions
+ * @param rel Direct simulation
+ * @param oddRel Rank simulation
+ * @param reachRes Reachability restriction (SuccRank)
+ * @param reachMax Maximum reachable macrostate
+ * @param useInverse Use inverse function
+ * @return Set of all tight ranking functions
+ */
 vector<RankFunc> RankFunc::tightFromRankConstr(RankConstr constr, BackRel& rel, BackRel& oddRel,
     map<int, int>& reachRes, int reachMax, bool useInverse)
 {
@@ -264,6 +350,16 @@ vector<RankFunc> RankFunc::tightFromRankConstr(RankConstr constr, BackRel& rel, 
 }
 
 
+/*
+ * Generate all tight ranking functions based on restriction (odd version)
+ * @param constr Restriction of ranking functions
+ * @param rel Direct simulation
+ * @param oddRel Rank simulation
+ * @param reachRes Reachability restriction (SuccRank)
+ * @param reachMax Maximum reachable macrostate
+ * @param useInverse Use inverse function
+ * @return Set of all tight ranking functions
+ */
 vector<RankFunc> RankFunc::tightFromRankConstrOdd(RankConstr constr, BackRel& rel, BackRel& oddRel,
     map<int, int>& reachRes, int reachMax, bool useInverse)
 {
@@ -271,6 +367,18 @@ vector<RankFunc> RankFunc::tightFromRankConstrOdd(RankConstr constr, BackRel& re
 }
 
 
+/*
+ * Generate all tight ranking functions based on restriction (tailored for
+ * successors with given maximum rank)
+ * @param constr Restriction of ranking functions
+ * @param rel Direct simulation
+ * @param oddRel Rank simulation
+ * @param max Maximum rank
+ * @param reachRes Reachability restriction (SuccRank)
+ * @param reachMax Maximum reachable macrostate
+ * @param useInverse Use inverse function
+ * @return Set of all tight ranking functions
+ */
 vector<RankFunc> RankFunc::tightSuccFromRankConstr(RankConstr constr, BackRel& rel, BackRel& oddRel,
     int max, map<int, int>& reachRes, int reachMax, bool useInverse)
 {
@@ -278,6 +386,12 @@ vector<RankFunc> RankFunc::tightSuccFromRankConstr(RankConstr constr, BackRel& r
 }
 
 
+/*
+ * does the ranking function fulfills the RankRestr constraint
+ * @param prev Ranking function
+ * @param succ RankRestr restriction
+ * @return True valid, otherwise false
+ */
 bool RankFunc::isSuccValid(RankFunc& prev, map<int, set<int> >& succ) const
 {
   bool val = true;
@@ -318,6 +432,11 @@ bool RankFunc::isSuccValid(RankFunc& prev, map<int, set<int> >& succ) const
 }
 
 
+/*
+ * Is the ranking function consistent wrt max ranks of each state
+ * @param maxRank Vector of maximum ranks
+ * @return Max rank consistency
+ */
 bool RankFunc::isMaxRankValid(vector<int>& maxRank) const
 {
   for(unsigned i = 0; i < maxRank.size(); i++)
@@ -331,6 +450,10 @@ bool RankFunc::isMaxRankValid(vector<int>& maxRank) const
 }
 
 
+/*
+ * Convert ranking function to string
+ * @return String representation
+ */
 std::string RankFunc::toString() const
 {
   std::string ret = "{";
@@ -343,6 +466,10 @@ std::string RankFunc::toString() const
 }
 
 
+/*
+ * Is the ranking function tight
+ * @return Tight?
+ */
 bool RankFunc::isTightRank() const
 {
   // for(const auto& t : this->tight)
@@ -354,6 +481,10 @@ bool RankFunc::isTightRank() const
 }
 
 
+/*
+ * Has even states assigned maximum even rank
+ * @return Even check
+ */
 bool RankFunc::eqEven() const
 {
   for(auto v : *this)
@@ -364,6 +495,10 @@ bool RankFunc::eqEven() const
   return true;
 }
 
+/*
+ * Implementation of <
+ * @return this < f
+ */
 bool RankFunc::isAllLeq(const RankFunc& f)
 {
   vector<int> rnk = f.getRanks();
@@ -378,6 +513,11 @@ bool RankFunc::isAllLeq(const RankFunc& f)
 }
 
 
+/*
+ * Is the ranking function consistent wrt direct simulation
+ * @param rel Direct simulation
+ * @return Consistency
+ */
 bool RankFunc::relConsistent(set<std::pair<int, int> >& rel) const
 {
   for(auto item : rel)
@@ -391,6 +531,11 @@ bool RankFunc::relConsistent(set<std::pair<int, int> >& rel) const
 }
 
 
+/*
+ * Is the ranking function consistent wrt rank simulation
+ * @param rel Rank simulation
+ * @return Consistency
+ */
 bool RankFunc::relOddConsistent(set<std::pair<int, int> >& rel) const
 {
   for(auto item : rel)
@@ -404,6 +549,12 @@ bool RankFunc::relOddConsistent(set<std::pair<int, int> >& rel) const
 }
 
 
+/*
+ * Is the ranking function consistent wrt reachability constraints
+ * @param res Reachability of states
+ * @param reachMax Maximum macrostate reachability
+ * @return Reachability consistency
+ */
 bool RankFunc::isReachConsistent(map<int, int>& res, int reachMax) const
 {
   for(const auto& t : res)
@@ -428,6 +579,14 @@ std::string RankFunc::toStringVer() const
 }
 
 
+/*
+ * Get Schewe reduced outdegree ranking functions
+ * @param ranks Maximum rank
+ * @param states Macrostate
+ * @param fin Final states
+ * @param useInverse Use inverse ranking function
+ * @return Ranking functions (RO)
+ */
 vector<RankFunc> RankFunc::getRORanks(int ranks, std::set<int>& states, std::set<int>& fin, bool useInverse)
 {
   vector<RankFunc> ret;
@@ -466,6 +625,19 @@ vector<RankFunc> RankFunc::getRORanks(int ranks, std::set<int>& states, std::set
 }
 
 
+/*
+ * Cartesian product of a set of ranking functions and pairs to be added
+ * @param s1 Set of ranking funtions
+ * @param s2 Vector of pairs to be added to s1
+ * @param rem Number of remaining tight positions
+ * @param rel Direct simulation
+ * @param oddRel Rank simulation
+ * @param max Max rank
+ * @param reachRes Reachability restriction (SuccRank)
+ * @param reachMax Maximum reachable macrostate
+ * @param useInverse Use inverse ranking function
+ * @return Set of combinations of ranking functions with joined pairs
+ */
 vector<RankFunc> RankFunc::cartTightProductMapPure(vector<RankFunc>& s1, vector<std::pair<int, int> >& s2,
     int rem, BackRel& rel, BackRel& oddRel, int max, map<int, int>& reachRes, int reachMax, bool useInverse)
 {
@@ -498,6 +670,17 @@ vector<RankFunc> RankFunc::cartTightProductMapPure(vector<RankFunc>& s1, vector<
 }
 
 
+/*
+ * Generate all ranking functions based on restriction slist (pure version)
+ * @param slist Restriction of ranking functions
+ * @param rel Direct simulation
+ * @param oddRel Rank simulation
+ * @param max Maximum rank
+ * @param reachRes Reachability restriction (SuccRank)
+ * @param reachMax Maximum reachable macrostate
+ * @param useInverse Use inverse function
+ * @return Set of all ranking functions
+ */
 vector<RankFunc> RankFunc::cartTightProductMapListPure(RankConstr slist, BackRel& rel, BackRel& oddRel,
     int max, map<int, int>& reachRes, int reachMax, bool useInverse)
 {
@@ -520,6 +703,16 @@ vector<RankFunc> RankFunc::cartTightProductMapListPure(RankConstr slist, BackRel
 }
 
 
+/*
+ * Generate all tight ranking functions based on restriction (no max rank, tight start) (pure version)
+ * @param constr Restriction of ranking functions
+ * @param rel Direct simulation
+ * @param oddRel Rank simulation
+ * @param reachRes Reachability restriction (SuccRank)
+ * @param reachMax Maximum reachable macrostate
+ * @param useInverse Use inverse function
+ * @return Set of all tight ranking functions
+ */
 vector<RankFunc> RankFunc::tightFromRankConstrPure(RankConstr constr, BackRel& rel, BackRel& oddRel,
     map<int, int>& reachRes, int reachMax, bool useInverse)
 {
@@ -527,6 +720,17 @@ vector<RankFunc> RankFunc::tightFromRankConstrPure(RankConstr constr, BackRel& r
 }
 
 
+/*
+ * Generate all tight ranking functions based on restriction (no max rank, tight start) (pure version)
+ * @param constr Restriction of ranking functions
+ * @param rel Direct simulation
+ * @param oddRel Rank simulation
+ * @param max Maximum rank
+ * @param reachRes Reachability restriction (SuccRank)
+ * @param reachMax Maximum reachable macrostate
+ * @param useInverse Use inverse function
+ * @return Set of all tight ranking functions
+ */
 vector<RankFunc> RankFunc::tightSuccFromRankConstrPure(RankConstr constr, BackRel& rel, BackRel& oddRel,
     int max, map<int, int>& reachRes, int reachMax, bool useInverse)
 {

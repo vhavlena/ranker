@@ -1,6 +1,10 @@
 
 #include "AutGraph.h"
 
+/*
+ * Strongly connected components from a given vertex number (implementing
+ * the Tarjan's algorithm)
+ */
 void AutGraph::strongConnect(int v)
 {
   this->vertices[v].index = this->index;
@@ -57,6 +61,9 @@ void AutGraph::strongConnect(int v)
 }
 
 
+/*
+ * Compute all strongly connected components (SCCs)
+ */
 void AutGraph::computeSCCs()
 {
   this->index = 0;
@@ -72,11 +79,24 @@ void AutGraph::computeSCCs()
   }
 }
 
+
+/*
+ * Get all reachable vertices from a set of vertices
+ * @param from Set of starting vertices
+ * @return Set of reachable vertices
+ */
 set<int> AutGraph::reachableVertices(set<int>& from)
 {
   return reachableVertices(this->adjList, from);
 }
 
+
+/*
+ * Get all reachable vertices from a set of vertices
+ * @param lst List of adjacent vertices
+ * @param from Set of starting vertices
+ * @return Set of reachable vertices
+ */
 set<int> AutGraph::reachableVertices(AdjList &lst, set<int>& from)
 {
   set<int> all(from);

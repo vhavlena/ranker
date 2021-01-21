@@ -20,6 +20,9 @@
 using namespace std;
 namespace pt = boost::property_tree;
 
+/*
+ * Parser exception
+ */
 class ParserException : public exception
 {
 private:
@@ -36,6 +39,7 @@ public:
 class BuchiAutomataParser {
 
 private:
+  // Current line in a file
   int line;
 
 public:

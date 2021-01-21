@@ -3,9 +3,12 @@
 
 #include <boost/dynamic_bitset.hpp>
 
-//Bitarray representing a set of APs
+/*
+ * Type representing an item of AP set
+ */
 struct APSymbol
 {
+  //Bitarray representing a set of APs
   boost::dynamic_bitset<> ap;
 
   APSymbol() : ap() {};
