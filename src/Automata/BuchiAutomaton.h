@@ -42,9 +42,23 @@ struct LabelState {
 };
 
 /*
+ * Macrostate labels for the case of the DELAY optimization
+ */
+struct DelayLabel {
+  unsigned macrostateSize;
+  unsigned maxRank;
+};
+
+
+/*
  * Transition function
  */
 template<typename State, typename Symbol> using Delta = std::map<std::pair<State, Symbol>, std::set<State>>;
+/*
+ * State labels for the case of the DELAY optimization
+ */
+template<typename State> using DelayMap = std::map<State, DelayLabel>;
+
 
 template <typename State, typename Symbol>
 class BuchiAutomaton {
@@ -352,7 +366,7 @@ public:
   std::map<State, int> propagateGraphValues(const std::function<int(LabelState<State>*,VecLabelStatesPtr)>& updFnc,
     const std::function<int(const State&)>& initFnc);
 
-  SetStates getCycleClosingStates(SetStates& slignore);
+  SetStates getCycleClosingStates(SetStates& slignore, DelayMap<State>& dmap);
   bool reachWithRestriction(const State& from, const State& to, SetStates& restr, SetStates& high);
 
   bool isEmpty();

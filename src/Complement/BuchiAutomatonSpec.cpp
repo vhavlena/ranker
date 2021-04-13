@@ -430,8 +430,15 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSch()
   map<int, int> reachCons = this->getMinReachSize();
   map<DFAState, int> maxReach = this->getMaxReachSize(comp, slIgnore);
 
+  // Compute rank upper bound on the macrostates
+  this->rankBound = this->getRankBound(comp, slIgnore, maxReach, reachCons);
+  map<StateSch, DelayLabel> delayMp;
+  for(const auto& st : comp.getStates())
+  {
+    delayMp[st] = { .macrostateSize = (unsigned)st.S.size(), .maxRank = (unsigned)this->rankBound[st.S] };
+  }
   // Compute states necessary to generate in the tight part
-  set<StateSch> tightStart = comp.getCycleClosingStates(slIgnore);
+  set<StateSch> tightStart = comp.getCycleClosingStates(slIgnore, delayMp);
   for(const StateSch& tmp : tightStart)
   {
     if(tmp.S.size() > 0)
@@ -439,10 +446,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSch()
       stack.push(tmp);
     }
   }
-  //std::cout << nfaStates.size() << std::endl;
 
-  // Compute rank upper bound on the macrostates
-  this->rankBound = this->getRankBound(comp, slIgnore, maxReach, reachCons);
 
   StateSch init = {getInitials(), set<int>(), RankFunc(), 0, false};
   initials.insert(init);
@@ -817,15 +821,6 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced()
 
   mp.insert(comp.getTransitions().begin(), comp.getTransitions().end());
   finals = set<StateSch>(comp.getFinals());
-  // Compute states necessary to generate in the tight part
-  set<StateSch> tightStart = comp.getCycleClosingStates(ignoreAll);
-  for(const StateSch& tmp : tightStart)
-  {
-    if(tmp.S.size() > 0)
-    {
-      stack.push(tmp);
-    }
-  }
 
   int newState = this->getStates().size(); //Assumes numbered states: from 0, no gaps
   map<pair<DFAState,int>, StateSch> slTrans;
@@ -845,6 +840,20 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced()
 
   // Compute rank upper bound on the macrostates
   this->rankBound = this->getRankBound(comp, ignoreAll, maxReach, reachCons);
+  map<StateSch, DelayLabel> delayMp;
+  for(const auto& st : comp.getStates())
+  {
+    delayMp[st] = { .macrostateSize = (unsigned)st.S.size(), .maxRank = (unsigned)this->rankBound[st.S] };
+  }
+  // Compute states necessary to generate in the tight part
+  set<StateSch> tightStart = comp.getCycleClosingStates(ignoreAll, delayMp);
+  for(const StateSch& tmp : tightStart)
+  {
+    if(tmp.S.size() > 0)
+    {
+      stack.push(tmp);
+    }
+  }
 
   StateSch init = {getInitials(), set<int>(), RankFunc(), 0, false};
   initials.insert(init);
@@ -1557,15 +1566,6 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchOpt()
 
   mp.insert(comp.getTransitions().begin(), comp.getTransitions().end());
   finals = set<StateSch>(comp.getFinals());
-  // Compute states necessary to generate in the tight part
-  set<StateSch> tightStart = comp.getCycleClosingStates(ignoreAll);
-  for(const StateSch& tmp : tightStart)
-  {
-    if(tmp.S.size() > 0)
-    {
-      stack.push(tmp);
-    }
-  }
 
   int newState = this->getTransitions().size(); //Assumes numbered states: from 0, no gaps
   map<pair<DFAState,int>, StateSch> slTrans;
@@ -1585,6 +1585,20 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchOpt()
 
   // Compute rank upper bound on the macrostates
   this->rankBound = this->getRankBound(comp, ignoreAll, maxReach, reachCons);
+  map<StateSch, DelayLabel> delayMp;
+  for(const auto& st : comp.getStates())
+  {
+    delayMp[st] = { .macrostateSize = (unsigned)st.S.size(), .maxRank = (unsigned)this->rankBound[st.S] };
+  }
+  // Compute states necessary to generate in the tight part
+  set<StateSch> tightStart = comp.getCycleClosingStates(ignoreAll, delayMp);
+  for(const StateSch& tmp : tightStart)
+  {
+    if(tmp.S.size() > 0)
+    {
+      stack.push(tmp);
+    }
+  }
 
   StateSch init = {getInitials(), set<int>(), RankFunc(), 0, false};
   initials.insert(init);

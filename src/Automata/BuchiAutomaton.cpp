@@ -1153,10 +1153,11 @@ set<State> BuchiAutomaton<State, Symbol>::getEventReachable(set<State>& sls)
 /*
  * Get states closing a cycle in the automaton graph
  * @params slignore States containing self-loops to be ignored
+ * @params dmap Delay map (mapping assigning information about macrostates for the Delay optimization)
  * @return Set of states closing a cycle
  */
 template <typename State, typename Symbol>
-set<State> BuchiAutomaton<State, Symbol>::getCycleClosingStates(set<State>& slignore)
+set<State> BuchiAutomaton<State, Symbol>::getCycleClosingStates(set<State>& slignore, DelayMap<State>& dmap)
 {
   set<State> ret;
   std::stack<State> stack;
