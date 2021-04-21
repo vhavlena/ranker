@@ -101,14 +101,14 @@ void complementAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<int, int>* 
 }
 
 
-void complementScheweAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<int, int>* complRes, Stat* stats)
+void complementScheweAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<int, int>* complRes, Stat* stats, bool delay)
 {
   BuchiAutomatonSpec sp(ren);
   ComplOptions opt = { .cutPoint = true, .CacheMaxState = 6, .CacheMaxRank = 8,
       .semidetOpt = false };
   sp.setComplOptions(opt);
   BuchiAutomaton<StateSch, int> comp;
-  comp = sp.complementSchOpt();
+  comp = sp.complementSchOpt(delay, ren.getFinals());
 
   stats->generatedStates = comp.getStates().size();
   stats->generatedTrans = comp.getTransCount();

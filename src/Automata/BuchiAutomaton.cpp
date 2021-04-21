@@ -1,5 +1,5 @@
-
 #include "BuchiAutomaton.h"
+#include <boost/math/special_functions/factorials.hpp>
 
 /*
  * Get all symbols occuring within the transitions (requires iterating over all
@@ -1153,12 +1153,12 @@ set<State> BuchiAutomaton<State, Symbol>::getEventReachable(set<State>& sls)
 /*
  * Get states closing a cycle in the automaton graph
  * @params slignore States containing self-loops to be ignored
- * @params dmap Delay map (mapping assigning information about macrostates for the Delay optimization)
  * @return Set of states closing a cycle
  */
 template <typename State, typename Symbol>
-set<State> BuchiAutomaton<State, Symbol>::getCycleClosingStates(set<State>& slignore, DelayMap<State>& dmap)
+set<State> BuchiAutomaton<State, Symbol>::getCycleClosingStates(set<State>& slignore)
 {
+  this->getAllCycles(); // test
   set<State> ret;
   std::stack<State> stack;
   set<State> done;
@@ -1193,6 +1193,289 @@ set<State> BuchiAutomaton<State, Symbol>::getCycleClosingStates(set<State>& slig
   return ret;
 }
 
+template<typename State, typename Symbol>
+void BuchiAutomaton<State, Symbol> :: unblock(int state, std::set<int> &blockedSet, std::map<int, std::set<int>> &blockedMap){
+  for (auto w : blockedMap[state]){
+    if (blockedSet.find(w) != blockedSet.end()){ // w is in blockedSet
+      blockedSet.erase(w);
+    }
+    blockedMap[state].erase(w); // delete w from blocked maps
+  }
+}
+
+template<typename State, typename Symbol>
+bool BuchiAutomaton<State, Symbol> :: circuit(int state, std::vector<int> &stack, std::set<int> &blockedSet, std::map<int, 
+  std::set<int>> &blockedMap, std::set<int> scc, AdjList adjlist, int startState, std::vector<std::vector<int>> &allCyclesRenamed) {
+  bool flag = false;
+  stack.push_back(state);
+  blockedSet.insert(state);
+
+  // for every successor
+  for (auto succ : adjlist[state]){
+    if (succ == startState){
+      // cycle was closed -> states on stack
+      flag = true;
+      std::vector<int> cycle;
+      for (auto state : stack){
+        cycle.push_back(state);
+      }
+      if (not cycle.empty())
+        cycle.push_back(startState);
+      if (not std::any_of(cycle.begin(), cycle.end(), [startState](int i){return i < startState;}))
+        allCyclesRenamed.push_back(cycle); // add new cycle to the vector of cycles
+    }
+    else if (blockedSet.find(succ) == blockedSet.end()){ // succ is not in blockedSet
+      // successor is not in the blocked set
+      if (this->circuit(succ, stack, blockedSet, blockedMap, scc, adjlist, startState, allCyclesRenamed)){
+        flag = true;
+      }
+    }
+  }
+
+  if (flag){
+    // unblock ...
+    this->unblock(state, blockedSet, blockedMap);
+  } else {
+    // for every successor
+    for (auto succ : adjlist[state]){
+      if (blockedMap[state].find(succ) == blockedMap[state].end()){ // succ is not in blockedMap[state]
+        blockedMap[state].insert(succ);
+      }
+    }
+  }
+
+  stack.pop_back(); // remove last element from stack
+  return flag;
+}
+
+template<typename State, typename Symbol>
+std::vector<std::vector<State>> BuchiAutomaton<State, Symbol> :: getAllCycles(){
+  BuchiAutomaton<int, int> renAut = this->renameAut();
+  vector<vector<int>> adjList(this->states.size());
+  vector<VertItem> vrt;
+  vector<set<State>> sccs;
+
+  renAut.getAutGraphComponents(adjList, vrt);
+  AutGraph gr(adjList, vrt, renAut.getFinals());
+  gr.computeSCCs(); // all sccs
+
+  std::vector<std::vector<int>> allCyclesRenamed;
+  std::vector<std::vector<State>> allCycles;
+  const std::set<int> emptySet;
+  std::vector<std::set<int>> tmpVector;
+
+  for(auto& scc : gr.getAllComponents()){ // for every scc
+    for (auto &state : scc){ // for every state in scc
+      std::vector<int> stack;
+      std::set<int> blockedSet;
+      std::map<int, std::set<int>> blockedMap;
+
+      // insert all states in scc to blockedMap
+      for(auto &state : scc){
+        blockedMap.insert(std::pair<int, std::set<int>>(state, emptySet));
+      }
+
+      // circuit method: returns all cycles in allCyclesRenamed
+      this->circuit(state, stack, blockedSet, blockedMap, scc, adjList, state, allCyclesRenamed);
+    }
+  }
+
+  for (auto &cycle : allCyclesRenamed){
+    //std::cout << "Cycle: ";
+    std::vector<State> oneCycle;
+    for (auto &state : cycle){
+      oneCycle.push_back(this->invRenameMap[state]);
+      //std::cout << state << " ";
+    }
+    allCycles.push_back(oneCycle);
+    //std::cout << std::endl;
+  }
+
+  return allCycles;
+}
+
+template<typename State, typename Symbol>
+std::set<State> BuchiAutomaton<State, Symbol> :: getAllSuccessors(State state){
+  std::set<State> successors;
+  std::set<State> tmp;
+  for (auto symbol : this->alph){
+    tmp = this->trans[std::pair<State, Symbol>(state, symbol)];
+    successors.insert(tmp.begin(), tmp.end());
+  }
+  return successors;
+}
+
+int fact(int n)
+{
+    int res = 1;
+    for (int i = 2; i <= n; i++)
+        res = res * i;
+    return res;
+}
+
+int nCr(int n, int r)
+{
+    return fact(n) / (fact(r) * fact(n - r));
+}
+
+template<typename State, typename Symbol>
+unsigned BuchiAutomaton<State, Symbol> :: getAllPossibleRankings(unsigned maxRank, unsigned accStates, unsigned nonAccStates){
+  unsigned even = std::pow(((maxRank+1)/2), accStates);
+
+  unsigned odd = 0;
+  unsigned tmpSum = 1;
+  unsigned tmp;
+  unsigned upperBound = nonAccStates - (maxRank-1)/2;
+  unsigned innerUpperBound;
+  for (unsigned r=0; r<=(maxRank-1)/2; r++){
+    // every rank
+    //FIXME
+    innerUpperBound = nonAccStates - (maxRank-1)/2 + 1 + r;
+
+    tmp = [](unsigned upperBound, unsigned innerUpperBound, unsigned tmpSum){
+      unsigned tmpVar = 0;
+      for (unsigned i=1; i<=upperBound; i++){
+        std::cout << innerUpperBound << " " << i << " " << tmpSum << std::endl;
+        tmpVar += (nCr(innerUpperBound, i) * tmpSum);
+      }
+      return tmpVar;
+    }(upperBound, innerUpperBound, tmpSum); 
+    tmpSum = tmp;
+    odd = tmp;   
+  }
+
+  return odd*even; //FIXME
+}
+
+/*
+ * Get states closing a cycle in the automaton graph
+ * @params slignore States containing self-loops to be ignored
+ * @params dmap Delay map (mapping assigning information about macrostates for the Delay optimization)
+ * @return Set of states and symbols for which transitions to the tight part should be generated
+ */
+template <typename State, typename Symbol>
+std::map<State, std::set<Symbol>> BuchiAutomaton<State, Symbol> :: getCycleClosingStates(SetStates& slignore, DelayMap<State>& dmap) {
+  std::map<State, std::set<Symbol>> statesToGenerate;
+  //std::set<State> statesToGenerate;
+  std::vector<std::vector<State>> allCycles;
+  std::map<State, double> mapping;
+  std::set<State> successors;
+  std::set<State> allStates = this->states;
+  std::set<State> tmpStates;
+  std::vector<std::vector<State>> tmpCycles;
+
+  allCycles = this->getAllCycles(); // get all cycles
+  while (not allStates.empty()){
+    mapping.clear(); //!!
+    while(not allStates.empty() and std::any_of(allStates.begin(), allStates.end(), [&](State i){return mapping[i]==0.0;})){  
+    // number for every state
+    for (auto state : allStates){
+      successors = this->getAllSuccessors(state); // all successors
+      std::set<State> tmpSucc = successors;
+      
+      for (auto succ : successors){
+        // only successors in cycles that are not covered yet
+        if (not std::any_of(allCycles.begin(), allCycles.end(), [state, succ](std::vector<State> item){
+          return [state, succ, item](){
+            for (unsigned i=0; i<item.size()-1; i++){
+              if (item[i] == state and item[i+1] == succ)
+                return true;
+            }
+            return false;
+          }();
+        })){tmpSucc.erase(succ);}
+      }
+      successors = tmpSucc;
+
+      unsigned rankings = [successors, this](DelayMap<State> &dmap){
+          unsigned result = 0;
+          for (auto succ : successors){
+            if (dmap[succ].maxRank != 0)
+              result += this->getAllPossibleRankings(dmap[succ].maxRank, dmap[succ].macrostateSize - dmap[succ].nonAccStates, dmap[succ].nonAccStates);
+          }
+          return result; 
+        }(dmap);
+
+      // number of cycles with this state that are not covered yet
+      unsigned cycles = [allCycles, state](){
+        unsigned tmp = 0;
+        for (std::vector<State> cycle : allCycles){
+          if (std::find(cycle.begin(), cycle.end(), state) != cycle.end())
+            tmp++;
+        }
+        return tmp;
+      }();
+
+      mapping.insert(std::pair<State, double>(state, cycles!=0 ? ((double)rankings)/cycles : 0.0));
+    }
+
+    // remove states with 0.0
+    tmpStates = allStates;
+    for (auto state : allStates){
+      if (mapping[state] == 0.0){
+        // add them to statesToGenerate with no symbol
+        std::set<Symbol> tmpSymbols;
+        statesToGenerate.insert(std::pair<State, std::set<Symbol>>(state, tmpSymbols)); 
+        tmpStates.erase(state);
+        // remove all cycles with this state
+        tmpCycles.clear();
+        for (std::vector<State> cycle : allCycles){
+          if (std::find(cycle.begin(), cycle.end(), state) == cycle.end())
+            tmpCycles.push_back(cycle);
+        }
+        allCycles = tmpCycles;
+      }
+    }
+    allStates = tmpStates;
+    }
+    
+    // pick min
+    State minState;
+    double min = -1.0;
+    bool first = true;
+    if (allStates.size() == 0)
+      break;
+    for (auto state : allStates){
+      if (first or mapping[state] < min){
+        minState = state;
+        min = mapping[state];
+        first = false;
+      }
+    }
+
+    // which transitions should be generated
+    std::set<Symbol> symbols;
+    std::set<State> cycleSucc;
+    for (auto cycle : allCycles){
+      for (unsigned i = 0; i < cycle.size()-1; i++){
+        if (cycle[i] == minState){
+          cycleSucc.insert(cycle[i+1]); 
+          break;
+        }
+      }
+    }
+    
+    for (auto succ : cycleSucc){
+      for (auto a : this->alph){
+        std::set<State> reachStates = this->trans[std::pair<State, Symbol>(minState, a)];
+        if (reachStates.find(succ) != reachStates.end())
+          symbols.insert(a);
+      }
+    }
+
+    statesToGenerate.insert(std::pair<State, std::set<Symbol>>(minState, symbols)); 
+    // remove all cycles with this state
+    tmpCycles.clear();
+    for (std::vector<State> cycle : allCycles){
+      if (std::find(cycle.begin(), cycle.end(), minState) == cycle.end())
+        tmpCycles.push_back(cycle);
+    }
+    allCycles = tmpCycles;
+    allStates.erase(minState);
+  }
+
+  return statesToGenerate;
+}
 
 /*
  * Get reachable states wrt given restrictions

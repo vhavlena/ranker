@@ -47,6 +47,7 @@ struct LabelState {
 struct DelayLabel {
   unsigned macrostateSize;
   unsigned maxRank;
+  unsigned nonAccStates;
 };
 
 
@@ -362,11 +363,18 @@ public:
   vector<set<State>> getAutGraphSCCs();
   set<State> getEventReachable(set<State>& sls);
   set<State> getSelfLoops();
+  vector<vector<State>> getAllCycles();
+  bool circuit(int state, std::vector<int> &stack, std::set<int> &blockedSet, std::map<int, std::set<int>> &blockedMap, 
+    std::set<int> scc, AdjList adjlist, int startState, std::vector<std::vector<int>> &allCyclesRenamed);
+  void unblock(int state, std::set<int> &blockedSet, std::map<int, std::set<int>> &blockedMap);
+  set<State> getAllSuccessors(State state);
+  unsigned getAllPossibleRankings(unsigned maxRank, unsigned accStates, unsigned nonAccStates);
 
   std::map<State, int> propagateGraphValues(const std::function<int(LabelState<State>*,VecLabelStatesPtr)>& updFnc,
     const std::function<int(const State&)>& initFnc);
 
-  SetStates getCycleClosingStates(SetStates& slignore, DelayMap<State>& dmap);
+  SetStates getCycleClosingStates(SetStates& slignore);
+  std::map<State, std::set<Symbol>> getCycleClosingStates(SetStates& slignore, DelayMap<State>& dmap);
   bool reachWithRestriction(const State& from, const State& to, SetStates& restr, SetStates& high);
 
   bool isEmpty();

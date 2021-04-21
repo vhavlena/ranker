@@ -179,7 +179,8 @@ bool suitCase(BuchiAutomatonSpec& sp)
     delayMp[st] = { .macrostateSize = (unsigned)st.S.size(), .maxRank = (unsigned)rankBound[st.S] };
   }
 
-  for(auto t : comp.getCycleClosingStates(slIgnore, delayMp))
+  //for(auto t : comp.getCycleClosingStates(slIgnore, delayMp))
+  for (auto t : comp.getCycleClosingStates(slIgnore))
   {
     if((t.S.size() >= 9 && rankBound[t.S] >= 5) || (t.S.size() >= 8 && rankBound[t.S] >= 6))
     {

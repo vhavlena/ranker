@@ -89,7 +89,8 @@ public:
   BuchiAutomaton<StateSch, int> complementSch();
   BuchiAutomaton<StateSch, int> complementSchReduced();
   BuchiAutomaton<StateSch, int> complementSchNFA(set<int>& start);
-  BuchiAutomaton<StateSch, int> complementSchOpt();
+  //BuchiAutomaton<StateSch, int> complementSchOpt(bool delay);
+  BuchiAutomaton<StateSch, int> complementSchOpt(bool delay, std::set<int> originalFinals);
 
   set<StateSch> nfaSlAccept(BuchiAutomaton<StateSch, int>& nfaSchewe);
   set<pair<DFAState,int>> nfaSingleSlNoAccept(BuchiAutomaton<StateSch, int>& nfaSchewe);
