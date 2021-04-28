@@ -160,7 +160,7 @@ void printStat(Stat& st)
 std::string getHelpMsg(const std::string& progName)
 {
 	std::string helpMsg;
-	helpMsg += "Usage: " + progName + " [--stats] INPUT\n";
+	helpMsg += "Usage: " + progName + " [--stats] [--delay] INPUT\n";
 	helpMsg += "\n";
 	helpMsg += "Complements a (state-based acceptance condition) Buchi automaton.\n";
 	helpMsg += "\n";
