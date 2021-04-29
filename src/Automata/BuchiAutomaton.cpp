@@ -1335,7 +1335,6 @@ unsigned BuchiAutomaton<State, Symbol> :: getAllPossibleRankings(unsigned maxRan
     tmp = [](unsigned upperBound, unsigned innerUpperBound, unsigned tmpSum){
       unsigned tmpVar = 0;
       for (unsigned i=1; i<=upperBound; i++){
-        //std::cout << innerUpperBound << " " << i << " " << tmpSum << std::endl;
         tmpVar += (nCr(innerUpperBound, i) * tmpSum);
       }
       return tmpVar;

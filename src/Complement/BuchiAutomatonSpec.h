@@ -87,7 +87,7 @@ public:
 
   BuchiAutomaton<StateKV, int> complementKV();
   BuchiAutomaton<StateSch, int> complementSch();
-  BuchiAutomaton<StateSch, int> complementSchReduced();
+  BuchiAutomaton<StateSch, int> complementSchReduced(bool delay, std::set<int> originalFinals);
   BuchiAutomaton<StateSch, int> complementSchNFA(set<int>& start);
   //BuchiAutomaton<StateSch, int> complementSchOpt(bool delay);
   BuchiAutomaton<StateSch, int> complementSchOpt(bool delay, std::set<int> originalFinals);

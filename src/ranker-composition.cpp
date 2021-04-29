@@ -24,6 +24,7 @@ int main(int argc, char *argv[])
 {
   Params params = { .output = "", .input = "", .stats = false};
   ifstream os;
+  bool delay = false;
 
   if(argc == 2)
   {
@@ -43,6 +44,16 @@ int main(int argc, char *argv[])
   {
     params.input = string(argv[2]);
     params.stats = true;
+  }
+  else if (argc == 4 and strcmp(argv[1], "--stats") == 0 and strcmp(argv[2], "--delay") == 0){
+    params.input = string(argv[3]);
+    params.stats = true;
+    delay = true;
+  }
+  else if (argc == 3 and strcmp(argv[1], "--delay") == 0){
+    params.input = string(argv[2]);
+    params.stats = false;
+    delay = true;
   }
   else
   {
@@ -132,7 +143,7 @@ int main(int argc, char *argv[])
     {
       try
       {
-        complementAutWrap(ren, &renCompl, &stats);
+        complementAutWrap(ren, &renCompl, &stats, delay);
       }
       catch (const std::bad_alloc&)
       {
