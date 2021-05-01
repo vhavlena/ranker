@@ -1343,6 +1343,12 @@ unsigned BuchiAutomaton<State, Symbol> :: getAllPossibleRankings(unsigned maxRan
     odd = tmp;   
   }
 
+  //TODO
+  /*if (even == 0)
+    even = 1;
+  if (odd == 0)
+    odd = 1;*/
+
   return odd*even; //FIXME
 }
 
@@ -1366,7 +1372,7 @@ std::map<State, std::set<Symbol>> BuchiAutomaton<State, Symbol> :: getCycleClosi
   allCycles = this->getAllCycles(); // get all cycles
   while (not allStates.empty()){
     mapping.clear(); //!!
-    while(not allStates.empty() and std::any_of(allStates.begin(), allStates.end(), [&](State i){return mapping[i]==0.0;})){  
+    //while(not allStates.empty() and std::any_of(allStates.begin(), allStates.end(), [&](State i){return mapping[i]==0.0;})){  
     // number for every state
     for (auto state : allStates){
       successors = this->getAllSuccessors(state); // all successors
@@ -1386,11 +1392,12 @@ std::map<State, std::set<Symbol>> BuchiAutomaton<State, Symbol> :: getCycleClosi
       }
       successors = tmpSucc;
 
-      unsigned rankings = [successors, this](DelayMap<State> &dmap){
+      unsigned rankings = [successors, this, state](DelayMap<State> &dmap){
           unsigned result = 0;
           for (auto succ : successors){
-            if (dmap[succ].maxRank != 0)
+            if (dmap[succ].maxRank != 0){
               result += this->getAllPossibleRankings(dmap[succ].maxRank, dmap[succ].macrostateSize - dmap[succ].nonAccStates, dmap[succ].nonAccStates);
+            } //else result += 1; //TODO self-loops?
           }
           return result; 
         }(dmap);
@@ -1404,6 +1411,7 @@ std::map<State, std::set<Symbol>> BuchiAutomaton<State, Symbol> :: getCycleClosi
         }
         return tmp;
       }();
+      //std::cout << "Number of cycles: " << cycles << ", rankings: " << rankings << std::endl;
 
       mapping.insert(std::pair<State, double>(state, cycles!=0 ? ((double)rankings)/cycles : 0.0));
     }
@@ -1426,7 +1434,8 @@ std::map<State, std::set<Symbol>> BuchiAutomaton<State, Symbol> :: getCycleClosi
       }
     }
     allStates = tmpStates;
-    }
+    //}
+    //std::cout << "All states size: " << allStates.size() << std::endl;
     
     // pick min
     State minState;
@@ -1441,6 +1450,7 @@ std::map<State, std::set<Symbol>> BuchiAutomaton<State, Symbol> :: getCycleClosi
         first = false;
       }
     }
+    //std::cout << "Min: " << min << std::endl; 
 
     // which transitions should be generated
     std::set<Symbol> symbols;
@@ -1455,6 +1465,7 @@ std::map<State, std::set<Symbol>> BuchiAutomaton<State, Symbol> :: getCycleClosi
     }
     
     for (auto succ : cycleSucc){
+      //std::cout << "Alph size: " << this->alph.size() << std::endl;
       for (auto a : this->alph){
         std::set<State> reachStates = this->trans[std::pair<State, Symbol>(minState, a)];
         if (reachStates.find(succ) != reachStates.end())
