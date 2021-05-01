@@ -869,14 +869,6 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
   map<StateSch, set<int>> tightStartDelay;
   if (delay){
     tightStartDelay = comp.getCycleClosingStates(ignoreAll, delayMp);
-    /*std::cout << "Here" << std::endl;
-    for (auto item : tightStartDelay){
-      std::cout << "State: " << item.first.toString() << std::endl;
-      std::cout << "Symbols: ";
-      for (auto symbol : item.second)
-        std::cout << symbol << " ";
-      std::cout << std::endl;
-    }*/
   }
   else
     tightStart = comp.getCycleClosingStates(ignoreAll);
@@ -960,7 +952,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
               for (const auto &a : this->getAlphabet()){
                 for (const auto &d : prev[{st, a}]) {
                   if (tightStartDelay[d].find(a) != tightStartDelay[d].end()){
-                    mp[{d,a}].insert(dst.begin(), dst.end()); //TODO
+                    mp[{d,a}].insert(dst.begin(), dst.end()); 
                   }
                 }
               }
@@ -1624,7 +1616,6 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchOpt(bool delay, s
   map<pair<DFAState,int>, StateSch> slTrans;
   for(const auto& pr : slNonEmpty)
   {
-    //std::cout << StateSch::printSet(pr.first) << std::endl;
     StateSch ns = { set<int>({newState}), set<int>(), RankFunc(), 0, false };
     StateSch src = { pr.first, set<int>(), RankFunc(), 0, false };
     slTrans[pr] = ns;
@@ -1656,14 +1647,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchOpt(bool delay, s
   map<StateSch, set<int>> tightStartDelay;
   if (delay){
     tightStartDelay = comp.getCycleClosingStates(ignoreAll, delayMp);
-    /*std::cout << "Here" << std::endl;
-    for (auto item : tightStartDelay){
-      std::cout << "State: " << item.first.toString() << std::endl;
-      std::cout << "Symbols: ";
-      for (auto symbol : item.second)
-        std::cout << symbol << " ";
-      std::cout << std::endl;
-    }*/
+
   }
   else
     tightStart = comp.getCycleClosingStates(ignoreAll);
@@ -1747,7 +1731,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchOpt(bool delay, s
               for (const auto &a : this->getAlphabet()){
                 for (const auto &d : prev[{st, a}]) {
                   if (tightStartDelay[d].find(a) != tightStartDelay[d].end()){
-                    mp[{d,a}].insert(dst.begin(), dst.end()); //TODO
+                    mp[{d,a}].insert(dst.begin(), dst.end()); 
                   }
                 }
               }
