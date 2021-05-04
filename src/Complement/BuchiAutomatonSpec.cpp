@@ -680,10 +680,10 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
     map<int, int> rnkMap((map<int, int>)st.f);
 
     // TODO
-    SCC intersection;
+    /**SCC intersection;
     std::set_intersection(st.S.begin(), st.S.end(), fin.begin(), fin.end(), std::inserter(intersection, intersection.begin()));
     if (intersection.size() == 0)
-      continue;
+      continue;*/
 
     if(state.O.size() == 0)
       continue;
