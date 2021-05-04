@@ -888,8 +888,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
   std::set<StateSch> tmpSet;
   if (delay){
     for(auto item : tightStartDelay)
-      if (item.second.size() > 0)
-        tmpSet.insert(item.first);
+      tmpSet.insert(item.first);
   }
   std::set<StateSch> tmpStackSet;
   for(const StateSch& tmp : (delay ? tmpSet : tightStart))
