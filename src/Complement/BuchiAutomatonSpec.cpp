@@ -680,7 +680,7 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
     map<int, int> rnkMap((map<int, int>)st.f);
 
     // TODO
-    /**SCC intersection;
+    /*SCC intersection;
     std::set_intersection(st.S.begin(), st.S.end(), fin.begin(), fin.end(), std::inserter(intersection, intersection.begin()));
     if (intersection.size() == 0)
       continue;*/
@@ -956,7 +956,10 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
             for(const auto& a : this->getAlphabet())
             {
               for(const auto& d : prev[{st, a}]) { 
-                mp[{d,a}].insert(dst.begin(), dst.end());
+                if ((not delay) or tightStartDelay[d].find(a) != tightStartDelay[d].end()){ //TODO !!!!!!!!
+                  mp[{d,a}].insert(dst.begin(), dst.end());
+                  //std::cout << "Transition " << d.toString() << " -> " << a << std::endl;
+                }
               }
             }
           /*} else {
@@ -976,8 +979,9 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
             mp[pr].insert(dst.begin(), dst.end());
           else {
             for (auto d : dst){
-              if (tightStartDelay[st].find(sym) != tightStartDelay[st].end())
+              //if (tightStartDelay[st].find(sym) != tightStartDelay[st].end()){ //TODO !!!!!!!!!!!!
                 mp[pr].insert(d);
+              //}
             }
           }
         }

@@ -1223,8 +1223,8 @@ bool BuchiAutomaton<State, Symbol> :: circuit(int state, std::vector<int> &stack
       }
       if (not cycle.empty())
         cycle.push_back(startState);
-      if (not std::any_of(cycle.begin(), cycle.end(), [startState](int i){return i < startState;})) //TODO remove comment
-      allCyclesRenamed.push_back(cycle); // add new cycle to the vector of cycles
+      //if (not std::any_of(cycle.begin(), cycle.end(), [startState](int i){return i < startState;})) //TODO remove comment
+        allCyclesRenamed.push_back(cycle); // add new cycle to the vector of cycles
     }
     else if (blockedSet.find(succ) == blockedSet.end()){ // succ is not in blockedSet
       // successor is not in the blocked set
@@ -1267,6 +1267,7 @@ std::vector<std::vector<State>> BuchiAutomaton<State, Symbol> :: getAllCycles(){
   std::vector<std::set<int>> tmpVector;
 
   for(auto& scc : gr.getAllComponents()){ // for every scc
+    auto tmpScc = scc;
     for (auto &state : scc){ // for every state in scc
       std::vector<int> stack;
       std::set<int> blockedSet;
@@ -1278,7 +1279,10 @@ std::vector<std::vector<State>> BuchiAutomaton<State, Symbol> :: getAllCycles(){
       }
 
       // circuit method: returns all cycles in allCyclesRenamed
-      this->circuit(state, stack, blockedSet, blockedMap, scc, adjList, state, allCyclesRenamed);
+      this->circuit(state, stack, blockedSet, blockedMap, tmpScc, adjList, state, allCyclesRenamed);
+
+      tmpScc.erase(state);
+      adjList[state].erase(std::remove(adjList[state].begin(), adjList[state].end(), state), adjList[state].end());
     }
   }
   
@@ -1328,28 +1332,40 @@ template<typename State, typename Symbol>
 unsigned BuchiAutomaton<State, Symbol> :: getAllPossibleRankings(unsigned maxRank, unsigned accStates, unsigned nonAccStates){
   unsigned even = std::pow(((maxRank+1)/2), accStates);
 
-  unsigned odd = 0;
-  unsigned tmpSum = 1;
-  unsigned tmp;
-  unsigned upperBound = nonAccStates - (maxRank-1)/2;
-  unsigned innerUpperBound;
-  for (unsigned r=0; r<=(maxRank-1)/2; r++){
-    // every rank
-    //FIXME
-    innerUpperBound = nonAccStates - (maxRank-1)/2 + 1 + r;
+  unsigned oddSum = 0;
+  unsigned rank;
 
-    tmp = [](unsigned upperBound, unsigned innerUpperBound, unsigned tmpSum){
-      unsigned tmpVar = 0;
-      for (unsigned i=1; i<=upperBound; i++){
-        tmpVar += (nCr(innerUpperBound, i) * tmpSum);
-      }
-      return tmpVar;
-    }(upperBound, innerUpperBound, tmpSum); 
-    tmpSum = tmp;
-    odd = tmp;   
+  for (unsigned count = 0; count < (maxRank+1)/2; count++){
+    unsigned odd = 0;
+    unsigned tmpSum = 1;
+    unsigned tmp;
+    rank = 2*count + 1;
+    unsigned upperBound = nonAccStates - (rank-1)/2;
+    unsigned innerUpperBound;
+    
+    if (nonAccStates < (rank-1)/2)
+      continue;
+    if (rank == 1 and nonAccStates > 0)
+      odd = 1;
+    for (unsigned r=0; r<(rank-1)/2; r++){
+      innerUpperBound = nonAccStates - (rank-1)/2 + 1 + r;
+
+      tmp = [](unsigned upperBound, unsigned innerUpperBound, unsigned tmpSum){
+        unsigned tmpVar = 0;
+        for (unsigned i=1; i<=upperBound; i++){
+          tmpVar += (nCr(innerUpperBound, i) * tmpSum);
+        }
+        return tmpVar;
+      }(upperBound, innerUpperBound, tmpSum); 
+
+      tmpSum = tmp;
+      odd = tmp;   
+    }
+
+    oddSum += odd;
   }
 
-  return odd*even; //FIXME
+  return oddSum*even;
 }
 
 /*
@@ -1397,8 +1413,7 @@ std::map<State, std::set<Symbol>> BuchiAutomaton<State, Symbol> :: getCycleClosi
           for (auto succ : successors){
             if (dmap[succ].maxRank != 0){
               result += this->getAllPossibleRankings(dmap[succ].maxRank, dmap[succ].macrostateSize - dmap[succ].nonAccStates, dmap[succ].nonAccStates);
-              //std::cout << this->getAllPossibleRankings(dmap[succ].maxRank, dmap[succ].macrostateSize - dmap[succ].nonAccStates, dmap[succ].nonAccStates) << std::endl;
-            } //else result += 1;
+            } 
           }
           return result; 
         }(dmap);
@@ -1414,14 +1429,14 @@ std::map<State, std::set<Symbol>> BuchiAutomaton<State, Symbol> :: getCycleClosi
       }();
 
       mapping.insert(std::pair<State, double>(state, cycles!=0 ? ((double)rankings)/cycles : 0.0));
-      //std::cout << " -> " << (cycles!=0 ? ((double)rankings)/cycles : 0.0) << std::endl;
     }
-    //std::cout << "======" << std::endl;
 
     // remove states with 0.0
     tmpStates = allStates;
+    bool removed = false;
     for (auto state : allStates){
       if (mapping[state] == 0.0){
+        removed = true;
         // add them to statesToGenerate with no symbol
         std::set<Symbol> tmpSymbols;
         statesToGenerate.insert(std::pair<State, std::set<Symbol>>(state, tmpSymbols)); 
@@ -1436,6 +1451,8 @@ std::map<State, std::set<Symbol>> BuchiAutomaton<State, Symbol> :: getCycleClosi
       }
     }
     allStates = tmpStates;
+    if (removed)
+      continue;
     
     // pick min
     State minState;
@@ -1444,12 +1461,14 @@ std::map<State, std::set<Symbol>> BuchiAutomaton<State, Symbol> :: getCycleClosi
     if (allStates.size() == 0)
       break;
     for (auto state : allStates){
-      if (first or mapping[state] < min){
+      if (first or (mapping[state] <= min and dmap[state].maxRank < dmap[minState].maxRank)) {
         minState = state;
         min = mapping[state];
         first = false;
       }
     }
+    //if constexpr (std::is_same<State, StateSch>::value)
+    //  std::cout << minState.toString() << std::endl;
 
     // which transitions should be generated
     std::set<Symbol> symbols;
@@ -1463,10 +1482,11 @@ std::map<State, std::set<Symbol>> BuchiAutomaton<State, Symbol> :: getCycleClosi
       }
     }
     
+    //std::cout << "Succ size: " << cycleSucc.size() << std::endl;
     for (auto succ : cycleSucc){
       for (auto a : this->alph){
         std::set<State> reachStates = this->trans[std::pair<State, Symbol>(minState, a)];
-        if (reachStates.find(succ) != reachStates.end())
+        if (reachStates.find(succ) != reachStates.end()) //TODO remove !!!!!!!!!!!!!!!!
           symbols.insert(a);
       }
     }
@@ -1477,6 +1497,10 @@ std::map<State, std::set<Symbol>> BuchiAutomaton<State, Symbol> :: getCycleClosi
     for (std::vector<State> cycle : allCycles){
       if (std::find(cycle.begin(), cycle.end(), minState) == cycle.end())
         tmpCycles.push_back(cycle);
+      else if (cycle.size() == 6){
+        //if constexpr (std::is_same<State, StateSch>::value)
+        //  std::cout << "Cycle was removed because of: " << minState.toString() << std::endl;
+      }
     }
     allCycles = tmpCycles;
     allStates.erase(minState);
