@@ -43,12 +43,14 @@ struct Stat
   string engine;
 };
 
+//enum delayVersion : unsigned {oldVersion, newVersion, randomVersion};
+
 InFormat parseRenamedAutomaton(ifstream& os);
 BuchiAutomaton<int, int> parseRenameHOA(ifstream& os, BuchiAutomaton<int, APSymbol>* orig);
 BuchiAutomaton<int, int> parseRenameBA(ifstream& os, BuchiAutomaton<string, string>* orig);
 
-void complementScheweAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<int, int>* complRes, Stat* stats, bool delay);
-void complementAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<int, int>* complRes, Stat* stats, bool delay);
+void complementScheweAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<int, int>* complRes, Stat* stats, bool delay, double w, delayVersion version);
+void complementAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<int, int>* complRes, Stat* stats, bool delay, double w, delayVersion version);
 void printStat(Stat& st);
 
 BuchiAutomaton<int, int> createBA(vector<int>& loop);

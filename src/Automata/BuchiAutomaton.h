@@ -22,6 +22,9 @@ using std::tuple;
 
 class AutGraph;
 
+//enum delayVersion : unsigned;
+enum delayVersion : unsigned {oldVersion, newVersion, randomVersion, subsetVersion};
+
 /*
  * Single transition
  */
@@ -368,13 +371,13 @@ public:
     std::set<int> scc, AdjList adjlist, int startState, std::vector<std::vector<int>> &allCyclesRenamed);
   void unblock(int state, std::set<int> &blockedSet, std::map<int, std::set<int>> &blockedMap);
   set<State> getAllSuccessors(State state);
-  unsigned getAllPossibleRankings(unsigned maxRank, unsigned accStates, unsigned nonAccStates);
+  unsigned getAllPossibleRankings(unsigned maxRank, unsigned accStates, unsigned nonAccStates, delayVersion version);
 
   std::map<State, int> propagateGraphValues(const std::function<int(LabelState<State>*,VecLabelStatesPtr)>& updFnc,
     const std::function<int(const State&)>& initFnc);
 
   SetStates getCycleClosingStates(SetStates& slignore);
-  std::map<State, std::set<Symbol>> getCycleClosingStates(SetStates& slignore, DelayMap<State>& dmap);
+  std::map<State, std::set<Symbol>> getCycleClosingStates(SetStates& slignore, DelayMap<State>& dmap, double w, delayVersion version);
   bool reachWithRestriction(const State& from, const State& to, SetStates& restr, SetStates& high);
 
   bool isEmpty();

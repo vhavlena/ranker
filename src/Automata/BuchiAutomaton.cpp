@@ -1221,10 +1221,10 @@ bool BuchiAutomaton<State, Symbol> :: circuit(int state, std::vector<int> &stack
       for (auto state : stack){
         cycle.push_back(state);
       }
-      if (not cycle.empty())
+      if (not cycle.empty()){
         cycle.push_back(startState);
-      //if (not std::any_of(cycle.begin(), cycle.end(), [startState](int i){return i < startState;})) //TODO remove comment
         allCyclesRenamed.push_back(cycle); // add new cycle to the vector of cycles
+      }
     }
     else if (blockedSet.find(succ) == blockedSet.end()){ // succ is not in blockedSet
       // successor is not in the blocked set
@@ -1288,18 +1288,11 @@ std::vector<std::vector<State>> BuchiAutomaton<State, Symbol> :: getAllCycles(){
   
   for (auto &cycle : allCyclesRenamed){
     std::vector<State> oneCycle;
-    //std::cout << "Cycle: ";
     for (auto &state : cycle){
-      //std::cout << state << " ";
       oneCycle.push_back(this->invRenameMap[state]);
     }
     allCycles.push_back(oneCycle);
-    //std::cout << std::endl;
   }
-
-  /*for (auto cycle : allCycles){
-    std::cout << "Cycle: " << cycle.size()-1 << std::endl;
-  }*/
 
   return allCycles;
 }
@@ -1329,27 +1322,19 @@ int nCr(int n, int r)
 }
 
 template<typename State, typename Symbol>
-unsigned BuchiAutomaton<State, Symbol> :: getAllPossibleRankings(unsigned maxRank, unsigned accStates, unsigned nonAccStates){
-  unsigned even = std::pow(((maxRank+1)/2), accStates);
-
-  unsigned oddSum = 0;
-  unsigned rank;
-
-  for (unsigned count = 0; count < (maxRank+1)/2; count++){
+unsigned BuchiAutomaton<State, Symbol> :: getAllPossibleRankings(unsigned maxRank, unsigned accStates, unsigned nonAccStates, delayVersion version){
+  
+  // OLD VERSION
+  if (version == oldVersion){
+    unsigned even = std::pow(((maxRank+1)/2), accStates);
     unsigned odd = 0;
     unsigned tmpSum = 1;
     unsigned tmp;
-    rank = 2*count + 1;
-    unsigned upperBound = nonAccStates - (rank-1)/2;
+    unsigned upperBound = nonAccStates - (maxRank-1)/2;
     unsigned innerUpperBound;
-    
-    if (nonAccStates < (rank-1)/2)
-      continue;
-    if (rank == 1 and nonAccStates > 0)
-      odd = 1;
-    for (unsigned r=0; r<(rank-1)/2; r++){
-      innerUpperBound = nonAccStates - (rank-1)/2 + 1 + r;
-
+    for (unsigned r=0; r<=(maxRank-1)/2; r++){
+      // every rank
+      innerUpperBound = nonAccStates - (maxRank-1)/2 + 1 + r;
       tmp = [](unsigned upperBound, unsigned innerUpperBound, unsigned tmpSum){
         unsigned tmpVar = 0;
         for (unsigned i=1; i<=upperBound; i++){
@@ -1357,15 +1342,51 @@ unsigned BuchiAutomaton<State, Symbol> :: getAllPossibleRankings(unsigned maxRan
         }
         return tmpVar;
       }(upperBound, innerUpperBound, tmpSum); 
-
       tmpSum = tmp;
       odd = tmp;   
     }
 
-    oddSum += odd;
+    return odd*even; 
   }
 
-  return oddSum*even;
+  // SUBSET VERSION
+  else if (version == newVersion or version == subsetVersion){
+    unsigned even = std::pow(((maxRank+1)/2), accStates);
+    unsigned oddSum = 0;
+    unsigned rank;
+
+    for (unsigned count = 0; count < (maxRank+1)/2; count++){
+      unsigned odd = 0;
+      unsigned tmpSum = 1;
+      unsigned tmp;
+      rank = 2*count + 1;
+      unsigned upperBound = nonAccStates - (rank-1)/2;
+      unsigned innerUpperBound;
+
+      if (nonAccStates < (rank-1)/2)
+        continue;
+      if (rank == 1 and nonAccStates > 0)
+        odd = 1;
+      for (unsigned r=0; r<(rank-1)/2; r++){
+        innerUpperBound = nonAccStates - (rank-1)/2 + 1 + r;
+
+        tmp = [](unsigned upperBound, unsigned innerUpperBound, unsigned tmpSum){
+          unsigned tmpVar = 0;
+          for (unsigned i=1; i<=upperBound; i++){
+            tmpVar += (nCr(innerUpperBound, i) * tmpSum);
+          }
+          return tmpVar;
+        }(upperBound, innerUpperBound, tmpSum); 
+
+        tmpSum = tmp;
+        odd = tmp;   
+      }
+
+      oddSum += odd;
+    }
+
+    return oddSum*even;
+  }
 }
 
 /*
@@ -1375,104 +1396,140 @@ unsigned BuchiAutomaton<State, Symbol> :: getAllPossibleRankings(unsigned maxRan
  * @return Set of states and symbols for which transitions to the tight part should be generated
  */
 template <typename State, typename Symbol>
-std::map<State, std::set<Symbol>> BuchiAutomaton<State, Symbol> :: getCycleClosingStates(SetStates& slignore, DelayMap<State>& dmap) {
+std::map<State, std::set<Symbol>> BuchiAutomaton<State, Symbol> :: getCycleClosingStates(SetStates& slignore, DelayMap<State>& dmap, double w, delayVersion version) {
+  
   std::map<State, std::set<Symbol>> statesToGenerate;
-  //std::set<State> statesToGenerate;
   std::vector<std::vector<State>> allCycles;
   std::map<State, double> mapping;
   std::set<State> successors;
   std::set<State> allStates = this->states;
   std::set<State> tmpStates;
   std::vector<std::vector<State>> tmpCycles;
+  std::set<State> cycleSucc;
+  State minState;
+  srand(time(0));
 
   allCycles = this->getAllCycles(); // get all cycles
 
   while (not allStates.empty()){
-    mapping.clear(); //!!
-    // number for every state
-    for (auto state : allStates){
-      successors = this->getAllSuccessors(state); // all successors
-      std::set<State> tmpSucc = successors;
-      
-      for (auto succ : successors){
-        // only successors in cycles that are not covered yet
-        if (not std::any_of(allCycles.begin(), allCycles.end(), [state, succ](std::vector<State> item){
-          return [state, succ, item](){
-            for (unsigned i=0; i<item.size()-1; i++){
-              if (item[i] == state and item[i+1] == succ)
-                return true;
-            }
-            return false;
-          }();
-        })){tmpSucc.erase(succ);}
-      }
-      successors = tmpSucc;
-
-      unsigned rankings = [successors, this, state](DelayMap<State> &dmap){
-          unsigned result = 0;
-          for (auto succ : successors){
-            if (dmap[succ].maxRank != 0){
-              result += this->getAllPossibleRankings(dmap[succ].maxRank, dmap[succ].macrostateSize - dmap[succ].nonAccStates, dmap[succ].nonAccStates);
-            } 
-          }
-          return result; 
-        }(dmap);
-
-      // number of cycles with this state that are not covered yet
-      unsigned cycles = [allCycles, state](){
-        unsigned tmp = 0;
-        for (std::vector<State> cycle : allCycles){
-          if (std::find(cycle.begin(), cycle.end(), state) != cycle.end())
-            tmp++;
-        }
-        return tmp;
-      }();
-
-      mapping.insert(std::pair<State, double>(state, cycles!=0 ? ((double)rankings)/cycles : 0.0));
-    }
-
-    // remove states with 0.0
-    tmpStates = allStates;
-    bool removed = false;
-    for (auto state : allStates){
-      if (mapping[state] == 0.0){
-        removed = true;
-        // add them to statesToGenerate with no symbol
-        std::set<Symbol> tmpSymbols;
-        statesToGenerate.insert(std::pair<State, std::set<Symbol>>(state, tmpSymbols)); 
-        tmpStates.erase(state);
-        // remove all cycles with this state
-        tmpCycles.clear();
-        for (std::vector<State> cycle : allCycles){
-          if (std::find(cycle.begin(), cycle.end(), state) == cycle.end())
-            tmpCycles.push_back(cycle);
-        }
-        allCycles = tmpCycles;
-      }
-    }
-    allStates = tmpStates;
-    if (removed)
-      continue;
     
-    // pick min
-    State minState;
-    double min = -1.0;
-    bool first = true;
-    if (allStates.size() == 0)
-      break;
-    for (auto state : allStates){
-      if (first or (mapping[state] <= min and dmap[state].maxRank < dmap[minState].maxRank)) {
-        minState = state;
-        min = mapping[state];
-        first = false;
+    // NORMAL
+    if (version == oldVersion or version == newVersion or version == subsetVersion){
+      mapping.clear(); 
+      // number for every state
+      for (auto state : allStates){
+        successors = this->getAllSuccessors(state); // all successors
+        std::set<State> tmpSucc = successors;
+
+        for (auto succ : successors){
+          if (not std::any_of(allCycles.begin(), allCycles.end(), [state, succ](std::vector<State> item){
+            return [state, succ, item](){
+              for (unsigned i=0; i<item.size()-1; i++){
+                if (item[i] == state and item[i+1] == succ)
+                  return true;
+              }
+              return false;
+            }();
+          })){tmpSucc.erase(succ);}
+        }
+        successors = tmpSucc;
+
+        unsigned rankings = [successors, this, state, version](DelayMap<State> &dmap){
+            unsigned result = 0;
+            for (auto succ : successors){
+              if (dmap[succ].maxRank != 0){
+                result += this->getAllPossibleRankings(dmap[succ].maxRank, dmap[succ].macrostateSize - dmap[succ].nonAccStates, dmap[succ].nonAccStates, version);
+              } 
+            }
+            return result; 
+          }(dmap);
+
+        // number of cycles with this state that are not covered yet
+        unsigned cycles = [allCycles, state](){
+          unsigned tmp = 0;
+          for (std::vector<State> cycle : allCycles){
+            if (std::find(cycle.begin(), cycle.end(), state) != cycle.end())
+              tmp++;
+          }
+          return tmp;
+        }();
+
+        double result = [rankings, cycles, w](){
+          if (cycles == 0)
+            return 0.0;
+          //return ((double)rankings)/cycles;
+          return std::pow(rankings, w) / std::pow(cycles, 1-w);
+        }();
+        mapping.insert(std::pair<State, double>(state, result));
+      }
+
+      // remove states with 0.0
+      tmpStates = allStates;
+      bool removed = false;
+      for (auto state : allStates){
+        if (mapping[state] == 0.0){
+          removed = true;
+          // add them to statesToGenerate with no symbol
+          std::set<Symbol> tmpSymbols;
+          statesToGenerate.insert(std::pair<State, std::set<Symbol>>(state, tmpSymbols)); 
+          tmpStates.erase(state);
+          // remove all cycles with this state
+          tmpCycles.clear();
+          for (std::vector<State> cycle : allCycles){
+            if (std::find(cycle.begin(), cycle.end(), state) == cycle.end())
+              tmpCycles.push_back(cycle);
+          }
+          allCycles = tmpCycles;
+        }
+      }
+      allStates = tmpStates;
+      if (removed)
+        continue;
+    
+      // pick min
+      double min = -1.0;
+      bool first = true;
+      if (allStates.size() == 0)
+        break;
+      for (auto state : allStates){
+        if (first or (mapping[state] <= min and dmap[state].maxRank < dmap[minState].maxRank)) {
+          minState = state;
+          min = mapping[state];
+          first = false;
+        }
+      }
+
+      // NEW PART
+      // TODO
+      if (version == subsetVersion){
+        if constexpr (std::is_same<State, StateSch>::value){
+          auto tmpStates = allStates;
+          auto revTrans = this->getReverseTransitions();
+          for (auto succ : cycleSucc){
+            for (auto state : allStates){
+              std::set<int> tmpSet;
+              std::set_difference(state.S.begin(), state.S.end(), succ.S.begin(), succ.S.end(), std::inserter(tmpSet, tmpSet.begin()));
+              if (tmpSet.size() == 0 and std::find(tmpStates.begin(), tmpStates.end(), state) != tmpStates.end())
+                minState = state;
+            }
+          }
+          allStates = tmpStates;
+        }
       }
     }
-    //if constexpr (std::is_same<State, StateSch>::value)
-    //  std::cout << minState.toString() << std::endl;
+
+    // RANDOM
+    else if (version == randomVersion){
+      // randomly pick one state to generate
+      auto it = allStates.cbegin();
+      int random = rand() % allStates.size();
+      std::advance(it, random);
+      minState = *it;
+    }
 
     // which transitions should be generated
     std::set<Symbol> symbols;
-    std::set<State> cycleSucc;
+    cycleSucc.clear();
     for (auto cycle : allCycles){
       for (unsigned i = 0; i < cycle.size()-1; i++){
         if (cycle[i] == minState){
@@ -1482,11 +1539,10 @@ std::map<State, std::set<Symbol>> BuchiAutomaton<State, Symbol> :: getCycleClosi
       }
     }
     
-    //std::cout << "Succ size: " << cycleSucc.size() << std::endl;
     for (auto succ : cycleSucc){
       for (auto a : this->alph){
         std::set<State> reachStates = this->trans[std::pair<State, Symbol>(minState, a)];
-        if (reachStates.find(succ) != reachStates.end()) //TODO remove !!!!!!!!!!!!!!!!
+        if (reachStates.find(succ) != reachStates.end()) 
           symbols.insert(a);
       }
     }
@@ -1497,15 +1553,60 @@ std::map<State, std::set<Symbol>> BuchiAutomaton<State, Symbol> :: getCycleClosi
     for (std::vector<State> cycle : allCycles){
       if (std::find(cycle.begin(), cycle.end(), minState) == cycle.end())
         tmpCycles.push_back(cycle);
-      else if (cycle.size() == 6){
-        //if constexpr (std::is_same<State, StateSch>::value)
-        //  std::cout << "Cycle was removed because of: " << minState.toString() << std::endl;
-      }
     }
     allCycles = tmpCycles;
     allStates.erase(minState);
-  }
 
+    /*auto tmpStates = allStates;
+    for (auto state : allStates){
+      if constexpr (std::is_same<State, StateSch>::value){
+        std::set<int> tmpSet;
+        std::set_difference(state.S.begin(), state.S.end(), minState.S.begin(), minState.S.end(), std::inserter(tmpSet, tmpSet.begin()));
+        if (tmpSet.size() == 0 and std::find(tmpStates.begin(), tmpStates.end(), state) != tmpStates.end()){
+          // macrostate state is a subset of minState
+          statesToGenerate.insert(std::pair<State, std::set<Symbol>>(state, this->alph));
+          // remove all cycles with this state
+          tmpCycles.clear();
+          for (std::vector<State> cycle : allCycles){
+            if (std::find(cycle.begin(), cycle.end(), state) == cycle.end())
+              tmpCycles.push_back(cycle);
+          }
+          allCycles = tmpCycles;
+          tmpStates.erase(state);
+        }
+      }
+    }
+    allStates = tmpStates;*/
+    /*if (w == 0.0){
+      if constexpr (std::is_same<State, StateSch>::value){
+        auto tmpStates = allStates;
+        auto revTrans = this->getReverseTransitions();
+        for (auto succ : cycleSucc){
+          for (auto state : allStates){
+            std::set<int> tmpSet;
+            std::set_difference(state.S.begin(), state.S.end(), succ.S.begin(), succ.S.end(), std::inserter(tmpSet, tmpSet.begin()));
+            if (tmpSet.size() == 0 and std::find(tmpStates.begin(), tmpStates.end(), state) != tmpStates.end()){
+              for (auto a : this->alph){
+                for (auto genState : revTrans[{state, a}]){
+                  statesToGenerate.insert(std::pair<State, std::set<Symbol>>(state, this->alph));
+                  // remove all cycles with this state
+                  tmpCycles.clear();
+                  for (std::vector<State> cycle : allCycles){
+                    if (std::find(cycle.begin(), cycle.end(), state) == cycle.end())
+                      tmpCycles.push_back(cycle);
+                  }
+                  allCycles = tmpCycles;
+                  tmpStates.erase(state);
+                }
+              }
+            }
+          }
+        }
+        allStates = tmpStates;
+      }
+    }*/
+  }
+  
   return statesToGenerate;
 }
 

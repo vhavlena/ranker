@@ -21,6 +21,8 @@ using std::vector;
 using std::set;
 using std::map;
 
+enum delayVersion : unsigned;
+
 typedef set<int> DFAState;
 /*
  * Successor cache data type
@@ -87,10 +89,10 @@ public:
 
   BuchiAutomaton<StateKV, int> complementKV();
   BuchiAutomaton<StateSch, int> complementSch();
-  BuchiAutomaton<StateSch, int> complementSchReduced(bool delay, std::set<int> originalFinals);
+  BuchiAutomaton<StateSch, int> complementSchReduced(bool delay, std::set<int> originalFinals, double w, delayVersion version);
   BuchiAutomaton<StateSch, int> complementSchNFA(set<int>& start);
   //BuchiAutomaton<StateSch, int> complementSchOpt(bool delay);
-  BuchiAutomaton<StateSch, int> complementSchOpt(bool delay, std::set<int> originalFinals);
+  BuchiAutomaton<StateSch, int> complementSchOpt(bool delay, std::set<int> originalFinals, double w, delayVersion version);
 
   set<StateSch> nfaSlAccept(BuchiAutomaton<StateSch, int>& nfaSchewe);
   set<pair<DFAState,int>> nfaSingleSlNoAccept(BuchiAutomaton<StateSch, int>& nfaSchewe);

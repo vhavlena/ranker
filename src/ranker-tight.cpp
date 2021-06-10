@@ -23,7 +23,11 @@ int main(int argc, char *argv[])
   Params params = { .output = "", .input = "", .stats = false};
   ifstream os;
   bool delay = false;
+  double w = 0.5; 
+  delayVersion version;
+  bool error = false;
 
+  // without delay
   if(argc == 2)
   {
 		if ((std::string(argv[1]) == "--help") || (std::string(argv[1]) == "-h")) {
@@ -43,18 +47,83 @@ int main(int argc, char *argv[])
     params.input = string(argv[2]);
     params.stats = true;
   }
-  else if (argc == 4 and strcmp(argv[1], "--stats") == 0 and strcmp(argv[2], "--delay") == 0){
-    params.input = string(argv[3]);
+
+  // delay without weight
+  else if (argc == 5 and strcmp(argv[1], "--stats") == 0 and strcmp(argv[2], "--delay") == 0){
+    params.input = string(argv[4]);
     params.stats = true;
     delay = true;
+    if (strcmp(argv[3], "--old") == 0)
+      version = oldVersion;
+    else if (strcmp(argv[3], "--new") == 0)
+      version = newVersion;
+    else if (strcmp(argv[3], "--random") == 0)
+      version = randomVersion;
+    else if (strcmp(argv[3], "--subset") == 0)
+      version = subsetVersion;
+    else
+      error = true;
   }
-  else if (argc == 3 and strcmp(argv[1], "--delay") == 0){
-    params.input = string(argv[2]);
+  else if (argc == 4 and strcmp(argv[1], "--delay") == 0){
+    params.input = string(argv[3]);
     params.stats = false;
     delay = true;
+    if (strcmp(argv[2], "--old") == 0)
+      version = oldVersion;
+    else if (strcmp(argv[2], "--new") == 0)
+      version = newVersion;
+    else if (strcmp(argv[2], "--random") == 0)
+      version = randomVersion;
+    else if (strcmp(argv[2], "--subset") == 0)
+      version = subsetVersion;
+    else
+      error = true;
   }
+
+  // delay with weight
+  else if (argc == 7 and strcmp(argv[1], "--stats") == 0 and strcmp(argv[2], "--delay") == 0 and strcmp(argv[4], "-w") == 0){
+    params.input = string(argv[6]);
+    params.stats = true;
+    delay = true;
+    w = stod(argv[5]);
+    if (strcmp(argv[3], "--old") == 0)
+      version = oldVersion;
+    else if (strcmp(argv[3], "--new") == 0)
+      version = newVersion;
+    else if (strcmp(argv[3], "--random") == 0)
+      version = randomVersion;
+    else if (strcmp(argv[3], "--subset") == 0)
+      version = subsetVersion;
+    else
+      error = true;
+  }
+  else if (argc == 6 and strcmp(argv[1], "--delay") == 0 and strcmp(argv[3], "-w") == 0){
+    params.input = string(argv[4]);
+    params.stats = false;
+    delay = true;
+    w = stod(argv[4]);
+    if (strcmp(argv[2], "--old") == 0)
+      version = oldVersion;
+    else if (strcmp(argv[2], "--new") == 0)
+      version = newVersion;
+    else if (strcmp(argv[2], "--random") == 0)
+      version = randomVersion;
+    else if (strcmp(argv[2], "--subset") == 0)
+      version = subsetVersion;
+    else
+      error = true;
+  }
+  
+  // error
   else
   {
+    cerr << "Unrecognized arguments" << endl;
+		cerr << "\n";
+		cerr << getHelpMsg(argv[0]);
+    return 1;
+  }
+  
+  if (error){
     cerr << "Unrecognized arguments" << endl;
 		cerr << "\n";
 		cerr << getHelpMsg(argv[0]);
@@ -76,7 +145,7 @@ int main(int argc, char *argv[])
       BuchiAutomaton<int, int> ren = parseRenameBA(os, &ba);
       try
       {
-        complementScheweAutWrap(ren, &renCompl, &stats, delay);
+        complementScheweAutWrap(ren, &renCompl, &stats, delay, w, version);
       }
       catch (const std::bad_alloc&)
       {
@@ -112,7 +181,7 @@ int main(int argc, char *argv[])
 
       try
       {
-        complementScheweAutWrap(ren, &renCompl, &stats, delay);
+        complementScheweAutWrap(ren, &renCompl, &stats, delay, w, version);
       }
       catch (const std::bad_alloc&)
       {
