@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
     return 1;
   }
   
-  if (error){
+  if (error or w < 0.0 or w > 1.0){
     cerr << "Unrecognized arguments" << endl;
 		cerr << "\n";
 		cerr << getHelpMsg(argv[0]);

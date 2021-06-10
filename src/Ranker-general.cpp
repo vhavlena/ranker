@@ -160,7 +160,7 @@ void printStat(Stat& st)
 std::string getHelpMsg(const std::string& progName)
 {
 	std::string helpMsg;
-	helpMsg += "Usage: " + progName + " [--stats] [--delay] INPUT\n";
+	helpMsg += "Usage: " + progName + " [--stats] [--delay VERSION [-w WEIGHT]] INPUT\n";
 	helpMsg += "\n";
 	helpMsg += "Complements a (state-based acceptance condition) Buchi automaton.\n";
 	helpMsg += "\n";
@@ -173,6 +173,9 @@ std::string getHelpMsg(const std::string& progName)
 	helpMsg += "\n";
 	helpMsg += "Flags:\n";
 	helpMsg += "  --stats       Print summary statistics\n";
+  helpMsg += "  --delay       Use delay optimization\n";
+  helpMsg += "  VERSION       --old / --new / --random / --subset\n";
+  helpMsg += "  WEIGHT        Weight parameter - in <0,1>\n";
 
 	return helpMsg;
 } // getHelpMsg
