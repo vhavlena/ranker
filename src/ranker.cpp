@@ -26,6 +26,7 @@ int main(int argc, char *argv[])
   double w = 0.5; 
   delayVersion version;
   bool error = false;
+  bool elevatorTest = false;
 
   // without delay
   if(argc == 2)
@@ -46,6 +47,12 @@ int main(int argc, char *argv[])
   {
     params.input = string(argv[2]);
     params.stats = true;
+  }
+
+  // elevator automaton test
+  else if (argc == 3 and strcmp(argv[1], "--elevator") == 0){
+    elevatorTest = true;
+    params.input = string(argv[2]);
   }
 
   // delay without weight
@@ -143,6 +150,14 @@ int main(int argc, char *argv[])
     {
       BuchiAutomaton<string, string> ba;
       BuchiAutomaton<int, int> ren = parseRenameBA(os, &ba);
+
+      // elevator test
+      if (elevatorTest){
+        std::cout << "Elevator automaton: " << (ren.isElevator() ? "Yes" : "No") << std::endl;
+        os.close();
+        return 0;
+      }
+
       try
       {
         complementAutWrap(ren, &renCompl, &stats, delay, w, version);
@@ -170,6 +185,12 @@ int main(int argc, char *argv[])
       try
       {
         ren = parseRenameHOA(os, &ba);
+        // elevator test
+        if (elevatorTest){
+          std::cout << "Elevator automaton: " << (ren.isElevator() ? "Yes" : "No") << std::endl;
+          os.close();
+          return 0;
+        }
       }
       catch(const ParserException& e)
       {

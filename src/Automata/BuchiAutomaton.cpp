@@ -15,6 +15,65 @@ std::set<Symbol> BuchiAutomaton<State, Symbol>::getAlph()
   return sym;
 }
 
+template <typename State, typename Symbol>
+unsigned BuchiAutomaton<State, Symbol>::getTransitionsToTight(){
+  unsigned count = 0;
+  if constexpr (std::is_same<State, StateSch>::value){
+    for (auto trans : this->trans){
+      if (not trans.first.first.tight){
+        for (auto succ : trans.second){
+          if (succ.tight)
+            count++;
+        }
+      }
+    }
+  }
+  return count;
+}
+
+/**
+ * Is it an elevator automaton?
+ */ 
+template<typename State, typename Symbol>
+bool BuchiAutomaton<State, Symbol>::isElevator(){
+  // get all sccs
+  std::vector<std::set<State>> sccs = this->getAutGraphSCCs();
+
+  for (auto scc : sccs){
+    // is scc deterministic?
+    bool det = true;
+    for (auto state : scc){
+      if (not det)
+        break;
+      for (auto a : this->alph){
+        if (not det)
+          break;
+        unsigned trans = 0;
+        for (auto succ : this->trans[{state, a}]){
+          if (scc.find(succ) != scc.end()){
+            if (trans > 0){
+              det = false;
+              break;
+            }
+            trans++;
+          }
+        }
+      }
+    }
+
+    // does scc contain accepting states?
+    bool finalStates = false;
+    if (std::any_of(scc.begin(), scc.end(), [this](State state){return this->getFinals().find(state) != this->getFinals().end();}))
+      finalStates = true;
+
+    // problem: nondeterministic scc with accepting states
+    if ((not det) and finalStates)
+      return false;
+  }
+
+  return true;
+}
+
 
 /*
  * Rename states and symbols of the automaton (to consecutive numbers).
@@ -1158,7 +1217,6 @@ set<State> BuchiAutomaton<State, Symbol>::getEventReachable(set<State>& sls)
 template <typename State, typename Symbol>
 set<State> BuchiAutomaton<State, Symbol>::getCycleClosingStates(set<State>& slignore)
 {
-  //this->getAllCycles(); // test
   set<State> ret;
   std::stack<State> stack;
   set<State> done;

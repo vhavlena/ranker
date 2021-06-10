@@ -944,7 +944,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
               for(const auto& d : prev[{st, a}]) { 
                 if ((not delay) or tightStartDelay[d].find(a) != tightStartDelay[d].end()){
                   mp[{d,a}].insert(dst.begin(), dst.end());
-                  transitionsToTight++;
+                  transitionsToTight += dst.size();
                 }
               }
             }
@@ -968,7 +968,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
     //std::cout << comst.size() << " : " << stack.size() << std::endl;
   }
 
-  std::cerr << "Transitions to tight: " << transitionsToTight << std::endl;
+  //std::cerr << "Transitions to tight: " << transitionsToTight << std::endl;
 
   return BuchiAutomaton<StateSch, int>(comst, finals,
     initials, mp, alph, getAPPattern());

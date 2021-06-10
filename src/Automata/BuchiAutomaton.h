@@ -164,6 +164,8 @@ public:
   BuchiAutomaton<int, int> renameAut(int start = 0);
   BuchiAutomaton<int, int> renameAutDict(map<Symbol, int>& mpsymbol, int start = 0);
 
+  unsigned getTransitionsToTight();
+  bool isElevator();
 
   /*
    * Rename symbols of the automaton.

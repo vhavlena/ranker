@@ -97,6 +97,8 @@ void complementAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<int, int>* 
   stats->reachStates = renCompl.getStates().size();
   stats->reachTrans = renCompl.getTransCount();
   stats->engine = "Ranker";
+  stats->transitionsToTight = comp.getTransitionsToTight();
+  stats->elevator = ren.isElevator(); // original automaton before complementation
   *complRes = renCompl;
 }
 
@@ -122,6 +124,8 @@ void complementScheweAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<int, 
   stats->reachStates = renCompl.getStates().size();
   stats->reachTrans = renCompl.getTransCount();
   stats->engine = "Ranker";
+  stats->transitionsToTight = comp.getTransitionsToTight();
+  stats->elevator = ren.isElevator(); // original automaton before complementation
   *complRes = renCompl;
 }
 
@@ -151,6 +155,8 @@ void printStat(Stat& st)
 {
   cerr << "Generated states: " << st.generatedStates << "\nGenerated trans: " << st.generatedTrans << endl;
   cerr << "States: " << st.reachStates << "\nTransitions: " << st.reachTrans << endl;
+  cerr << "Generated transitions to tight: " << st.transitionsToTight << endl;
+  cerr << "Elevator automaton: " << (st.elevator ? "Yes" : "No") << endl;
   cerr << "Engine: " << st.engine << endl;
   cerr << std::fixed;
   cerr << std::setprecision(2);
@@ -160,7 +166,9 @@ void printStat(Stat& st)
 std::string getHelpMsg(const std::string& progName)
 {
 	std::string helpMsg;
-	helpMsg += "Usage: " + progName + " [--stats] [--delay VERSION [-w WEIGHT]] INPUT\n";
+	helpMsg += "Usage: \n";
+  helpMsg += "1) Complementation:\n";
+  helpMsg += "  " + progName + " [--stats] [--delay VERSION [-w WEIGHT]] INPUT\n";
 	helpMsg += "\n";
 	helpMsg += "Complements a (state-based acceptance condition) Buchi automaton.\n";
 	helpMsg += "\n";
@@ -176,6 +184,9 @@ std::string getHelpMsg(const std::string& progName)
   helpMsg += "  --delay       Use delay optimization\n";
   helpMsg += "  VERSION       --old / --new / --random / --subset\n";
   helpMsg += "  WEIGHT        Weight parameter - in <0,1>\n";
+  helpMsg += "\n";
+  helpMsg += "2) Tests if INPUT is an elevator automaton\n";
+  helpMsg += "  " + progName + " --elevator INPUT\n";
 
 	return helpMsg;
 } // getHelpMsg
