@@ -28,6 +28,7 @@ int main(int argc, char *argv[])
   double w = 0.5; 
   delayVersion version;
   bool error = false;
+  bool elevatorRank = false;
 
   // without delay
   if(argc == 2)
@@ -114,6 +115,87 @@ int main(int argc, char *argv[])
       version = subsetVersion;
     else
       error = true;
+  }
+
+  // elevator rank
+  // elevator rank
+  else if(argc == 4 && strcmp(argv[2], "--stats") == 0 and strcmp(argv[3], "--elevator-rank") == 0)
+  {
+    params.input = string(argv[1]);
+    params.stats = true;
+    elevatorRank = true;
+  }
+  else if(argc == 4 && strcmp(argv[1], "--stats") == 0 and strcmp(argv[2], "--elevator-rank") == 0)
+  {
+    params.input = string(argv[3]);
+    params.stats = true;
+    elevatorRank = true;
+  }
+  else if (argc == 6 and strcmp(argv[1], "--stats") == 0 and strcmp(argv[2], "--delay") == 0 and strcmp(argv[4], "--elevator-rank") == 0){
+    params.input = string(argv[5]);
+    params.stats = true;
+    delay = true;
+    if (strcmp(argv[3], "--old") == 0)
+      version = oldVersion;
+    else if (strcmp(argv[3], "--new") == 0)
+      version = newVersion;
+    else if (strcmp(argv[3], "--random") == 0)
+      version = randomVersion;
+    else if (strcmp(argv[3], "--subset") == 0)
+      version = subsetVersion;
+    else
+      error = true;
+    elevatorRank = true;
+  }
+  else if (argc == 5 and strcmp(argv[1], "--delay") == 0 and strcmp(argv[3], "--elevator-rank") == 0){
+    params.input = string(argv[4]);
+    params.stats = false;
+    delay = true;
+    if (strcmp(argv[2], "--old") == 0)
+      version = oldVersion;
+    else if (strcmp(argv[2], "--new") == 0)
+      version = newVersion;
+    else if (strcmp(argv[2], "--random") == 0)
+      version = randomVersion;
+    else if (strcmp(argv[2], "--subset") == 0)
+      version = subsetVersion;
+    else
+      error = true;
+    elevatorRank = true;
+  }
+  else if (argc == 8 and strcmp(argv[1], "--stats") == 0 and strcmp(argv[2], "--delay") == 0 and strcmp(argv[4], "-w") == 0 and strcmp(argv[6], "--elevator-rank") == 0){
+    params.input = string(argv[7]);
+    params.stats = true;
+    delay = true;
+    w = stod(argv[5]);
+    if (strcmp(argv[3], "--old") == 0)
+      version = oldVersion;
+    else if (strcmp(argv[3], "--new") == 0)
+      version = newVersion;
+    else if (strcmp(argv[3], "--random") == 0)
+      version = randomVersion;
+    else if (strcmp(argv[3], "--subset") == 0)
+      version = subsetVersion;
+    else
+      error = true;
+    elevatorRank = true;
+  }
+  else if (argc == 7 and strcmp(argv[1], "--delay") == 0 and strcmp(argv[3], "-w") == 0 and strcmp(argv[5], "--elevator-rank") == 0){
+    params.input = string(argv[6]);
+    params.stats = false;
+    delay = true;
+    w = stod(argv[4]);
+    if (strcmp(argv[2], "--old") == 0)
+      version = oldVersion;
+    else if (strcmp(argv[2], "--new") == 0)
+      version = newVersion;
+    else if (strcmp(argv[2], "--random") == 0)
+      version = randomVersion;
+    else if (strcmp(argv[2], "--subset") == 0)
+      version = subsetVersion;
+    else
+      error = true;
+    elevatorRank = true;
   }
   
   // error
@@ -212,7 +294,7 @@ int main(int argc, char *argv[])
     {
       try
       {
-        complementAutWrap(ren, &renCompl, &stats, delay, w, version);
+        complementAutWrap(ren, &renCompl, &stats, delay, w, version, elevatorRank);
       }
       catch (const std::bad_alloc&)
       {
