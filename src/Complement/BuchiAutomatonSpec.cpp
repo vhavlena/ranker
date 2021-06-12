@@ -1185,7 +1185,7 @@ std::vector<std::set<int>> BuchiAutomatonSpec::topologicalSort(){
 /**
  * Updates rankBound of every state based on elevator automaton structure (minimum of these two options)
  */ 
-void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> &nfaSchewe){
+void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe){
   // topological sort
   std::vector<std::set<int>> sortedComponents = this->topologicalSort();
 
@@ -1244,14 +1244,28 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> &nfaSchewe){
       break;
   }
 
+  unsigned bad = 0;
+  unsigned other = 0;
+  for (unsigned i = sortedComponents.size()-1; i >= 0; i--){
+    if (typeMap[sortedComponents[i]] == BAD)
+      bad++;
+    else
+      other++;
+    if (i == 0)
+      break;
+  }
+  std::cerr << "Good: " << other << "\tBad: " << bad << std::endl;
+
   // merge sccs if possible
   // from back to front -> lower rank
   std::vector<std::pair<std::set<int>, sccType>> partition;
   std::pair<std::set<int>, sccType> tmpComponent;
   for (unsigned i = sortedComponents.size()-1; i > 0; i--){
     
-    if (typeMap[sortedComponents[i]] == BAD or typeMap[sortedComponents[i-1]] == BAD)
+    if (typeMap[sortedComponents[i]] == BAD or typeMap[sortedComponents[i-1]] == BAD){
+      tmpComponent.second = BAD;
       break;
+    }
 
     if (tmpComponent.first.size() == 0){
       tmpComponent.first.insert(sortedComponents[i].begin(), sortedComponents[i].end());
@@ -1367,7 +1381,7 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> &nfaSchewe){
     else if (part.second == ND and rank%2 == 0)
       rank++;
     else if (part.second == BAD)
-      break;
+      continue;
     
     for (auto state : part.first){
       newRank.insert({state, rank});
@@ -1398,11 +1412,22 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> &nfaSchewe){
       }
       // update rank upper bound if lower
       if (not bad and this->rankBound[macrostate.S] > max){
+        std::cerr << "Update: " << this->rankBound[macrostate.S] << " -> " << max << std::endl;
         this->rankBound[macrostate.S] = max;
-        std::cerr << "Update" << std::endl;
       }
     }
   }
+
+  bool first = true;
+  unsigned maxRank;
+  for (auto macrostate : nfaSchewe.getStates()){
+    if (first){
+      maxRank = this->rankBound[macrostate.S];
+      first = false;
+    } else if (this->rankBound[macrostate.S] > maxRank)
+      maxRank = this->rankBound[macrostate.S];
+  }
+  std::cerr << "Max rank: " << maxRank << std::endl;
 }
 
 /*
