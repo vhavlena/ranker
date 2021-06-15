@@ -586,7 +586,7 @@ void BuchiAutomatonSpec::getSchRanksTightReduced(vector<RankFunc>& out, vector<i
  * @return Set of all successors
  */
 vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int symbol,
-    map<int, int> reachCons, map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel)
+    map<int, int> reachCons, map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel, bool eta4)
 {
   vector<StateSch> ret;
   set<int> sprime;
@@ -679,11 +679,12 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
     retAll.insert(st);
     map<int, int> rnkMap((map<int, int>)st.f);
 
-    // TODO
-    /*SCC intersection;
-    std::set_intersection(st.S.begin(), st.S.end(), fin.begin(), fin.end(), std::inserter(intersection, intersection.begin()));
-    if (intersection.size() == 0)
-      continue;*/
+    if (eta4){
+      SCC intersection;
+      std::set_intersection(st.S.begin(), st.S.end(), fin.begin(), fin.end(), std::inserter(intersection, intersection.begin()));
+      if (intersection.size() == 0)
+        continue;
+    }
 
     if(state.O.size() == 0)
       continue;
@@ -796,7 +797,7 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchStartReduced(set<int>& state, int
  * Optimized Schewe complementation procedure
  * @return Complemented automaton
  */
-BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool delay, std::set<int> originalFinals, double w, delayVersion version, bool elevatorRank)
+BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool delay, std::set<int> originalFinals, double w, delayVersion version, bool elevatorRank, bool eta4)
 {
   std::stack<StateSch> stack;
   set<StateSch> comst;
@@ -914,7 +915,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
       set<StateSch> dst;
       if(st.tight)
       {
-        succ = succSetSchTightReduced(st, sym, reachCons, maxReach, dirRel, oddRel);
+        succ = succSetSchTightReduced(st, sym, reachCons, maxReach, dirRel, oddRel, eta4);
       }
       else
       {

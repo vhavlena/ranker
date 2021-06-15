@@ -26,6 +26,7 @@ int main(int argc, char *argv[])
   double w = 0.5; 
   delayVersion version;
   bool error = false;
+  bool eta4 = false;
 
   // without delay
   if(argc == 2)

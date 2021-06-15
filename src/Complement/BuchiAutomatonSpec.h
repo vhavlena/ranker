@@ -69,7 +69,7 @@ protected:
   vector<StateSch> succSetSchStartReduced(set<int>& state, int rankBound, map<int, int> reachCons,
       map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel);
   vector<StateSch> succSetSchTightReduced(StateSch& state, int symbol, map<int, int> reachCons,
-      map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel);
+      map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel, bool eta4);
 
   bool acceptSl(StateSch& state, vector<int>& alp);
 
@@ -90,7 +90,7 @@ public:
 
   BuchiAutomaton<StateKV, int> complementKV();
   BuchiAutomaton<StateSch, int> complementSch();
-  BuchiAutomaton<StateSch, int> complementSchReduced(bool delay, std::set<int> originalFinals, double w, delayVersion version, bool elevatorRank);
+  BuchiAutomaton<StateSch, int> complementSchReduced(bool delay, std::set<int> originalFinals, double w, delayVersion version, bool elevatorRank, bool eta4);
   BuchiAutomaton<StateSch, int> complementSchNFA(set<int>& start);
   //BuchiAutomaton<StateSch, int> complementSchOpt(bool delay);
   BuchiAutomaton<StateSch, int> complementSchOpt(bool delay, std::set<int> originalFinals, double w, delayVersion version);

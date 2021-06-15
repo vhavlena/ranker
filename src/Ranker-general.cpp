@@ -47,14 +47,14 @@ BuchiAutomaton<int, int> parseRenameBA(ifstream& os, BuchiAutomaton<string, stri
 }
 
 
-void complementAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<int, int>* complRes, Stat* stats, bool delay, double w, delayVersion version, bool elevatorRank)
+void complementAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<int, int>* complRes, Stat* stats, bool delay, double w, delayVersion version, bool elevatorRank, bool eta4)
 {
   BuchiAutomatonSpec sp(ren);
   ComplOptions opt = { .cutPoint = true, .succEmptyCheck = true, .ROMinState = 8,
       .ROMinRank = 6, .CacheMaxState = 6, .CacheMaxRank = 8, .semidetOpt = false };
   sp.setComplOptions(opt);
   BuchiAutomaton<StateSch, int> comp;
-  comp = sp.complementSchReduced(delay, ren.getFinals(), w, version, elevatorRank);
+  comp = sp.complementSchReduced(delay, ren.getFinals(), w, version, elevatorRank, eta4);
 
   stats->generatedStates = comp.getStates().size();
   stats->generatedTrans = comp.getTransCount();
@@ -171,7 +171,7 @@ std::string getHelpMsg(const std::string& progName)
 	std::string helpMsg;
 	helpMsg += "Usage: \n";
   helpMsg += "1) Complementation:\n";
-  helpMsg += "  " + progName + " [--stats] [--delay VERSION [-w WEIGHT]] [--elevator-rank] INPUT\n";
+  helpMsg += "  " + progName + " [--stats] [--delay VERSION [-w WEIGHT]] [--elevator-rank] [--eta4] INPUT\n";
 	helpMsg += "\n";
 	helpMsg += "Complements a (state-based acceptance condition) Buchi automaton.\n";
 	helpMsg += "\n";
@@ -188,7 +188,8 @@ std::string getHelpMsg(const std::string& progName)
   helpMsg += "  VERSION             --old / --new / --random / --subset\n";
   helpMsg += "  WEIGHT              Weight parameter - in <0,1>\n";
   helpMsg += "  --elevator-rank     Update rank upper bound of each macrostate based on elevator automaton structure";
-  helpMsg += "\n";
+  helpMsg += "  --eta4              Max rank optimization - eta 4 only when going from some accepting state";
+  helpMsg += "\n\n";
   helpMsg += "2) Tests if INPUT is an elevator automaton\n";
   helpMsg += "  " + progName + " --elevator-test INPUT\n";
 
