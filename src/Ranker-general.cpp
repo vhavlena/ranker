@@ -155,11 +155,11 @@ BuchiAutomaton<int, int> createBA(vector<int>& loop)
 
 void printStat(Stat& st)
 {
-  cerr << "Generated states: " << st.generatedStates << "\nGenerated trans: " << st.generatedTrans << endl;
+  cerr << "Generated-states: " << st.generatedStates << "\nGenerated-trans: " << st.generatedTrans << endl;
   cerr << "States: " << st.reachStates << "\nTransitions: " << st.reachTrans << endl;
-  cerr << "Generated transitions to tight: " << st.generatedTransitionsToTight << endl;
+  cerr << "Generated-transitions-to-tight: " << st.generatedTransitionsToTight << endl;
   //cerr << "Transitions to tight: " << st.transitionsToTight << endl;
-  cerr << "Elevator automaton: " << (st.elevator ? "Yes" : "No") << endl;
+  cerr << "Elevator-automaton: " << (st.elevator ? "Yes" : "No") << endl;
   cerr << "Engine: " << st.engine << endl;
   cerr << std::fixed;
   cerr << std::setprecision(2);
