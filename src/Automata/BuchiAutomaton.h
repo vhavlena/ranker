@@ -23,7 +23,7 @@ using std::tuple;
 class AutGraph;
 
 //enum delayVersion : unsigned;
-enum delayVersion : unsigned {oldVersion, newVersion, randomVersion, subsetVersion};
+enum delayVersion : unsigned {oldVersion, newVersion, randomVersion, subsetVersion, stirlingVersion};
 
 /*
  * Single transition

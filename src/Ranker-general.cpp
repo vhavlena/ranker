@@ -185,7 +185,7 @@ std::string getHelpMsg(const std::string& progName)
 	helpMsg += "Flags:\n";
 	helpMsg += "  --stats             Print summary statistics\n";
   helpMsg += "  --delay             Use delay optimization\n";
-  helpMsg += "  VERSION             --old / --new / --random / --subset\n";
+  helpMsg += "  VERSION             --old / --new / --random / --subset / --stirling\n";
   helpMsg += "  WEIGHT              Weight parameter - in <0,1>\n";
   helpMsg += "  --elevator-rank     Update rank upper bound of each macrostate based on elevator automaton structure";
   helpMsg += "  --eta4              Max rank optimization - eta 4 only when going from some accepting state";

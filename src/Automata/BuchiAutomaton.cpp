@@ -1407,7 +1407,7 @@ unsigned BuchiAutomaton<State, Symbol> :: getAllPossibleRankings(unsigned maxRan
     return odd*even; 
   }
 
-  // SUBSET VERSION
+  // NEW VERSION
   else if (version == newVersion or version == subsetVersion){
     unsigned even = std::pow(((maxRank+1)/2), accStates);
     unsigned oddSum = 0;
@@ -1445,6 +1445,27 @@ unsigned BuchiAutomaton<State, Symbol> :: getAllPossibleRankings(unsigned maxRan
 
     return oddSum*even;
   }
+
+  else if (version == stirlingVersion){
+    unsigned even = std::pow(((maxRank+1)/2), accStates);
+    unsigned count = (maxRank+1)/2;
+    unsigned odd = 0;
+
+    for (unsigned tmpCount = 1; tmpCount <= count; tmpCount++){
+      odd += [nonAccStates, tmpCount](){
+        unsigned tmp = 0;
+        for (unsigned i=0; i<=tmpCount; i++){
+          int sign = 1;
+          if (i%2 == 1)
+            sign = -1;
+          tmp += sign * nCr(tmpCount, i) * std::pow(tmpCount-i, nonAccStates);
+        }
+        return tmp;
+      }();
+    }
+
+    return odd * even;
+  }
 }
 
 /*
@@ -1472,7 +1493,7 @@ std::map<State, std::set<Symbol>> BuchiAutomaton<State, Symbol> :: getCycleClosi
   while (not allStates.empty()){
     
     // NORMAL
-    if (version == oldVersion or version == newVersion or version == subsetVersion){
+    if (version == oldVersion or version == newVersion or version == subsetVersion or version == stirlingVersion){
       mapping.clear(); 
       // number for every state
       for (auto state : allStates){

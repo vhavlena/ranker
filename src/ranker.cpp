@@ -70,6 +70,8 @@ int main(int argc, char *argv[])
       version = randomVersion;
     else if (strcmp(argv[3], "--subset") == 0)
       version = subsetVersion;
+    else if (strcmp(argv[3], "--stirling") == 0)
+      version = stirlingVersion;
     else
       error = true;
   }
@@ -85,6 +87,8 @@ int main(int argc, char *argv[])
       version = randomVersion;
     else if (strcmp(argv[2], "--subset") == 0)
       version = subsetVersion;
+    else if (strcmp(argv[2], "--stirling") == 0)
+      version = stirlingVersion;
     else
       error = true;
   }
@@ -103,6 +107,8 @@ int main(int argc, char *argv[])
       version = randomVersion;
     else if (strcmp(argv[3], "--subset") == 0)
       version = subsetVersion;
+    else if (strcmp(argv[3], "--stirling") == 0)
+      version = stirlingVersion;
     else
       error = true;
   }
@@ -119,6 +125,8 @@ int main(int argc, char *argv[])
       version = randomVersion;
     else if (strcmp(argv[2], "--subset") == 0)
       version = subsetVersion;
+    else if (strcmp(argv[2], "--stirling") == 0)
+      version = stirlingVersion;
     else
       error = true;
   }
@@ -152,6 +160,8 @@ int main(int argc, char *argv[])
       version = randomVersion;
     else if (strcmp(argv[3], "--subset") == 0)
       version = subsetVersion;
+    else if (strcmp(argv[3], "--stirling") == 0)
+      version = stirlingVersion;
     else
       error = true;
     elevatorRank = true;
@@ -168,6 +178,8 @@ int main(int argc, char *argv[])
       version = randomVersion;
     else if (strcmp(argv[2], "--subset") == 0)
       version = subsetVersion;
+    else if (strcmp(argv[2], "--stirling") == 0)
+      version = stirlingVersion;
     else
       error = true;
     elevatorRank = true;
@@ -185,6 +197,8 @@ int main(int argc, char *argv[])
       version = randomVersion;
     else if (strcmp(argv[3], "--subset") == 0)
       version = subsetVersion;
+    else if (strcmp(argv[3], "--stirling") == 0)
+      version = stirlingVersion;
     else
       error = true;
     elevatorRank = true;
@@ -202,6 +216,8 @@ int main(int argc, char *argv[])
       version = randomVersion;
     else if (strcmp(argv[2], "--subset") == 0)
       version = subsetVersion;
+    else if (strcmp(argv[2], "--stirling") == 0)
+      version = stirlingVersion;
     else
       error = true;
     elevatorRank = true;
@@ -255,6 +271,8 @@ int main(int argc, char *argv[])
       version = randomVersion;
     else if (strcmp(argv[3], "--subset") == 0)
       version = subsetVersion;
+    else if (strcmp(argv[3], "--stirling") == 0)
+      version = stirlingVersion;
     else
       error = true;
     eta4 = true;
@@ -271,6 +289,8 @@ int main(int argc, char *argv[])
       version = randomVersion;
     else if (strcmp(argv[3], "--subset") == 0)
       version = subsetVersion;
+    else if (strcmp(argv[3], "--stirling") == 0)
+      version = stirlingVersion;
     else
       error = true;
     elevatorRank = true;
@@ -288,6 +308,8 @@ int main(int argc, char *argv[])
       version = randomVersion;
     else if (strcmp(argv[2], "--subset") == 0)
       version = subsetVersion;
+    else if (strcmp(argv[2], "--stirling") == 0)
+      version = stirlingVersion;
     else
       error = true;
     eta4 = true;
@@ -304,6 +326,8 @@ int main(int argc, char *argv[])
       version = randomVersion;
     else if (strcmp(argv[2], "--subset") == 0)
       version = subsetVersion;
+    else if (strcmp(argv[2], "--stirling") == 0)
+      version = stirlingVersion;
     else
       error = true;
     elevatorRank = true;
@@ -322,6 +346,8 @@ int main(int argc, char *argv[])
       version = randomVersion;
     else if (strcmp(argv[3], "--subset") == 0)
       version = subsetVersion;
+    else if (strcmp(argv[3], "--stirling") == 0)
+      version = stirlingVersion;
     else
       error = true;
     eta4 = true;
@@ -339,6 +365,8 @@ int main(int argc, char *argv[])
       version = randomVersion;
     else if (strcmp(argv[3], "--subset") == 0)
       version = subsetVersion;
+    else if (strcmp(argv[3], "--stirling") == 0)
+      version = stirlingVersion;
     else
       error = true;
     elevatorRank = true;
@@ -357,6 +385,8 @@ int main(int argc, char *argv[])
       version = randomVersion;
     else if (strcmp(argv[2], "--subset") == 0)
       version = subsetVersion;
+    else if (strcmp(argv[2], "--stirling") == 0)
+      version = stirlingVersion;
     else
       error = true;
     eta4 = true;
@@ -374,6 +404,8 @@ int main(int argc, char *argv[])
       version = randomVersion;
     else if (strcmp(argv[2], "--subset") == 0)
       version = subsetVersion;
+    else if (strcmp(argv[2], "--stirling") == 0)
+      version = stirlingVersion;
     else
       error = true;
     elevatorRank = true;
