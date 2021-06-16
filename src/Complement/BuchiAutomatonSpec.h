@@ -106,6 +106,7 @@ public:
   ComplOptions getComplOptions() const { return this->opt; }
 
   void elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe);
+  unsigned elevatorStates();
   vector<set<int>> topologicalSort();
   void topologicalSortUtil(set<int> currentScc, vector<set<int>> allSccs, map<set<int>, bool> &visited, stack<set<int>> &Stack);
 };

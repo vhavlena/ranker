@@ -98,8 +98,11 @@ void complementAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<int, int>* 
   stats->reachStates = renCompl.getStates().size();
   stats->reachTrans = renCompl.getTransCount();
   stats->engine = "Ranker";
-  //stats->transitionsToTight = renCompl.getTransitionsToTight();
+  stats->transitionsToTight = comp.getTransitionsToTight();
+  stats->transitionsToTight = renCompl.getTransitionsToTight();
   stats->elevator = ren.isElevator(); // original automaton before complementation
+  stats->elevatorStates = sp.elevatorStates();
+  stats->originalStates = sp.getStates().size();
   *complRes = renCompl;
 }
 
@@ -128,6 +131,8 @@ void complementScheweAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<int, 
   stats->transitionsToTight = comp.getTransitionsToTight();
   stats->transitionsToTight = renCompl.getTransitionsToTight();
   stats->elevator = ren.isElevator(); // original automaton before complementation
+  stats->elevatorStates = sp.elevatorStates();
+  stats->originalStates = sp.getStates().size();
   *complRes = renCompl;
 }
 
@@ -160,6 +165,8 @@ void printStat(Stat& st)
   cerr << "Generated-transitions-to-tight: " << st.generatedTransitionsToTight << endl;
   //cerr << "Transitions to tight: " << st.transitionsToTight << endl;
   cerr << "Elevator-automaton: " << (st.elevator ? "Yes" : "No") << endl;
+  cerr << "States-before-complementation: " << st.originalStates << endl;
+  cerr << "Elevator-states: " << st.elevatorStates << endl;
   cerr << "Engine: " << st.engine << endl;
   cerr << std::fixed;
   cerr << std::setprecision(2);

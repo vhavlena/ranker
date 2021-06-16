@@ -42,6 +42,8 @@ struct Stat
   size_t generatedTransitionsToTight;
   size_t transitionsToTight; // generated transitions to the tight part
   bool elevator; // is it an elevator automaton?
+  size_t elevatorStates;
+  size_t originalStates;
   long duration;
   string engine;
 };

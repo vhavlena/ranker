@@ -1172,6 +1172,7 @@ std::vector<std::set<int>> BuchiAutomatonSpec::topologicalSort(){
   for (auto scc : sccs){
     if (visited[scc] == false)
       this->topologicalSortUtil(scc, sccs, visited, Stack);
+    //std::cerr << "size: " << scc.size() << std::endl;
   }
 
   // return topological sort
@@ -1181,6 +1182,73 @@ std::vector<std::set<int>> BuchiAutomatonSpec::topologicalSort(){
     Stack.pop();
   }
   return sorted;
+}
+
+unsigned BuchiAutomatonSpec::elevatorStates(){
+  // topological sort
+  std::vector<std::set<int>> sortedComponents = this->topologicalSort();
+
+  // determine scc type (deterministic, nondeterministic, bad, both)
+  std::map<std::set<int>, sccType> typeMap;
+  for (auto scc : sortedComponents){
+    // is scc deterministic?
+    bool det = true;
+    for (auto state : scc){
+      if (not det)
+        break;
+      for (auto a : this->getAlphabet()){
+        if (not det)
+          break;
+        unsigned trans = 0;
+        for (auto succ : this->getTransitions()[{state, a}]){
+          if (scc.find(succ) != scc.end()){
+            if (trans > 0){
+              det = false;
+              break;
+            }
+            trans++;
+          }
+        }
+      }
+    }
+
+    // does scc contain accepting states?
+    bool finalStates = false;
+    if (std::any_of(scc.begin(), scc.end(), [this](int state){return this->getFinals().find(state) != this->getFinals().end();}))
+      finalStates = true;
+
+    // type of scc
+    sccType type;
+    if (det and finalStates)
+      type = D;
+    else if (not det and not finalStates)
+      type = ND;
+    else if (det and not finalStates)
+      type = BOTH;
+    else
+      type = BAD;
+    typeMap.insert({scc, type});
+  }
+
+  // propagate BAD back
+  for (unsigned i = sortedComponents.size()-1; i >= 0; i--){
+    if (typeMap[sortedComponents[i]] == BAD){
+      // type of all components before this one will also be BAD
+      for (unsigned j = 0; j < i; j++){
+        typeMap[sortedComponents[j]] = BAD;
+      }
+      break;
+    }
+    if (i == 0) // i is unsigned
+      break;
+  }
+
+  unsigned elevatorStates = 0;
+  for (auto scc : sortedComponents){
+    if (typeMap[scc] != BAD)
+      elevatorStates += scc.size();
+  }
+  return elevatorStates;
 }
 
 /**
@@ -1244,18 +1312,6 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe){
     if (i == 0) // i is unsigned
       break;
   }
-
-  unsigned bad = 0;
-  unsigned other = 0;
-  for (unsigned i = sortedComponents.size()-1; i >= 0; i--){
-    if (typeMap[sortedComponents[i]] == BAD)
-      bad++;
-    else
-      other++;
-    if (i == 0)
-      break;
-  }
-  std::cerr << "Good: " << other << "\tBad: " << bad << std::endl;
 
   // merge sccs if possible
   // from back to front -> lower rank
