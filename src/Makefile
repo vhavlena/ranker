@@ -56,7 +56,8 @@ test-nfa-prop: units/test-nfa-prop.cpp $(OBJ)/BuchiAutomataParser.o \
 
 test-process: units/test-process.cpp $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomatonSpec.o $(OBJ)/RankFunc.o \
-	$(OBJ)/AutGraph.o $(OBJ)/Simulations.o $(OBJ)/AuxFunctions.o
+	$(OBJ)/AutGraph.o $(OBJ)/Simulations.o $(OBJ)/AuxFunctions.o \
+	$(OBJ)/BuchiAutomatonDebug.o
 	$(GCC) $(CPPFLAGS) -o units/$@ $^ $(SUFF)
 
 test-simulation: units/test-simulation.cpp $(OBJ)/BuchiAutomataParser.o \
@@ -71,27 +72,35 @@ test-classify: units/test-classify.cpp $(OBJ)/BuchiAutomataParser.o \
 
 ranker: ranker.cpp $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomatonSpec.o $(OBJ)/RankFunc.o \
-	$(OBJ)/AutGraph.o $(OBJ)/Simulations.o $(OBJ)/AuxFunctions.o $(OBJ)/ranker-general.o
+	$(OBJ)/AutGraph.o $(OBJ)/Simulations.o $(OBJ)/AuxFunctions.o $(OBJ)/ranker-general.o \
+	$(OBJ)/BuchiAutomatonDebug.o
 	$(GCC) $(CPPFLAGS) -o $@ $^ $(SUFF)
 
 ranker-sim: ranker-sim.cpp $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/BuchiAutomaton.o  $(OBJ)/Simulations.o $(OBJ)/BuchiAutomatonSpec.o \
-	$(OBJ)/RankFunc.o $(OBJ)/AutGraph.o $(OBJ)/AuxFunctions.o
+	$(OBJ)/RankFunc.o $(OBJ)/AutGraph.o $(OBJ)/AuxFunctions.o \
+	$(OBJ)/BuchiAutomatonDebug.o
 	$(GCC) $(CPPFLAGS) -o $@ $^ $(SUFF)
 
 ranker-composition: ranker-composition.cpp $(OBJ)/ranker-general.o $(OBJ)/AuxFunctions.o \
 	$(OBJ)/RankFunc.o $(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomataParser.o \
-	$(OBJ)/Simulations.o   $(OBJ)/AutGraph.o  $(OBJ)/BuchiAutomatonSpec.o
+	$(OBJ)/Simulations.o   $(OBJ)/AutGraph.o  $(OBJ)/BuchiAutomatonSpec.o \
+	$(OBJ)/BuchiAutomatonDebug.o
 	$(GCC) $(CPPFLAGS) -o ranker-composition $^ $(SUFF)
 
 ranker-tight: ranker-tight.cpp $(OBJ)/AuxFunctions.o $(OBJ)/ranker-general.o \
 	$(OBJ)/RankFunc.o $(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomataParser.o \
-	$(OBJ)/Simulations.o   $(OBJ)/AutGraph.o  $(OBJ)/BuchiAutomatonSpec.o
+	$(OBJ)/Simulations.o   $(OBJ)/AutGraph.o  $(OBJ)/BuchiAutomatonSpec.o \
+	$(OBJ)/BuchiAutomatonDebug.o
 	$(GCC) $(CPPFLAGS) -o $@ $^ $(SUFF)
 
 $(OBJ)/ranker-general.o: Ranker-general.cpp $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomatonSpec.o $(OBJ)/RankFunc.o \
-	$(OBJ)/AutGraph.o $(OBJ)/Simulations.o $(OBJ)/AuxFunctions.o
+	$(OBJ)/AutGraph.o $(OBJ)/Simulations.o $(OBJ)/AuxFunctions.o $(OBJ)/BuchiAutomatonDebug.o
+	$(GCC) $(CPPFLAGS) -c -o $@ $<
+
+$(OBJ)/BuchiAutomatonDebug.o: Debug/BuchiAutomatonDebug.cpp \
+	Debug/BuchiAutomatonDebug.h Automata/BuchiAutomatonException.h $(OBJ)/BuchiAutomaton.o
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 
 $(OBJ)/BuchiAutomataParser.o: Automata/BuchiAutomataParser.cpp \
