@@ -1347,6 +1347,68 @@ BuchiAutomaton<tuple<State, int, bool>, Symbol> BuchiAutomaton<State, Symbol>::p
 
 
 /*
+ * Get cartesian product with another BA (assuming the second BA has all states final)
+ * @param other Other BA
+ * @return cartesian product of two BAs
+ */
+template <typename State, typename Symbol>
+BuchiAutomaton<pair<State, int>, Symbol> BuchiAutomaton<State, Symbol>::cartProductBA(BuchiAutomaton<int, Symbol>& other)
+{
+  typedef pair<State, int> ProdState;
+  set<ProdState> nstates;
+  set<ProdState> nini;
+  stack<ProdState> stack;
+  set<State> fin1 = this->getFinals();
+  set<int> fin2 = other.getFinals();
+  auto tr1 = this->getTransitions();
+  auto tr2 = other.getTransitions();
+  map<std::pair<ProdState, Symbol>, set<ProdState>> ntr;
+  set<ProdState> nfin;
+
+  for(const State& st1 : this->getInitials())
+  {
+    for(const int& st2 : other.getInitials())
+    {
+      stack.push({st1, st2});
+      nstates.insert({st1, st2});
+      nini.insert({st1, st2});
+    }
+  }
+
+  while(stack.size() > 0)
+  {
+    ProdState act = stack.top();
+    stack.pop();
+
+    for(const Symbol& sym : this->getAlph())
+    {
+      set<ProdState> dst;
+      for(const State& d1 : tr1[{act.first, sym}])
+      {
+        for(const int& d2 : tr2[{act.second, sym}])
+        {
+          dst.insert({d1, d2});
+        }
+      }
+      for(auto& item : dst)
+      {
+        if(nstates.find(item) == nstates.end())
+        {
+          if(fin1.find(item.first) != fin1.end())
+            nfin.insert(item);
+          nstates.insert(item);
+          stack.push(item);
+        }
+      }
+      ntr[{act, sym}] = dst;
+    }
+  }
+
+  return BuchiAutomaton<pair<State, int>, Symbol>(nstates, nfin, nini, ntr);
+}
+
+
+/*
  * Compute union (nondeterministic) with another BA
  * @param other Other BA
  * @return BA accepting intersection of both languages

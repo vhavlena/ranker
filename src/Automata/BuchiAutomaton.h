@@ -390,6 +390,7 @@ public:
   }
 
   BuchiAutomaton<tuple<State, int, bool>, Symbol> productBA(BuchiAutomaton<int, Symbol>& other);
+  BuchiAutomaton<pair<State, int>, Symbol> cartProductBA(BuchiAutomaton<int, Symbol>& other);
   BuchiAutomaton<State, Symbol> unionBA(BuchiAutomaton<State, Symbol>& other);
   void singleInitial(State init);
 
