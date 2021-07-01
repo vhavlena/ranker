@@ -6,6 +6,7 @@
 #include <fstream>
 #include <chrono>
 #include <iomanip>
+#include "args.hxx" // argument parsing
 
 #include "Ranker-general.h"
 #include "Compl-config.h"
@@ -24,409 +25,105 @@ int main(int argc, char *argv[])
   ifstream os;
   bool delay = false;
   double w = 0.5; 
-  delayVersion version;
+  delayVersion version = oldVersion;
   bool error = false;
   bool elevatorTest = false;
   bool elevatorRank = false;
   bool eta4 = false;
 
-  // without delay
-  if(argc == 2)
+  args::ArgumentParser parser("Program complementing a (state-based acceptance condition) Buchi automaton.\n", "");
+  args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
+
+  args::Positional<std::string> inputFile(parser, "INPUT", "The name of a file in the HOA (Hanoi Omega Automata) format with the following restrictions:\n* only state-based acceptance is supported\n* transitions need to have the form of a single conjunction with exactly one positive atomic proposition\n* no aliases or any other fancy features of HOA are supported\n");
+  args::Flag statsFlag(parser, "", "Print summary statistics", {"stats"});
+  args::ValueFlag<std::string> delayFlag(parser, "version", "Use delay optimization, versions: old, new, random, subset, stirling", {"delay"});
+  args::ValueFlag<double> weightFlag(parser, "value", "Weight parameter for delay - value in <0,1>", {'w', "weight"});
+  args::Flag elevatorFlag(parser, "elevator rank", "Update rank upper bound of each macrostate based on elevator automaton structure", {"elevator-rank"});
+  args::Flag eta4Flag(parser, "eta4", "Max rank optimization - eta 4 only when going from some accepting state", {"eta4"});
+  args::Flag elevatorTestFlag(parser, "elevator test", "Test if INPUT is an elevator automaton", {"elevator-test"});
+    
+  try
   {
-		if ((std::string(argv[1]) == "--help") || (std::string(argv[1]) == "-h")) {
-			cerr << getHelpMsg(argv[0]);
-			return 0;
-		} else {
-			params.input = string(argv[1]);
-		}
+      parser.ParseCLI(argc, argv);
   }
-  else if(argc == 3 && strcmp(argv[2], "--stats") == 0)
+  catch (args::Help)
   {
-    params.input = string(argv[1]);
-    params.stats = true;
+      std::cout << parser;
+      return 0;
   }
-  else if(argc == 3 && strcmp(argv[1], "--stats") == 0)
+  catch (args::ParseError e)
   {
-    params.input = string(argv[2]);
+      std::cerr << e.what() << std::endl;
+      std::cerr << parser;
+      return 1;
+  }
+  catch (args::ValidationError e)
+  {
+      std::cerr << e.what() << std::endl;
+      std::cerr << parser;
+      return 1;
+  }
+
+  // input file
+  if (inputFile){
+    params.input = args::get(inputFile);
+  }
+
+  // print statistics
+  if (statsFlag){
     params.stats = true;
   }
 
-  // elevator automaton test
-  else if (argc == 3 and strcmp(argv[1], "--elevator-test") == 0){
-    elevatorTest = true;
-    params.input = string(argv[2]);
+  // delay version
+  if (delayFlag){
+    std::string v = args::get(delayFlag);
+    if (v == "old")
+      version = oldVersion;
+    else if (v == "new")
+      version = newVersion;
+    else if (v == "random")
+      version = randomVersion;
+    else if (v == "subset")
+      version = subsetVersion;
+    else if (v == "stirling")
+      version = stirlingVersion;
+    else {
+      std::cerr << "Wrong delay version" << std::endl;
+      return 1;
+    }
   }
 
-  // delay without weight
-  else if (argc == 5 and strcmp(argv[1], "--stats") == 0 and strcmp(argv[2], "--delay") == 0){
-    params.input = string(argv[4]);
-    params.stats = true;
-    delay = true;
-    if (strcmp(argv[3], "--old") == 0)
-      version = oldVersion;
-    else if (strcmp(argv[3], "--new") == 0)
-      version = newVersion;
-    else if (strcmp(argv[3], "--random") == 0)
-      version = randomVersion;
-    else if (strcmp(argv[3], "--subset") == 0)
-      version = subsetVersion;
-    else if (strcmp(argv[3], "--stirling") == 0)
-      version = stirlingVersion;
-    else
-      error = true;
-  }
-  else if (argc == 4 and strcmp(argv[1], "--delay") == 0){
-    params.input = string(argv[3]);
-    params.stats = false;
-    delay = true;
-    if (strcmp(argv[2], "--old") == 0)
-      version = oldVersion;
-    else if (strcmp(argv[2], "--new") == 0)
-      version = newVersion;
-    else if (strcmp(argv[2], "--random") == 0)
-      version = randomVersion;
-    else if (strcmp(argv[2], "--subset") == 0)
-      version = subsetVersion;
-    else if (strcmp(argv[2], "--stirling") == 0)
-      version = stirlingVersion;
-    else
-      error = true;
-  }
-
-  // delay with weight
-  else if (argc == 7 and strcmp(argv[1], "--stats") == 0 and strcmp(argv[2], "--delay") == 0 and strcmp(argv[4], "-w") == 0){
-    params.input = string(argv[6]);
-    params.stats = true;
-    delay = true;
-    w = stod(argv[5]);
-    if (strcmp(argv[3], "--old") == 0)
-      version = oldVersion;
-    else if (strcmp(argv[3], "--new") == 0)
-      version = newVersion;
-    else if (strcmp(argv[3], "--random") == 0)
-      version = randomVersion;
-    else if (strcmp(argv[3], "--subset") == 0)
-      version = subsetVersion;
-    else if (strcmp(argv[3], "--stirling") == 0)
-      version = stirlingVersion;
-    else
-      error = true;
-  }
-  else if (argc == 6 and strcmp(argv[1], "--delay") == 0 and strcmp(argv[3], "-w") == 0){
-    params.input = string(argv[4]);
-    params.stats = false;
-    delay = true;
-    w = stod(argv[4]);
-    if (strcmp(argv[2], "--old") == 0)
-      version = oldVersion;
-    else if (strcmp(argv[2], "--new") == 0)
-      version = newVersion;
-    else if (strcmp(argv[2], "--random") == 0)
-      version = randomVersion;
-    else if (strcmp(argv[2], "--subset") == 0)
-      version = subsetVersion;
-    else if (strcmp(argv[2], "--stirling") == 0)
-      version = stirlingVersion;
-    else
-      error = true;
+  // weight parameters for delay
+  if (weightFlag){
+    if (not delayFlag){
+      std::cerr << "Wrong combination of arguments" << std::endl;
+      return 1;
+    }
+    w = args::get(weightFlag);
+    if (w < 0.0 or w > 1.0) {
+      std::cerr << "Wrong weight parameter" << std::endl;
+      return 1;
+    }
   }
 
   // elevator rank
-  else if (argc == 3 and strcmp(argv[1], "--elevator-rank") == 0){
-    elevatorRank = true;
-    params.input = string(argv[2]);
-  }
-  else if(argc == 4 && strcmp(argv[2], "--stats") == 0 and strcmp(argv[3], "--elevator-rank") == 0)
-  {
-    params.input = string(argv[3]);
-    params.stats = true;
+  if (elevatorFlag){
     elevatorRank = true;
   }
-  else if(argc == 4 && strcmp(argv[1], "--stats") == 0 and strcmp(argv[2], "--elevator-rank") == 0)
-  {
-    params.input = string(argv[3]);
-    params.stats = true;
-    elevatorRank = true;
-  }
-  else if (argc == 6 and strcmp(argv[1], "--stats") == 0 and strcmp(argv[2], "--delay") == 0 and strcmp(argv[4], "--elevator-rank") == 0){
-    params.input = string(argv[5]);
-    params.stats = true;
-    delay = true;
-    if (strcmp(argv[3], "--old") == 0)
-      version = oldVersion;
-    else if (strcmp(argv[3], "--new") == 0)
-      version = newVersion;
-    else if (strcmp(argv[3], "--random") == 0)
-      version = randomVersion;
-    else if (strcmp(argv[3], "--subset") == 0)
-      version = subsetVersion;
-    else if (strcmp(argv[3], "--stirling") == 0)
-      version = stirlingVersion;
-    else
-      error = true;
-    elevatorRank = true;
-  }
-  else if (argc == 5 and strcmp(argv[1], "--delay") == 0 and strcmp(argv[3], "--elevator-rank") == 0){
-    params.input = string(argv[4]);
-    params.stats = false;
-    delay = true;
-    if (strcmp(argv[2], "--old") == 0)
-      version = oldVersion;
-    else if (strcmp(argv[2], "--new") == 0)
-      version = newVersion;
-    else if (strcmp(argv[2], "--random") == 0)
-      version = randomVersion;
-    else if (strcmp(argv[2], "--subset") == 0)
-      version = subsetVersion;
-    else if (strcmp(argv[2], "--stirling") == 0)
-      version = stirlingVersion;
-    else
-      error = true;
-    elevatorRank = true;
-  }
-  else if (argc == 8 and strcmp(argv[1], "--stats") == 0 and strcmp(argv[2], "--delay") == 0 and strcmp(argv[4], "-w") == 0 and strcmp(argv[6], "--elevator-rank") == 0){
-    params.input = string(argv[7]);
-    params.stats = true;
-    delay = true;
-    w = stod(argv[5]);
-    if (strcmp(argv[3], "--old") == 0)
-      version = oldVersion;
-    else if (strcmp(argv[3], "--new") == 0)
-      version = newVersion;
-    else if (strcmp(argv[3], "--random") == 0)
-      version = randomVersion;
-    else if (strcmp(argv[3], "--subset") == 0)
-      version = subsetVersion;
-    else if (strcmp(argv[3], "--stirling") == 0)
-      version = stirlingVersion;
-    else
-      error = true;
-    elevatorRank = true;
-  }
-  else if (argc == 7 and strcmp(argv[1], "--delay") == 0 and strcmp(argv[3], "-w") == 0 and strcmp(argv[5], "--elevator-rank") == 0){
-    params.input = string(argv[6]);
-    params.stats = false;
-    delay = true;
-    w = stod(argv[4]);
-    if (strcmp(argv[2], "--old") == 0)
-      version = oldVersion;
-    else if (strcmp(argv[2], "--new") == 0)
-      version = newVersion;
-    else if (strcmp(argv[2], "--random") == 0)
-      version = randomVersion;
-    else if (strcmp(argv[2], "--subset") == 0)
-      version = subsetVersion;
-    else if (strcmp(argv[2], "--stirling") == 0)
-      version = stirlingVersion;
-    else
-      error = true;
-    elevatorRank = true;
-  }
-  
-  // max rank optimization - eta 4 only when going from some accepting state
-  else if (argc == 3 and strcmp(argv[1], "--eta4") == 0){
-    eta4 = true;
-    params.input = string(argv[2]);
-  }
-  else if (argc == 4 and strcmp(argv[1], "--elevator-rank") == 0 and strcmp(argv[2], "--eta4") == 0){
-    elevatorRank = true;
-    eta4 = true;
-    params.input = string(argv[3]);
-  }
-  else if(argc == 4 && strcmp(argv[2], "--stats") == 0 and strcmp(argv[3], "--eta4") == 0)
-  {
-    params.input = string(argv[3]);
-    params.stats = true;
-    eta4 = true;
-  }
-  else if(argc == 5 && strcmp(argv[2], "--stats") == 0 and strcmp(argv[3], "--elevator-rank") == 0 and strcmp(argv[4], "--eta4") == 0)
-  {
-    params.input = string(argv[4]);
-    params.stats = true;
-    elevatorRank = true;
-    eta4 = true;
-  }
-  else if(argc == 4 && strcmp(argv[1], "--stats") == 0 and strcmp(argv[2], "--eta4") == 0)
-  {
-    params.input = string(argv[3]);
-    params.stats = true;
-    eta4 = true;
-  }
-  else if(argc == 5 && strcmp(argv[1], "--stats") == 0 and strcmp(argv[2], "--elevator-rank") == 0 and strcmp(argv[3], "--eta4") == 0)
-  {
-    params.input = string(argv[4]);
-    params.stats = true;
-    elevatorRank = true;
-    eta4 = true;
-  }
-  else if (argc == 6 and strcmp(argv[1], "--stats") == 0 and strcmp(argv[2], "--delay") == 0 and strcmp(argv[4], "--eta4") == 0){
-    params.input = string(argv[5]);
-    params.stats = true;
-    delay = true;
-    if (strcmp(argv[3], "--old") == 0)
-      version = oldVersion;
-    else if (strcmp(argv[3], "--new") == 0)
-      version = newVersion;
-    else if (strcmp(argv[3], "--random") == 0)
-      version = randomVersion;
-    else if (strcmp(argv[3], "--subset") == 0)
-      version = subsetVersion;
-    else if (strcmp(argv[3], "--stirling") == 0)
-      version = stirlingVersion;
-    else
-      error = true;
-    eta4 = true;
-  }
-  else if (argc == 7 and strcmp(argv[1], "--stats") == 0 and strcmp(argv[2], "--delay") == 0 and strcmp(argv[4], "--elevator-rank") == 0 and strcmp(argv[5], "--eta4") == 0){
-    params.input = string(argv[6]);
-    params.stats = true;
-    delay = true;
-    if (strcmp(argv[3], "--old") == 0)
-      version = oldVersion;
-    else if (strcmp(argv[3], "--new") == 0)
-      version = newVersion;
-    else if (strcmp(argv[3], "--random") == 0)
-      version = randomVersion;
-    else if (strcmp(argv[3], "--subset") == 0)
-      version = subsetVersion;
-    else if (strcmp(argv[3], "--stirling") == 0)
-      version = stirlingVersion;
-    else
-      error = true;
-    elevatorRank = true;
-    eta4 = true;
-  }
-  else if (argc == 5 and strcmp(argv[1], "--delay") == 0 and strcmp(argv[3], "--eta4") == 0){
-    params.input = string(argv[4]);
-    params.stats = false;
-    delay = true;
-    if (strcmp(argv[2], "--old") == 0)
-      version = oldVersion;
-    else if (strcmp(argv[2], "--new") == 0)
-      version = newVersion;
-    else if (strcmp(argv[2], "--random") == 0)
-      version = randomVersion;
-    else if (strcmp(argv[2], "--subset") == 0)
-      version = subsetVersion;
-    else if (strcmp(argv[2], "--stirling") == 0)
-      version = stirlingVersion;
-    else
-      error = true;
-    eta4 = true;
-  }
-  else if (argc == 6 and strcmp(argv[1], "--delay") == 0 and strcmp(argv[3], "--elevator-rank") == 0 and strcmp(argv[4], "--eta4") == 0){
-    params.input = string(argv[5]);
-    params.stats = false;
-    delay = true;
-    if (strcmp(argv[2], "--old") == 0)
-      version = oldVersion;
-    else if (strcmp(argv[2], "--new") == 0)
-      version = newVersion;
-    else if (strcmp(argv[2], "--random") == 0)
-      version = randomVersion;
-    else if (strcmp(argv[2], "--subset") == 0)
-      version = subsetVersion;
-    else if (strcmp(argv[2], "--stirling") == 0)
-      version = stirlingVersion;
-    else
-      error = true;
-    elevatorRank = true;
-    eta4 = true;
-  }
-  else if (argc == 8 and strcmp(argv[1], "--stats") == 0 and strcmp(argv[2], "--delay") == 0 and strcmp(argv[4], "-w") == 0 and strcmp(argv[6], "--eta4") == 0){
-    params.input = string(argv[7]);
-    params.stats = true;
-    delay = true;
-    w = stod(argv[5]);
-    if (strcmp(argv[3], "--old") == 0)
-      version = oldVersion;
-    else if (strcmp(argv[3], "--new") == 0)
-      version = newVersion;
-    else if (strcmp(argv[3], "--random") == 0)
-      version = randomVersion;
-    else if (strcmp(argv[3], "--subset") == 0)
-      version = subsetVersion;
-    else if (strcmp(argv[3], "--stirling") == 0)
-      version = stirlingVersion;
-    else
-      error = true;
-    eta4 = true;
-  }
-  else if (argc == 9 and strcmp(argv[1], "--stats") == 0 and strcmp(argv[2], "--delay") == 0 and strcmp(argv[4], "-w") == 0 and strcmp(argv[6], "--elevator-rank") == 0 and strcmp(argv[7], "--eta4") == 0){
-    params.input = string(argv[8]);
-    params.stats = true;
-    delay = true;
-    w = stod(argv[5]);
-    if (strcmp(argv[3], "--old") == 0)
-      version = oldVersion;
-    else if (strcmp(argv[3], "--new") == 0)
-      version = newVersion;
-    else if (strcmp(argv[3], "--random") == 0)
-      version = randomVersion;
-    else if (strcmp(argv[3], "--subset") == 0)
-      version = subsetVersion;
-    else if (strcmp(argv[3], "--stirling") == 0)
-      version = stirlingVersion;
-    else
-      error = true;
-    elevatorRank = true;
-    eta4 = true;
-  }
-  else if (argc == 7 and strcmp(argv[1], "--delay") == 0 and strcmp(argv[3], "-w") == 0 and strcmp(argv[5], "--eta4") == 0){
-    params.input = string(argv[6]);
-    params.stats = false;
-    delay = true;
-    w = stod(argv[4]);
-    if (strcmp(argv[2], "--old") == 0)
-      version = oldVersion;
-    else if (strcmp(argv[2], "--new") == 0)
-      version = newVersion;
-    else if (strcmp(argv[2], "--random") == 0)
-      version = randomVersion;
-    else if (strcmp(argv[2], "--subset") == 0)
-      version = subsetVersion;
-    else if (strcmp(argv[2], "--stirling") == 0)
-      version = stirlingVersion;
-    else
-      error = true;
-    eta4 = true;
-  }
-  else if (argc == 8 and strcmp(argv[1], "--delay") == 0 and strcmp(argv[3], "-w") == 0 and strcmp(argv[5], "--elevator-rank") == 0 and strcmp(argv[6], "--eta4") == 0){
-    params.input = string(argv[7]);
-    params.stats = false;
-    delay = true;
-    w = stod(argv[4]);
-    if (strcmp(argv[2], "--old") == 0)
-      version = oldVersion;
-    else if (strcmp(argv[2], "--new") == 0)
-      version = newVersion;
-    else if (strcmp(argv[2], "--random") == 0)
-      version = randomVersion;
-    else if (strcmp(argv[2], "--subset") == 0)
-      version = subsetVersion;
-    else if (strcmp(argv[2], "--stirling") == 0)
-      version = stirlingVersion;
-    else
-      error = true;
-    elevatorRank = true;
+
+  // eta4
+  if (eta4Flag){
     eta4 = true;
   }
 
-  // error
-  else
-  {
-    cerr << "Unrecognized arguments" << endl;
-		cerr << "\n";
-		cerr << getHelpMsg(argv[0]);
-    return 1;
+  if (elevatorTestFlag){
+    elevatorTest = true;
+    if (statsFlag or delayFlag or weightFlag or elevatorFlag or eta4Flag){
+      std::cerr << "Wrong combination of arguments" << std::endl;
+      return 1;
+    }
   }
-  
-  if (error or w < 0.0 or w > 1.0){
-    cerr << "Unrecognized arguments" << endl;
-		cerr << "\n";
-		cerr << getHelpMsg(argv[0]);
-    return 1;
-  }
+
 
   string filename(params.input);
   os.open(filename);
