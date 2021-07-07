@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <stack>
+#include <chrono>
 
 #include <iostream>
 #include <algorithm>
@@ -90,10 +91,10 @@ public:
 
   BuchiAutomaton<StateKV, int> complementKV();
   BuchiAutomaton<StateSch, int> complementSch();
-  BuchiAutomaton<StateSch, int> complementSchReduced(bool delay, std::set<int> originalFinals, double w, delayVersion version, bool elevatorRank, bool eta4);
+  BuchiAutomaton<StateSch, int> complementSchReduced(bool delay, std::set<int> originalFinals, double w, delayVersion version, bool elevatorRank, bool eta4, Stat *stats);
   BuchiAutomaton<StateSch, int> complementSchNFA(set<int>& start);
   //BuchiAutomaton<StateSch, int> complementSchOpt(bool delay);
-  BuchiAutomaton<StateSch, int> complementSchOpt(bool delay, std::set<int> originalFinals, double w, delayVersion version);
+  BuchiAutomaton<StateSch, int> complementSchOpt(bool delay, std::set<int> originalFinals, double w, delayVersion version, Stat *stats);
 
   set<StateSch> nfaSlAccept(BuchiAutomaton<StateSch, int>& nfaSchewe);
   set<pair<DFAState,int>> nfaSingleSlNoAccept(BuchiAutomaton<StateSch, int>& nfaSchewe);

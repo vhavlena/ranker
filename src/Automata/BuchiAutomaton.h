@@ -11,6 +11,7 @@
 #include <tuple>
 #include <functional>
 #include <numeric>
+#include <chrono>
 
 #include "AutGraph.h"
 #include "../Complement/StateKV.h"
@@ -24,6 +25,33 @@ class AutGraph;
 
 //enum delayVersion : unsigned;
 enum delayVersion : unsigned {oldVersion, newVersion, randomVersion, subsetVersion, stirlingVersion};
+
+struct Stat
+{
+  size_t generatedStates;
+  size_t generatedTrans;
+  size_t reachStates;
+  size_t reachTrans;
+  size_t generatedTransitionsToTight;
+  size_t transitionsToTight; // generated transitions to the tight part
+  bool elevator; // is it an elevator automaton?
+  size_t elevatorStates;
+  size_t originalStates;
+  long duration;
+  string engine;
+
+  // time
+  std::chrono::_V2::system_clock::time_point beginning;
+  std::chrono::_V2::system_clock::time_point end;
+  long waitingPart;
+  long rankBound;
+  long elevatorRank = -1;
+  long cycleClosingStates;
+  long getAllCycles = -1;
+  long statesToGenerate = -1;
+  long simulations;
+  long tightPart;
+};
 
 /*
  * Single transition
@@ -379,7 +407,7 @@ public:
     const std::function<int(const State&)>& initFnc);
 
   SetStates getCycleClosingStates(SetStates& slignore);
-  std::map<State, std::set<Symbol>> getCycleClosingStates(SetStates& slignore, DelayMap<State>& dmap, double w, delayVersion version);
+  std::map<State, std::set<Symbol>> getCycleClosingStates(SetStates& slignore, DelayMap<State>& dmap, double w, delayVersion version, Stat *stats);
   bool reachWithRestriction(const State& from, const State& to, SetStates& restr, SetStates& high);
 
   bool isEmpty();

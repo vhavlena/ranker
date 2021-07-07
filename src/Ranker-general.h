@@ -33,6 +33,7 @@ struct Params
   bool stats;
 };
 
+/*
 struct Stat
 {
   size_t generatedStates;
@@ -46,7 +47,12 @@ struct Stat
   size_t originalStates;
   long duration;
   string engine;
-};
+
+  // time
+  std::chrono::_V2::system_clock::time_point beginning;
+  std::chrono::_V2::system_clock::time_point end;
+  long waitingPart;
+};*/
 
 //enum delayVersion : unsigned {oldVersion, newVersion, randomVersion};
 

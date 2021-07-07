@@ -1475,7 +1475,7 @@ unsigned BuchiAutomaton<State, Symbol> :: getAllPossibleRankings(unsigned maxRan
  * @return Set of states and symbols for which transitions to the tight part should be generated
  */
 template <typename State, typename Symbol>
-std::map<State, std::set<Symbol>> BuchiAutomaton<State, Symbol> :: getCycleClosingStates(SetStates& slignore, DelayMap<State>& dmap, double w, delayVersion version) {
+std::map<State, std::set<Symbol>> BuchiAutomaton<State, Symbol> :: getCycleClosingStates(SetStates& slignore, DelayMap<State>& dmap, double w, delayVersion version, Stat *stats) {
   
   std::map<State, std::set<Symbol>> statesToGenerate;
   std::vector<std::vector<State>> allCycles;
@@ -1488,8 +1488,14 @@ std::map<State, std::set<Symbol>> BuchiAutomaton<State, Symbol> :: getCycleClosi
   State minState;
   srand(time(0));
 
-  allCycles = this->getAllCycles(); // get all cycles
+  // get all cycles
+  auto start = std::chrono::high_resolution_clock::now();
+  allCycles = this->getAllCycles(); 
+  auto end = std::chrono::high_resolution_clock::now();
+  stats->getAllCycles = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
+  // states to generate
+  start = std::chrono::high_resolution_clock::now();
   while (not allStates.empty()){
     
     // NORMAL
@@ -1578,8 +1584,6 @@ std::map<State, std::set<Symbol>> BuchiAutomaton<State, Symbol> :: getCycleClosi
         }
       }
 
-      // NEW PART
-      // TODO
       if (version == subsetVersion){
         if constexpr (std::is_same<State, StateSch>::value){
           auto tmpStates = allStates;
@@ -1636,56 +1640,11 @@ std::map<State, std::set<Symbol>> BuchiAutomaton<State, Symbol> :: getCycleClosi
     allCycles = tmpCycles;
     allStates.erase(minState);
 
-    /*auto tmpStates = allStates;
-    for (auto state : allStates){
-      if constexpr (std::is_same<State, StateSch>::value){
-        std::set<int> tmpSet;
-        std::set_difference(state.S.begin(), state.S.end(), minState.S.begin(), minState.S.end(), std::inserter(tmpSet, tmpSet.begin()));
-        if (tmpSet.size() == 0 and std::find(tmpStates.begin(), tmpStates.end(), state) != tmpStates.end()){
-          // macrostate state is a subset of minState
-          statesToGenerate.insert(std::pair<State, std::set<Symbol>>(state, this->alph));
-          // remove all cycles with this state
-          tmpCycles.clear();
-          for (std::vector<State> cycle : allCycles){
-            if (std::find(cycle.begin(), cycle.end(), state) == cycle.end())
-              tmpCycles.push_back(cycle);
-          }
-          allCycles = tmpCycles;
-          tmpStates.erase(state);
-        }
-      }
-    }
-    allStates = tmpStates;*/
-    /*if (w == 0.0){
-      if constexpr (std::is_same<State, StateSch>::value){
-        auto tmpStates = allStates;
-        auto revTrans = this->getReverseTransitions();
-        for (auto succ : cycleSucc){
-          for (auto state : allStates){
-            std::set<int> tmpSet;
-            std::set_difference(state.S.begin(), state.S.end(), succ.S.begin(), succ.S.end(), std::inserter(tmpSet, tmpSet.begin()));
-            if (tmpSet.size() == 0 and std::find(tmpStates.begin(), tmpStates.end(), state) != tmpStates.end()){
-              for (auto a : this->alph){
-                for (auto genState : revTrans[{state, a}]){
-                  statesToGenerate.insert(std::pair<State, std::set<Symbol>>(state, this->alph));
-                  // remove all cycles with this state
-                  tmpCycles.clear();
-                  for (std::vector<State> cycle : allCycles){
-                    if (std::find(cycle.begin(), cycle.end(), state) == cycle.end())
-                      tmpCycles.push_back(cycle);
-                  }
-                  allCycles = tmpCycles;
-                  tmpStates.erase(state);
-                }
-              }
-            }
-          }
-        }
-        allStates = tmpStates;
-      }
-    }*/
   }
   
+  end = std::chrono::high_resolution_clock::now();
+  stats->statesToGenerate = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+
   return statesToGenerate;
 }
 

@@ -76,6 +76,7 @@ int main(int argc, char *argv[])
 
   // delay version
   if (delayFlag){
+    delay = true;
     std::string v = args::get(delayFlag);
     if (v == "old")
       version = oldVersion;
@@ -130,9 +131,11 @@ int main(int argc, char *argv[])
   if(os)
   { // file opened correctly
     InFormat fmt = parseRenamedAutomaton(os);
-    auto t1 = std::chrono::high_resolution_clock::now();
-    BuchiAutomaton<int, int> renCompl;
+    
     Stat stats;
+    stats.beginning = std::chrono::high_resolution_clock::now();
+
+    BuchiAutomaton<int, int> renCompl;
 
     if(fmt == BA)
     {
@@ -159,8 +162,8 @@ int main(int argc, char *argv[])
       map<int, string> symDict = Aux::reverseMap(ba.getRenameSymbolMap());
       BuchiAutomaton<int, string> outOrig = renCompl.renameAlphabet<string>(symDict);
 
-      auto t2 = std::chrono::high_resolution_clock::now();
-      stats.duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+      stats.end = std::chrono::high_resolution_clock::now();
+      stats.duration = std::chrono::duration_cast<std::chrono::milliseconds>(stats.end - stats.beginning).count();
 
       if(params.stats)
         printStat(stats);
@@ -204,8 +207,8 @@ int main(int argc, char *argv[])
       stats.reachStates = outOrig.getStates().size();
       stats.reachTrans = outOrig.getTransCount();
 
-      auto t2 = std::chrono::high_resolution_clock::now();
-      stats.duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+      stats.end = std::chrono::high_resolution_clock::now();
+      stats.duration = std::chrono::duration_cast<std::chrono::milliseconds>(stats.end - stats.beginning).count();
 
       if(params.stats)
         printStat(stats);

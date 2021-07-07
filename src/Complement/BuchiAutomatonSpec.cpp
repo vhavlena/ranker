@@ -1,5 +1,6 @@
 
 #include "BuchiAutomatonSpec.h"
+#include <chrono>
 
 /*
  * Set of all successors.
@@ -797,7 +798,7 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchStartReduced(set<int>& state, int
  * Optimized Schewe complementation procedure
  * @return Complemented automaton
  */
-BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool delay, std::set<int> originalFinals, double w, delayVersion version, bool elevatorRank, bool eta4)
+BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool delay, std::set<int> originalFinals, double w, delayVersion version, bool elevatorRank, bool eta4, Stat *stats)
 {
   std::stack<StateSch> stack;
   set<StateSch> comst;
@@ -810,7 +811,14 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
   map<std::pair<StateSch, int>, set<StateSch> >::iterator it;
 
   // NFA part of the Schewe construction
+  auto start = std::chrono::high_resolution_clock::now();
   BuchiAutomaton<StateSch, int> comp = this->complementSchNFA(this->getInitials());
+  auto end = std::chrono::high_resolution_clock::now();
+  stats->waitingPart = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
+
+  // rank bound
+  start = std::chrono::high_resolution_clock::now();
+  
   map<std::pair<StateSch, int>, set<StateSch>> prev = comp.getReverseTransitions();
   //std::cout << comp.toGraphwiz() << std::endl;
 
@@ -848,11 +856,19 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
 
   // Compute rank upper bound on the macrostates
   this->rankBound = this->getRankBound(comp, ignoreAll, maxReach, reachCons);
+  end = std::chrono::high_resolution_clock::now();
+  stats->rankBound = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
+
   // update rank upper bound of each macrostate based on elevator automaton structure
   if (elevatorRank){
+    start = std::chrono::high_resolution_clock::now();
     this->elevatorRank(comp);
+    end = std::chrono::high_resolution_clock::now();;
+    stats->elevatorRank = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
   }
 
+  // states necessary to generate in the tight part
+  start = std::chrono::high_resolution_clock::now();
   map<StateSch, DelayLabel> delayMp;
   for(const auto& st : comp.getStates())
   {
@@ -870,10 +886,14 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
   set<StateSch> tightStart;
   map<StateSch, set<int>> tightStartDelay;
   if (delay){
-    tightStartDelay = comp.getCycleClosingStates(ignoreAll, delayMp, w, version);
+    tightStartDelay = comp.getCycleClosingStates(ignoreAll, delayMp, w, version, stats);
   }
-  else
+  else {
     tightStart = comp.getCycleClosingStates(ignoreAll);
+  }
+  end = std::chrono::high_resolution_clock::now();
+  stats->cycleClosingStates = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
+  
   std::set<StateSch> tmpSet;
   if (delay){
     for(auto item : tightStartDelay)
@@ -892,15 +912,21 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
   StateSch init = {getInitials(), set<int>(), RankFunc(), 0, false};
   initials.insert(init);
 
+  // simulations
+  start = std::chrono::high_resolution_clock::now();
   set<int> cl;
   this->computeRankSim(cl);
 
   BackRel dirRel = createBackRel(this->getDirectSim());
   BackRel oddRel = createBackRel(this->getOddRankSim());
+  end = std::chrono::high_resolution_clock::now();
+  stats->simulations = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
 
   bool cnt = true;
   unsigned transitionsToTight = 0;
 
+  // tight part construction
+  start = std::chrono::high_resolution_clock::now();
   while(stack.size() > 0)
   {
     StateSch st = stack.top();
@@ -975,6 +1001,9 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
   }
 
   //std::cerr << "Transitions to tight: " << transitionsToTight << std::endl;
+
+  end = std::chrono::high_resolution_clock::now();
+  stats->tightPart = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
 
   return BuchiAutomaton<StateSch, int>(comst, finals,
     initials, mp, alph, getAPPattern());
@@ -1934,7 +1963,7 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchStartOpt(set<int>& state, int ran
  * Schewe complementation proceudre (with RankRestr)
  * @return Complemented automaton
  */
-BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchOpt(bool delay, std::set<int> originalFinals, double w, delayVersion version)
+BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchOpt(bool delay, std::set<int> originalFinals, double w, delayVersion version, Stat *stats)
 {
   std::stack<StateSch> stack;
   set<StateSch> comst;
@@ -2001,7 +2030,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchOpt(bool delay, s
   set<StateSch> tightStart;
   map<StateSch, set<int>> tightStartDelay;
   if (delay){
-    tightStartDelay = comp.getCycleClosingStates(ignoreAll, delayMp, w, version);
+    tightStartDelay = comp.getCycleClosingStates(ignoreAll, delayMp, w, version, stats);
   }
   else
     tightStart = comp.getCycleClosingStates(ignoreAll);
