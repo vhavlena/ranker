@@ -79,7 +79,7 @@ private:
   SetStates initials;
   SetSymbols alph;
   Delta<State, Symbol> trans;
-  vector<string> apsPattern;
+  map<string, int> apsPattern;
 
   StateRelation directSim;
   StateRelation oddRankSim;
@@ -109,7 +109,7 @@ public:
     this->trans = trans;
     this->initials = ini;
     this->alph = getAlph();
-    this->apsPattern = vector<string>();
+    this->apsPattern = map<string, int>();
   }
 
   BuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans, SetSymbols alp)
@@ -119,10 +119,10 @@ public:
     this->trans = trans;
     this->initials = ini;
     this->alph = alp;
-    this->apsPattern = vector<string>();
+    this->apsPattern = map<string, int>();
   }
 
-  BuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans, SetSymbols alp, vector<string> aps)
+  BuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans, SetSymbols alp, map<string, int> aps)
   {
     this->states = st;
     this->finals = fin;
@@ -320,7 +320,7 @@ public:
    * Get atomic propositions
    * @return Vector of atomic propositions
    */
-  vector<string> getAPPattern()
+  map<string, int> getAPPattern()
   {
     return this->apsPattern;
   }
@@ -329,7 +329,7 @@ public:
    * Set atomic propositions
    * @param aps Vector of atomic propositions
    */
-  void setAPPattern(vector<string> aps)
+  void setAPPattern(map<string, int> aps)
   {
     this->apsPattern = aps;
   }
