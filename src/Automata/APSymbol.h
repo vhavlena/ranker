@@ -2,6 +2,7 @@
 #define AP_SYMBOL_H_
 
 #include <boost/dynamic_bitset.hpp>
+#include <vector>
 
 /*
  * Type representing an item of AP set
@@ -36,6 +37,19 @@ struct APSymbol
       if(i + 1 < ap.size())
         ret += "&";
     }
+    return ret;
+  }
+};
+
+
+class APWord : public std::vector<APSymbol>
+{
+public:
+  string toString() const
+  {
+    string ret;
+    for(const auto it : *this)
+      ret += it.toString() + "; ";
     return ret;
   }
 };

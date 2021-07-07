@@ -207,7 +207,7 @@ BuchiAutomaton<int, APSymbol> BuchiAutomataParser::parseHoaFormat(ifstream & os)
   BuchiAutomaton<int, APSymbol>::Transitions trans;
   set<APSymbol> syms;
   int statesnum = 0;
-  vector<string> aps;
+  map<string, int> aps;
 
   string line;
   string linecp;
@@ -240,7 +240,7 @@ BuchiAutomaton<int, APSymbol> BuchiAutomataParser::parseHoaFormat(ifstream & os)
       for(int i = 0; i < count; i++)
       {
         ss >> std::quoted(singleap);
-        aps.push_back(singleap);
+        aps.insert({singleap, i});
       }
     }
     else if(line.rfind("Acceptance:", 0) == 0)
@@ -398,4 +398,95 @@ APSymbol BuchiAutomataParser::parseHoaExpression(string& line, int apNum)
       symbol.ap.set(i);
   }
   return symbol;
+}
+
+
+/*
+ * Parse a HOA symbol
+ * @param line String with a symbol
+ * @param apInd Mapping AP to indices
+ * @return APSymbol corresponding to the symbol
+ */
+APSymbol BuchiAutomataParser::parseHoaSymbol(string& line, map<string, int>& apInd)
+{
+  int apNum = 0;
+  vector<char> symvar(apInd.size(), 0);
+  int stateid;
+  vector<string> tokens;
+  boost::split(tokens, line, boost::is_any_of("&"));
+  for(const string& t : tokens)
+  {
+    if(t.size() == 0)
+      continue;
+    if(t[0] == '!')
+    {
+      string statestr(t.begin()+1, t.end());
+      stateid = apInd[statestr];
+      symvar[stateid] = 2;
+    }
+    else
+    {
+      stateid = apInd[t];
+      symvar[stateid] = 1;
+    }
+    apNum++;
+  }
+
+  APSymbol symbol(apNum);
+  for(unsigned int i = 0; i < symvar.size(); i++)
+  {
+    if(symvar[i] == 0)
+      throw ParserException("Only simple symbols are allowed");
+    if(symvar[i] == 1)
+      symbol.ap.set(i);
+  }
+  return symbol;
+}
+
+
+/*
+ * Parse a finite HOA word
+ * @param line String with a word
+ * @param apInd Mapping AP to indices
+ * @return AP finite word
+ */
+APWord BuchiAutomataParser::parseHoaFinWord(string& line, map<string, int>& apInd)
+{
+  vector<string> symbols;
+  APWord word;
+  boost::split(symbols, line, boost::is_any_of(";"));
+  for(string& t : symbols)
+  {
+    if(t.size() == 0)
+      continue;
+
+    word.push_back(BuchiAutomataParser::parseHoaSymbol(t, apInd));
+  }
+  return word;
+}
+
+
+/*
+ * Parse an infinite HOA word
+ * @param line String with a word
+ * @param apInd Mapping AP to indices
+ * @return AP finite word
+ */
+pair<APWord, APWord> BuchiAutomataParser::parseHoaInfWord(string& line, map<string, int>& apInd)
+{
+  //remove whitespaces
+  line.erase(remove_if(line.begin(), line.end(), ::isspace), line.end());
+  boost::regex e("([a-zA-Z0-9!;&]*)cycle\\{([a-zA-Z0-9!;&]*)\\}$");
+  boost::smatch what;
+  if(boost::regex_match(line, what, e))
+  {
+    string prefix = what[1];
+    string loop = what[2];
+    return { BuchiAutomataParser::parseHoaFinWord(prefix, apInd), BuchiAutomataParser::parseHoaFinWord(loop, apInd) };
+  }
+  else
+  {
+    cout << line << endl;
+    throw ParserException("Unsupported format of infinite words");
+  }
 }

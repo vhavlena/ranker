@@ -14,6 +14,11 @@ test-parser: units/test-parser.cpp $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/AutGraph.o $(OBJ)/Simulations.o $(OBJ)/AuxFunctions.o
 	$(GCC) $(CPPFLAGS) -o units/$@ $^ $(SUFF)
 
+test-hoa-word: units/test-hoa-word.cpp $(OBJ)/BuchiAutomataParser.o \
+	$(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomatonSpec.o $(OBJ)/RankFunc.o \
+	$(OBJ)/AutGraph.o $(OBJ)/Simulations.o $(OBJ)/AuxFunctions.o
+	$(GCC) $(CPPFLAGS) -o units/$@ $^ $(SUFF)
+
 test-kv-compl: units/test-kv-compl.cpp $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomatonSpec.o $(OBJ)/RankFunc.o \
 	$(OBJ)/AutGraph.o $(OBJ)/Simulations.o $(OBJ)/AuxFunctions.o
@@ -135,4 +140,5 @@ clean:
 	rm -f obj/*.o units/test-parser units/test-kv-compl units/test-sch-red-compl \
 	units/test-sch-compl units/test-nfa-prop units/test-sch-hard \
 	units/test-simulation units/test-process units/test-simulation ranker \
-	units/test-hoa-parser units/test-classify ranker-composition ranker-sim ranker-tight
+	units/test-hoa-parser units/test-classify ranker-composition ranker-sim \
+	units/test-hoa-word ranker-tight

@@ -48,6 +48,10 @@ public:
   BuchiAutomaton<string, string> parseGffFormat(ifstream& is);
   BuchiAutomaton<int, APSymbol> parseHoaFormat(ifstream & os);
 
+  static APSymbol parseHoaSymbol(string& line, map<string, int>& apInd);
+  static pair<APWord, APWord> parseHoaInfWord(string& line, map<string, int>& apInd);
+  static APWord parseHoaFinWord(string& line, map<string, int>& apInd);
+
 private:
   Transition<string, string> parseBATransition(string line);
   Transition<string, string> parseGffTransition(pt::ptree& tr);
@@ -56,7 +60,6 @@ private:
   Transition<int, APSymbol> parseHoaTransition(int srcstate, int apNum, string& line);
   Delta<int, APSymbol> parseHoaBody(int apNum, ifstream & os, set<int>& fin);
   APSymbol parseHoaExpression(string & line, int apNum);
-
 };
 
 #endif
