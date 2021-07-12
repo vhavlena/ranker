@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <stack>
+#include <chrono>
 
 #include <iostream>
 #include <algorithm>
@@ -20,6 +21,9 @@
 using std::vector;
 using std::set;
 using std::map;
+
+enum delayVersion : unsigned;
+enum sccType {D, ND, BAD, BOTH}; // deterministic with accepting states / nondeterministic without accepting states / bad = nondeterministic with accepting states / both = deterministic without accepting states
 
 typedef set<int> DFAState;
 /*
@@ -66,7 +70,7 @@ protected:
   vector<StateSch> succSetSchStartReduced(set<int>& state, int rankBound, map<int, int> reachCons,
       map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel);
   vector<StateSch> succSetSchTightReduced(StateSch& state, int symbol, map<int, int> reachCons,
-      map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel);
+      map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel, bool eta4);
 
   bool acceptSl(StateSch& state, vector<int>& alp);
 
@@ -87,9 +91,10 @@ public:
 
   BuchiAutomaton<StateKV, int> complementKV();
   BuchiAutomaton<StateSch, int> complementSch();
-  BuchiAutomaton<StateSch, int> complementSchReduced();
+  BuchiAutomaton<StateSch, int> complementSchReduced(bool delay, std::set<int> originalFinals, double w, delayVersion version, bool elevatorRank, bool eta4, Stat *stats);
   BuchiAutomaton<StateSch, int> complementSchNFA(set<int>& start);
-  BuchiAutomaton<StateSch, int> complementSchOpt();
+  //BuchiAutomaton<StateSch, int> complementSchOpt(bool delay);
+  BuchiAutomaton<StateSch, int> complementSchOpt(bool delay, std::set<int> originalFinals, double w, delayVersion version, Stat *stats);
 
   set<StateSch> nfaSlAccept(BuchiAutomaton<StateSch, int>& nfaSchewe);
   set<pair<DFAState,int>> nfaSingleSlNoAccept(BuchiAutomaton<StateSch, int>& nfaSchewe);
@@ -100,6 +105,11 @@ public:
 
   void setComplOptions(ComplOptions& co) { this->opt = co; }
   ComplOptions getComplOptions() const { return this->opt; }
+
+  void elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe);
+  unsigned elevatorStates();
+  vector<set<int>> topologicalSort();
+  void topologicalSortUtil(set<int> currentScc, vector<set<int>> allSccs, map<set<int>, bool> &visited, stack<set<int>> &Stack);
 };
 
 #endif
