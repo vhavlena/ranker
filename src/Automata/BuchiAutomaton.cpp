@@ -1461,7 +1461,8 @@ unsigned BuchiAutomaton<State, Symbol> :: getAllPossibleRankings(unsigned maxRan
     return oddSum*even;
   }
 
-  else if (version == stirlingVersion){
+  // VERSION WITH STIRLING NUMBERS
+  else {
     unsigned even = std::pow(((maxRank+1)/2), accStates);
     unsigned count = (maxRank+1)/2;
     unsigned odd = 0;
