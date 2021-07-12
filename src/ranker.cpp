@@ -57,6 +57,7 @@ int main(int argc, char *argv[])
     InFormat fmt = parseRenamedAutomaton(os);
     auto t1 = std::chrono::high_resolution_clock::now();
     BuchiAutomaton<int, int> renCompl;
+    BuchiAutomaton<StateSch, int> comp;
     Stat stats;
 
     if(fmt == BA)
@@ -65,7 +66,7 @@ int main(int argc, char *argv[])
       BuchiAutomaton<int, int> ren = parseRenameBA(os, &ba);
       try
       {
-        complementAutWrap(ren, &renCompl, &stats);
+        complementAutWrap(ren, &comp, &renCompl, &stats);
       }
       catch (const std::bad_alloc&)
       {
@@ -101,7 +102,7 @@ int main(int argc, char *argv[])
 
       try
       {
-        complementAutWrap(ren, &renCompl, &stats);
+        complementAutWrap(ren, &comp, &renCompl, &stats);
       }
       catch (const std::bad_alloc&)
       {
@@ -109,7 +110,21 @@ int main(int argc, char *argv[])
         cerr << "Memory error" << endl;
         return 2;
       }
+
       map<int, APSymbol> symDict = Aux::reverseMap(ba.getRenameSymbolMap());
+
+      // Prepared for a debug product with a word
+      // string word = "cycle{!a0&a1}";
+      // auto appattern = comp.getAPPattern();
+      // pair<APWord, APWord> inf = BuchiAutomataParser::parseHoaInfWord(word, appattern);
+      // auto prefv = inf.first.getVector();
+      // auto loopv = inf.second.getVector();
+      // auto debugRename = comp.renameAlphabet<APSymbol>(symDict);
+      // BuchiAutomatonDebug<StateSch, APSymbol> compDebug(debugRename);
+      // auto ret = compDebug.getSubAutomatonWord(prefv, loopv);
+      // cout << ret.toGraphwiz() << endl;
+
+
       BuchiAutomaton<int, APSymbol> outOrig = renCompl.renameAlphabet<APSymbol>(symDict);
       outOrig.completeAPComplement();
       stats.reachStates = outOrig.getStates().size();

@@ -17,6 +17,7 @@
 #include "Automata/BuchiAutomaton.h"
 #include "Automata/BuchiAutomataParser.h"
 #include "Algorithms/Simulations.h"
+#include "Debug/BuchiAutomatonDebug.h"
 
 using namespace std;
 
@@ -48,7 +49,7 @@ BuchiAutomaton<int, int> parseRenameHOA(ifstream& os, BuchiAutomaton<int, APSymb
 BuchiAutomaton<int, int> parseRenameBA(ifstream& os, BuchiAutomaton<string, string>* orig);
 
 void complementScheweAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<int, int>* complRes, Stat* stats);
-void complementAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<int, int>* complRes, Stat* stats);
+void complementAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<StateSch, int>* complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats);
 void printStat(Stat& st);
 
 BuchiAutomaton<int, int> createBA(vector<int>& loop);

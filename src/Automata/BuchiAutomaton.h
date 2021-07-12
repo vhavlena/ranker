@@ -170,7 +170,7 @@ public:
   BuchiAutomaton<State, NewSymbol> renameAlphabet(map<Symbol, NewSymbol>& mpsymbol)
   {
     std::set<NewSymbol> ralph;
-    Delta<int, NewSymbol> rtrans;
+    Delta<State, NewSymbol> rtrans;
     for(const auto& al : this->alph)
     {
       ralph.insert(mpsymbol[al]);

@@ -47,7 +47,7 @@ BuchiAutomaton<int, int> parseRenameBA(ifstream& os, BuchiAutomaton<string, stri
 }
 
 
-void complementAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<int, int>* complRes, Stat* stats)
+void complementAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<StateSch, int>* complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats)
 {
   BuchiAutomatonSpec sp(ren);
   ComplOptions opt = { .cutPoint = true, .succEmptyCheck = true, .ROMinState = 8,
@@ -55,6 +55,7 @@ void complementAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<int, int>* 
   sp.setComplOptions(opt);
   BuchiAutomaton<StateSch, int> comp;
   comp = sp.complementSchReduced();
+  *complOrig = comp;
 
   stats->generatedStates = comp.getStates().size();
   stats->generatedTrans = comp.getTransCount();
@@ -66,33 +67,6 @@ void complementAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<int, int>* 
   renCompl.removeUseless();
   renCompl = renCompl.renameAutDict(id);
 
-  // cout << renCompl.getStates().size();
-  // map<int, StateSch> symDict = Aux::reverseMap(comp.getRenameStateMap());
-  // auto tmp = renCompl.getComplStructure(symDict);
-  //cout << tmp.toGraphwiz() << endl;
-
-  // auto prod = renCompl.productBA(ren);
-  // BuchiAutomaton<int, int> renProd = prod.renameAutDict(id);
-  // if(!renProd.isEmpty())
-  //   cout << "FALSE" << endl;
-  // else
-  //   cout << "TRUE" << endl;
-
-  // vector<int> word = {0,0,0,0,0,0,0,1,0,0,1};
-  // auto wb = createBA(word);
-  // cout << "HERE" << endl;
-  // cout << wb.toGraphwiz() << endl << endl;
-  // auto a = tmp.productBA(wb);
-  // cout << a.toGraphwiz() << endl;
-  // //set<int> fin = renCompl.getFinals();
-  // for(auto t : tmp.getRunTree(word))
-  // {
-  //   for(auto m : t)
-  //   {
-  //     cout << m.toString() << " ";
-  //   }
-  //   cout << endl;
-  // }
 
   stats->reachStates = renCompl.getStates().size();
   stats->reachTrans = renCompl.getTransCount();

@@ -509,6 +509,21 @@ std::string BuchiAutomaton<tuple<StateSch, int, bool>, int>::toGraphwiz()
   return toGraphwizWith(f1, f2);
 }
 
+/*
+ * Function converting the automaton <pair<StateSch, int>, APSymbol> to graphwiz format.
+ * @return Graphwiz representation of the automaton
+ */
+template <>
+std::string BuchiAutomaton<pair<StateSch, int>, APSymbol>::toGraphwiz()
+{
+  std::function<std::string(pair<StateSch, int>)> f1 = [&] (pair<StateSch, int> x)
+  {
+    return "(" + x.first.toString() + " " + std::to_string(x.second) + ")";
+  };
+  std::function<std::string(APSymbol)> f2 = [=] (APSymbol x) {return x.toString();};
+  return toGraphwizWith(f1, f2);
+}
+
 
 /*
  * Function converting the automaton <int, int> to string.
@@ -1597,3 +1612,6 @@ template class BuchiAutomaton<std::string, std::string>;
 template class BuchiAutomaton<StateKV, int>;
 template class BuchiAutomaton<StateSch, int>;
 template class BuchiAutomaton<int, APSymbol>;
+template class BuchiAutomaton<pair<StateSch, int>, APSymbol>;
+template class BuchiAutomaton<pair<StateSch, int>, int>;
+template class BuchiAutomaton<StateSch, APSymbol>;

@@ -3,6 +3,9 @@
 
 #include <boost/dynamic_bitset.hpp>
 #include <vector>
+#include <string>
+
+using std::string;
 
 /*
  * Type representing an item of AP set
@@ -51,6 +54,11 @@ public:
     for(const auto it : *this)
       ret += it.toString() + "; ";
     return ret;
+  }
+
+  std::vector<APSymbol> getVector()
+  {
+    return (std::vector<APSymbol>)(*this);
   }
 };
 

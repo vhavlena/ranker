@@ -105,7 +105,8 @@ $(OBJ)/ranker-general.o: Ranker-general.cpp $(OBJ)/BuchiAutomataParser.o \
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 
 $(OBJ)/BuchiAutomatonDebug.o: Debug/BuchiAutomatonDebug.cpp \
-	Debug/BuchiAutomatonDebug.h Automata/BuchiAutomatonException.h $(OBJ)/BuchiAutomaton.o
+	Automata/BuchiAutomaton.h Complement/StateSch.h Debug/BuchiAutomatonDebug.h \
+	Automata/BuchiAutomatonException.h $(OBJ)/BuchiAutomaton.o $(OBJ)/RankFunc.o
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 
 $(OBJ)/BuchiAutomataParser.o: Automata/BuchiAutomataParser.cpp \

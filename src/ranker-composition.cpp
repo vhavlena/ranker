@@ -69,6 +69,7 @@ int main(int argc, char *argv[])
     BuchiAutomaton<int, APSymbol> ba;
     BuchiAutomaton<int, int> ren;
     BuchiAutomaton<int, int> renCompl;
+    BuchiAutomaton<StateSch, int> comp;
     Stat stats;
     try
     {
@@ -132,7 +133,7 @@ int main(int argc, char *argv[])
     {
       try
       {
-        complementAutWrap(ren, &renCompl, &stats);
+        complementAutWrap(ren, &comp, &renCompl, &stats);
       }
       catch (const std::bad_alloc&)
       {
