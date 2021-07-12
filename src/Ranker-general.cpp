@@ -175,26 +175,28 @@ void printStat(Stat& st)
   float duration = (float)(st.duration/1000.0);
   float rest = duration;
   cerr << "Time: " << (float)(st.duration/1000.0) << endl;
-  cerr << "Waiting-part: " << (float)(st.waitingPart/1000.0) << " " << ((float)(st.waitingPart/1000.0)*100)/duration << "%" << endl;
-  rest -= (float)(st.waitingPart/1000.0);
-  cerr << "Rank-bound: " << (float)(st.rankBound/1000.0) << " " << ((float)(st.rankBound/1000.0)*100)/duration << "%" << endl;
-  rest -= (float)(st.rankBound/1000.0);
-  if (st.elevatorRank != -1){
-    cerr << "Elevator-rank: " << (float)(st.elevatorRank/1000.0) << " " << ((float)(st.elevatorRank/1000.0)*100)/duration << "%" << endl;
-    rest -= (float)(st.elevatorRank/1000.0);
+  if (st.duration/1000.0 != 0.0){
+    cerr << "Waiting-part: " << (float)(st.waitingPart/1000.0) << " " << ((float)(st.waitingPart/1000.0)*100)/duration << "%" << endl;
+    rest -= (float)(st.waitingPart/1000.0);
+    cerr << "Rank-bound: " << (float)(st.rankBound/1000.0) << " " << ((float)(st.rankBound/1000.0)*100)/duration << "%" << endl;
+    rest -= (float)(st.rankBound/1000.0);
+    if (st.elevatorRank != -1){
+      cerr << "Elevator-rank: " << (float)(st.elevatorRank/1000.0) << " " << ((float)(st.elevatorRank/1000.0)*100)/duration << "%" << endl;
+      rest -= (float)(st.elevatorRank/1000.0);
+    }
+    cerr << "Start-of-tight-part: " << (float)(st.cycleClosingStates/1000.0) << " " << ((float)(st.cycleClosingStates/1000.0)*100)/duration << "%" << endl;
+    rest -= (float)(st.cycleClosingStates/1000.0);
+    if (st.getAllCycles != -1){
+      // delay
+      cerr << "\tGet-all-cycles: " << (float)(st.getAllCycles/1000.0) << " " << ((float)(st.getAllCycles/1000.0)*100)/duration << "%" << endl;
+      cerr << "\tStates-to-generate: " << (float)(st.statesToGenerate/1000.0) << " " << ((float)(st.statesToGenerate/1000.0)*100)/duration << "%" << endl;
+    }
+    cerr << "Simulations: " << (float)(st.simulations/1000.0) << " " << ((float)(st.simulations/1000.0)*100)/duration << "%" << endl;
+    rest -= (float)(st.simulations/1000.0);
+    cerr << "Tight-part-construction: " << (float)(st.tightPart/1000.0) << " " << ((float)(st.tightPart/1000.0)*100)/duration << "%" << endl;
+    rest -= (float)(st.tightPart/1000.0);
+    cerr << "Rest: " << rest << " " << (rest*100.0)/duration << "%" << endl;
   }
-  cerr << "Start-of-tight-part: " << (float)(st.cycleClosingStates/1000.0) << " " << ((float)(st.cycleClosingStates/1000.0)*100)/duration << "%" << endl;
-  rest -= (float)(st.cycleClosingStates/1000.0);
-  if (st.getAllCycles != -1){
-    // delay
-    cerr << "\tGet-all-cycles: " << (float)(st.getAllCycles/1000.0) << " " << ((float)(st.getAllCycles/1000.0)*100)/duration << "%" << endl;
-    cerr << "\tStates-to-generate: " << (float)(st.statesToGenerate/1000.0) << " " << ((float)(st.statesToGenerate/1000.0)*100)/duration << "%" << endl;
-  }
-  cerr << "Simulations: " << (float)(st.simulations/1000.0) << " " << ((float)(st.simulations/1000.0)*100)/duration << "%" << endl;
-  rest -= (float)(st.simulations/1000.0);
-  cerr << "Tight-part-construction: " << (float)(st.tightPart/1000.0) << " " << ((float)(st.tightPart/1000.0)*100)/duration << "%" << endl;
-  rest -= (float)(st.tightPart/1000.0);
-  cerr << "Rest: " << rest << " " << (rest*100.0)/duration << "%" << endl;
 }
 
 std::string getHelpMsg(const std::string& progName)
