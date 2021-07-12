@@ -46,8 +46,12 @@ BuchiAutomaton<int, Symbol> BuchiAutomatonDebug<State, Symbol>::createWordAutoma
  * @return Product of the word and the BA.
  */
 template <typename State, typename Symbol>
-BuchiAutomaton<pair<State,int>, Symbol> BuchiAutomatonDebug<State, Symbol>::getSubAutomatonWord(vector<Symbol> handle, vector<Symbol> loop)
+BuchiAutomaton<pair<State,int>, Symbol> BuchiAutomatonDebug<State, Symbol>::getSubAutomatonWord(vector<Symbol>& handle, vector<Symbol>& loop)
 {
   BuchiAutomaton<int, Symbol> wordBA = createWordAutomaton(handle, loop);
   return this->cartProductBA(wordBA);
 }
+
+
+template class BuchiAutomatonDebug<StateSch, int>;
+template class BuchiAutomatonDebug<StateSch, APSymbol>;

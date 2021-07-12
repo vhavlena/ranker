@@ -1,6 +1,7 @@
 #ifndef _BUCHI_AUTOMATON_DEBUG_H_
 #define _BUCHI_AUTOMATON_DEBUG_H_
 
+#include "../Automata/APSymbol.h"
 #include "../Automata/BuchiAutomaton.h"
 #include "../Automata/BuchiAutomatonException.h"
 
@@ -11,7 +12,9 @@ protected:
   BuchiAutomaton<int, Symbol> createWordAutomaton(vector<Symbol>& handle, vector<Symbol>& loop);
 
 public:
-  BuchiAutomaton<pair<State,int>, Symbol> getSubAutomatonWord(vector<Symbol> handle, vector<Symbol> loop);
+  BuchiAutomatonDebug(BuchiAutomaton<State, Symbol> &t) : BuchiAutomaton<State, Symbol>(t) {  }
+
+  BuchiAutomaton<pair<State,int>, Symbol> getSubAutomatonWord(vector<Symbol>& handle, vector<Symbol>& loop);
 };
 
 #endif
