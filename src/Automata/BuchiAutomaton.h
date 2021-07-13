@@ -11,6 +11,7 @@
 #include <tuple>
 #include <functional>
 #include <numeric>
+#include <chrono>
 
 #include "AutGraph.h"
 #include "../Complement/StateKV.h"
@@ -21,6 +22,36 @@
 using std::tuple;
 
 class AutGraph;
+
+//enum delayVersion : unsigned;
+enum delayVersion : unsigned {oldVersion, newVersion, randomVersion, subsetVersion, stirlingVersion};
+
+struct Stat
+{
+  size_t generatedStates;
+  size_t generatedTrans;
+  size_t reachStates;
+  size_t reachTrans;
+  size_t generatedTransitionsToTight;
+  size_t transitionsToTight; // generated transitions to the tight part
+  bool elevator; // is it an elevator automaton?
+  size_t elevatorStates;
+  size_t originalStates;
+  long duration;
+  string engine;
+
+  // time
+  std::chrono::_V2::system_clock::time_point beginning;
+  std::chrono::_V2::system_clock::time_point end;
+  long waitingPart;
+  long rankBound;
+  long elevatorRank = -1;
+  long cycleClosingStates;
+  long getAllCycles = -1;
+  long statesToGenerate = -1;
+  long simulations;
+  long tightPart;
+};
 
 /*
  * Single transition
@@ -47,6 +78,7 @@ struct LabelState {
 struct DelayLabel {
   unsigned macrostateSize;
   unsigned maxRank;
+  unsigned nonAccStates;
 };
 
 
@@ -160,6 +192,8 @@ public:
   BuchiAutomaton<int, int> renameAut(int start = 0);
   BuchiAutomaton<int, int> renameAutDict(map<Symbol, int>& mpsymbol, int start = 0);
 
+  unsigned getTransitionsToTight();
+  bool isElevator();
 
   /*
    * Rename symbols of the automaton.
@@ -362,11 +396,18 @@ public:
   vector<set<State>> getAutGraphSCCs();
   set<State> getEventReachable(set<State>& sls);
   set<State> getSelfLoops();
+  vector<vector<State>> getAllCycles();
+  bool circuit(int state, std::vector<int> &stack, std::set<int> &blockedSet, std::map<int, std::set<int>> &blockedMap, 
+    std::set<int> scc, AdjList adjlist, int startState, std::vector<std::vector<int>> &allCyclesRenamed);
+  void unblock(int state, std::set<int> &blockedSet, std::map<int, std::set<int>> &blockedMap);
+  set<State> getAllSuccessors(State state);
+  unsigned getAllPossibleRankings(unsigned maxRank, unsigned accStates, unsigned nonAccStates, delayVersion version);
 
   std::map<State, int> propagateGraphValues(const std::function<int(LabelState<State>*,VecLabelStatesPtr)>& updFnc,
     const std::function<int(const State&)>& initFnc);
 
-  SetStates getCycleClosingStates(SetStates& slignore, DelayMap<State>& dmap);
+  SetStates getCycleClosingStates(SetStates& slignore);
+  std::map<State, std::set<Symbol>> getCycleClosingStates(SetStates& slignore, DelayMap<State>& dmap, double w, delayVersion version, Stat *stats);
   bool reachWithRestriction(const State& from, const State& to, SetStates& restr, SetStates& high);
 
   bool isEmpty();

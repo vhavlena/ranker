@@ -7,6 +7,7 @@
 #include <chrono>
 #include <iomanip>
 #include <string>
+#include "args.hxx"
 
 #include "Compl-config.h"
 #include "Ranker-general.h"
@@ -24,32 +25,105 @@ int main(int argc, char *argv[])
 {
   Params params = { .output = "", .input = "", .stats = false};
   ifstream os;
+  bool delay = false;
+  double w = 0.5; 
+  delayVersion version;
+  bool error = false;
+  bool elevatorTest = false;
+  bool elevatorRank = false;
+  bool eta4 = false;
 
-  if(argc == 2)
+ args::ArgumentParser parser("Program complementing a (state-based acceptance condition) Buchi automaton.\n", "");
+  args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
+
+  args::Positional<std::string> inputFile(parser, "INPUT", "The name of a file in the HOA (Hanoi Omega Automata) format with the following restrictions:\n* only state-based acceptance is supported\n* transitions need to have the form of a single conjunction with exactly one positive atomic proposition\n* no aliases or any other fancy features of HOA are supported\n");
+  args::Flag statsFlag(parser, "", "Print summary statistics", {"stats"});
+  args::ValueFlag<std::string> delayFlag(parser, "version", "Use delay optimization, versions: old, new, random, subset, stirling", {"delay"});
+  args::ValueFlag<double> weightFlag(parser, "value", "Weight parameter for delay - value in <0,1>", {'w', "weight"});
+  args::Flag elevatorFlag(parser, "elevator rank", "Update rank upper bound of each macrostate based on elevator automaton structure", {"elevator-rank"});
+  args::Flag eta4Flag(parser, "eta4", "Max rank optimization - eta 4 only when going from some accepting state", {"eta4"});
+  args::Flag elevatorTestFlag(parser, "elevator test", "Test if INPUT is an elevator automaton", {"elevator-test"});
+    
+  try
   {
-		if ((std::string(argv[1]) == "--help") || (std::string(argv[1]) == "-h")) {
-			cerr << getHelpMsg(argv[0]);
-			return 0;
-		} else {
-			params.input = string(argv[1]);
-		}
+      parser.ParseCLI(argc, argv);
   }
-  else if(argc == 3 && strcmp(argv[2], "--stats") == 0)
+  catch (args::Help)
   {
-    params.input = string(argv[1]);
+      std::cout << parser;
+      return 0;
+  }
+  catch (args::ParseError e)
+  {
+      std::cerr << e.what() << std::endl;
+      std::cerr << parser;
+      return 1;
+  }
+  catch (args::ValidationError e)
+  {
+      std::cerr << e.what() << std::endl;
+      std::cerr << parser;
+      return 1;
+  }
+
+  // input file
+  if (inputFile){
+    params.input = args::get(inputFile);
+  }
+
+  // print statistics
+  if (statsFlag){
     params.stats = true;
   }
-  else if(argc == 3 && strcmp(argv[1], "--stats") == 0)
-  {
-    params.input = string(argv[2]);
-    params.stats = true;
+
+  // delay version
+  if (delayFlag){
+    std::string v = args::get(delayFlag);
+    if (v == "old")
+      version = oldVersion;
+    else if (v == "new")
+      version = newVersion;
+    else if (v == "random")
+      version = randomVersion;
+    else if (v == "subset")
+      version = subsetVersion;
+    else if (v == "stirling")
+      version = stirlingVersion;
+    else {
+      std::cerr << "Wrong delay version" << std::endl;
+      return 1;
+    }
   }
-  else
-  {
-    cerr << "Unrecognized arguments" << endl;
-		cerr << "\n";
-		cerr << getHelpMsg(argv[0]);
-    return 1;
+
+  // weight parameters for delay
+  if (weightFlag){
+    if (not delayFlag){
+      std::cerr << "Wrong combination of arguments" << std::endl;
+      return 1;
+    }
+    w = args::get(weightFlag);
+    if (w < 0.0 or w > 1.0) {
+      std::cerr << "Wrong weight parameter" << std::endl;
+      return 1;
+    }
+  }
+
+  // elevator rank
+  if (elevatorFlag){
+    elevatorRank = true;
+  }
+
+  // eta4
+  if (eta4Flag){
+    eta4 = true;
+  }
+
+  if (elevatorTestFlag){
+    elevatorTest = true;
+    if (statsFlag or delayFlag or weightFlag or elevatorFlag or eta4Flag){
+      std::cerr << "Wrong combination of arguments" << std::endl;
+      return 1;
+    }
   }
 
   //string filename = params.input;
@@ -133,7 +207,7 @@ int main(int argc, char *argv[])
     {
       try
       {
-        complementAutWrap(ren, &comp, &renCompl, &stats);
+        complementAutWrap(ren, &comp, &renCompl, &stats, delay, w, version, elevatorRank, eta4);
       }
       catch (const std::bad_alloc&)
       {
@@ -180,7 +254,8 @@ bool suitCase(BuchiAutomatonSpec& sp)
     delayMp[st] = { .macrostateSize = (unsigned)st.S.size(), .maxRank = (unsigned)rankBound[st.S] };
   }
 
-  for(auto t : comp.getCycleClosingStates(slIgnore, delayMp))
+  //for(auto t : comp.getCycleClosingStates(slIgnore, delayMp))
+  for (auto t : comp.getCycleClosingStates(slIgnore))
   {
     if((t.S.size() >= 9 && rankBound[t.S] >= 5) || (t.S.size() >= 8 && rankBound[t.S] >= 6))
     {

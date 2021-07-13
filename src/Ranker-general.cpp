@@ -46,19 +46,20 @@ BuchiAutomaton<int, int> parseRenameBA(ifstream& os, BuchiAutomaton<string, stri
   return orig->renameAut();
 }
 
-
-void complementAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<StateSch, int>* complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats)
+void complementAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<StateSch, int>* complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats, bool delay, double w, delayVersion version, bool elevatorRank, bool eta4)
 {
   BuchiAutomatonSpec sp(ren);
   ComplOptions opt = { .cutPoint = true, .succEmptyCheck = true, .ROMinState = 8,
       .ROMinRank = 6, .CacheMaxState = 6, .CacheMaxRank = 8, .semidetOpt = false };
   sp.setComplOptions(opt);
   BuchiAutomaton<StateSch, int> comp;
-  comp = sp.complementSchReduced();
+
+  comp = sp.complementSchReduced(delay, ren.getFinals(), w, version, elevatorRank, eta4, stats);
   *complOrig = comp;
 
   stats->generatedStates = comp.getStates().size();
   stats->generatedTrans = comp.getTransCount();
+  stats->generatedTransitionsToTight = comp.getTransitionsToTight();
 
   map<int, int> id;
   for(auto al : comp.getAlphabet())
@@ -71,18 +72,23 @@ void complementAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<StateSch, i
   stats->reachStates = renCompl.getStates().size();
   stats->reachTrans = renCompl.getTransCount();
   stats->engine = "Ranker";
+  stats->transitionsToTight = comp.getTransitionsToTight();
+  stats->transitionsToTight = renCompl.getTransitionsToTight();
+  stats->elevator = ren.isElevator(); // original automaton before complementation
+  stats->elevatorStates = sp.elevatorStates();
+  stats->originalStates = sp.getStates().size();
   *complRes = renCompl;
 }
 
 
-void complementScheweAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<int, int>* complRes, Stat* stats)
+void complementScheweAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<int, int>* complRes, Stat* stats, bool delay, double w, delayVersion version)
 {
   BuchiAutomatonSpec sp(ren);
   ComplOptions opt = { .cutPoint = true, .CacheMaxState = 6, .CacheMaxRank = 8,
       .semidetOpt = false };
   sp.setComplOptions(opt);
   BuchiAutomaton<StateSch, int> comp;
-  comp = sp.complementSchOpt();
+  comp = sp.complementSchOpt(delay, ren.getFinals(), w, version, stats);
 
   stats->generatedStates = comp.getStates().size();
   stats->generatedTrans = comp.getTransCount();
@@ -96,6 +102,11 @@ void complementScheweAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<int, 
   stats->reachStates = renCompl.getStates().size();
   stats->reachTrans = renCompl.getTransCount();
   stats->engine = "Ranker";
+  stats->transitionsToTight = comp.getTransitionsToTight();
+  stats->transitionsToTight = renCompl.getTransitionsToTight();
+  stats->elevator = ren.isElevator(); // original automaton before complementation
+  stats->elevatorStates = sp.elevatorStates();
+  stats->originalStates = sp.getStates().size();
   *complRes = renCompl;
 }
 
@@ -123,18 +134,50 @@ BuchiAutomaton<int, int> createBA(vector<int>& loop)
 
 void printStat(Stat& st)
 {
-  cerr << "Generated states: " << st.generatedStates << "\nGenerated trans: " << st.generatedTrans << endl;
+  cerr << "Generated-states: " << st.generatedStates << "\nGenerated-trans: " << st.generatedTrans << endl;
   cerr << "States: " << st.reachStates << "\nTransitions: " << st.reachTrans << endl;
+  cerr << "Generated-transitions-to-tight: " << st.generatedTransitionsToTight << endl;
+  //cerr << "Transitions to tight: " << st.transitionsToTight << endl;
+  cerr << "Elevator-automaton: " << (st.elevator ? "Yes" : "No") << endl;
+  cerr << "States-before-complementation: " << st.originalStates << endl;
+  cerr << "Elevator-states: " << st.elevatorStates << endl;
   cerr << "Engine: " << st.engine << endl;
   cerr << std::fixed;
   cerr << std::setprecision(2);
-  cerr << "Time: " << (float)(st.duration/1000.0) << std::endl;
+  
+  float duration = (float)(st.duration/1000.0);
+  float rest = duration;
+  cerr << "Time: " << (float)(st.duration/1000.0) << endl;
+  if (st.duration/1000.0 != 0.0){
+    cerr << "Waiting-part: " << (float)(st.waitingPart/1000.0) << " " << ((float)(st.waitingPart/1000.0)*100)/duration << "%" << endl;
+    rest -= (float)(st.waitingPart/1000.0);
+    cerr << "Rank-bound: " << (float)(st.rankBound/1000.0) << " " << ((float)(st.rankBound/1000.0)*100)/duration << "%" << endl;
+    rest -= (float)(st.rankBound/1000.0);
+    if (st.elevatorRank != -1){
+      cerr << "Elevator-rank: " << (float)(st.elevatorRank/1000.0) << " " << ((float)(st.elevatorRank/1000.0)*100)/duration << "%" << endl;
+      rest -= (float)(st.elevatorRank/1000.0);
+    }
+    cerr << "Start-of-tight-part: " << (float)(st.cycleClosingStates/1000.0) << " " << ((float)(st.cycleClosingStates/1000.0)*100)/duration << "%" << endl;
+    rest -= (float)(st.cycleClosingStates/1000.0);
+    if (st.getAllCycles != -1){
+      // delay
+      cerr << "\tGet-all-cycles: " << (float)(st.getAllCycles/1000.0) << " " << ((float)(st.getAllCycles/1000.0)*100)/duration << "%" << endl;
+      cerr << "\tStates-to-generate: " << (float)(st.statesToGenerate/1000.0) << " " << ((float)(st.statesToGenerate/1000.0)*100)/duration << "%" << endl;
+    }
+    cerr << "Simulations: " << (float)(st.simulations/1000.0) << " " << ((float)(st.simulations/1000.0)*100)/duration << "%" << endl;
+    rest -= (float)(st.simulations/1000.0);
+    cerr << "Tight-part-construction: " << (float)(st.tightPart/1000.0) << " " << ((float)(st.tightPart/1000.0)*100)/duration << "%" << endl;
+    rest -= (float)(st.tightPart/1000.0);
+    cerr << "Rest: " << rest << " " << (rest*100.0)/duration << "%" << endl;
+  }
 }
 
 std::string getHelpMsg(const std::string& progName)
 {
 	std::string helpMsg;
-	helpMsg += "Usage: " + progName + " [--stats] INPUT\n";
+	helpMsg += "Usage: \n";
+  helpMsg += "1) Complementation:\n";
+  helpMsg += "  " + progName + " [--stats] [--delay VERSION [-w WEIGHT]] [--elevator-rank] [--eta4] INPUT\n";
 	helpMsg += "\n";
 	helpMsg += "Complements a (state-based acceptance condition) Buchi automaton.\n";
 	helpMsg += "\n";
@@ -146,7 +189,15 @@ std::string getHelpMsg(const std::string& progName)
 	helpMsg += "  * no aliases or any other fancy features of HOA are supported\n";
 	helpMsg += "\n";
 	helpMsg += "Flags:\n";
-	helpMsg += "  --stats       Print summary statistics\n";
+	helpMsg += "  --stats             Print summary statistics\n";
+  helpMsg += "  --delay             Use delay optimization\n";
+  helpMsg += "  VERSION             --old / --new / --random / --subset / --stirling\n";
+  helpMsg += "  WEIGHT              Weight parameter - in <0,1>\n";
+  helpMsg += "  --elevator-rank     Update rank upper bound of each macrostate based on elevator automaton structure";
+  helpMsg += "  --eta4              Max rank optimization - eta 4 only when going from some accepting state";
+  helpMsg += "\n\n";
+  helpMsg += "2) Tests if INPUT is an elevator automaton\n";
+  helpMsg += "  " + progName + " --elevator-test INPUT\n";
 
 	return helpMsg;
 } // getHelpMsg
