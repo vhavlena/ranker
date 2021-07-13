@@ -33,7 +33,7 @@ unsigned BuchiAutomaton<State, Symbol>::getTransitionsToTight(){
 
 /**
  * Is it an elevator automaton?
- */ 
+ */
 template<typename State, typename Symbol>
 bool BuchiAutomaton<State, Symbol>::isElevator(){
   // get all sccs
@@ -1279,7 +1279,7 @@ void BuchiAutomaton<State, Symbol> :: unblock(int state, std::set<int> &blockedS
 }
 
 template<typename State, typename Symbol>
-bool BuchiAutomaton<State, Symbol> :: circuit(int state, std::vector<int> &stack, std::set<int> &blockedSet, std::map<int, 
+bool BuchiAutomaton<State, Symbol> :: circuit(int state, std::vector<int> &stack, std::set<int> &blockedSet, std::map<int,
   std::set<int>> &blockedMap, std::set<int> scc, AdjList adjlist, int startState, std::vector<std::vector<int>> &allCyclesRenamed) {
   bool flag = false;
   stack.push_back(state);
@@ -1358,7 +1358,7 @@ std::vector<std::vector<State>> BuchiAutomaton<State, Symbol> :: getAllCycles(){
       adjList[state].erase(std::remove(adjList[state].begin(), adjList[state].end(), state), adjList[state].end());
     }
   }
-  
+
   for (auto &cycle : allCyclesRenamed){
     std::vector<State> oneCycle;
     for (auto &state : cycle){
@@ -1396,7 +1396,7 @@ int nCr(int n, int r)
 
 template<typename State, typename Symbol>
 unsigned BuchiAutomaton<State, Symbol> :: getAllPossibleRankings(unsigned maxRank, unsigned accStates, unsigned nonAccStates, delayVersion version){
-  
+
   // OLD VERSION
   if (version == oldVersion){
     unsigned even = std::pow(((maxRank+1)/2), accStates);
@@ -1414,12 +1414,12 @@ unsigned BuchiAutomaton<State, Symbol> :: getAllPossibleRankings(unsigned maxRan
           tmpVar += (nCr(innerUpperBound, i) * tmpSum);
         }
         return tmpVar;
-      }(upperBound, innerUpperBound, tmpSum); 
+      }(upperBound, innerUpperBound, tmpSum);
       tmpSum = tmp;
-      odd = tmp;   
+      odd = tmp;
     }
 
-    return odd*even; 
+    return odd*even;
   }
 
   // NEW VERSION
@@ -1449,10 +1449,10 @@ unsigned BuchiAutomaton<State, Symbol> :: getAllPossibleRankings(unsigned maxRan
             tmpVar += (nCr(innerUpperBound, i) * tmpSum);
           }
           return tmpVar;
-        }(upperBound, innerUpperBound, tmpSum); 
+        }(upperBound, innerUpperBound, tmpSum);
 
         tmpSum = tmp;
-        odd = tmp;   
+        odd = tmp;
       }
 
       oddSum += odd;
@@ -1492,7 +1492,7 @@ unsigned BuchiAutomaton<State, Symbol> :: getAllPossibleRankings(unsigned maxRan
  */
 template <typename State, typename Symbol>
 std::map<State, std::set<Symbol>> BuchiAutomaton<State, Symbol> :: getCycleClosingStates(SetStates& slignore, DelayMap<State>& dmap, double w, delayVersion version, Stat *stats) {
-  
+
   std::map<State, std::set<Symbol>> statesToGenerate;
   std::vector<std::vector<State>> allCycles;
   std::map<State, double> mapping;
@@ -1506,17 +1506,17 @@ std::map<State, std::set<Symbol>> BuchiAutomaton<State, Symbol> :: getCycleClosi
 
   // get all cycles
   auto start = std::chrono::high_resolution_clock::now();
-  allCycles = this->getAllCycles(); 
+  allCycles = this->getAllCycles();
   auto end = std::chrono::high_resolution_clock::now();
   stats->getAllCycles = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
   // states to generate
   start = std::chrono::high_resolution_clock::now();
   while (not allStates.empty()){
-    
+
     // NORMAL
     if (version == oldVersion or version == newVersion or version == subsetVersion or version == stirlingVersion){
-      mapping.clear(); 
+      mapping.clear();
       // number for every state
       for (auto state : allStates){
         successors = this->getAllSuccessors(state); // all successors
@@ -1540,9 +1540,9 @@ std::map<State, std::set<Symbol>> BuchiAutomaton<State, Symbol> :: getCycleClosi
             for (auto succ : successors){
               if (dmap[succ].maxRank != 0){
                 result += this->getAllPossibleRankings(dmap[succ].maxRank, dmap[succ].macrostateSize - dmap[succ].nonAccStates, dmap[succ].nonAccStates, version);
-              } 
+              }
             }
-            return result; 
+            return result;
           }(dmap);
 
         // number of cycles with this state that are not covered yet
@@ -1572,7 +1572,7 @@ std::map<State, std::set<Symbol>> BuchiAutomaton<State, Symbol> :: getCycleClosi
           removed = true;
           // add them to statesToGenerate with no symbol
           std::set<Symbol> tmpSymbols;
-          statesToGenerate.insert(std::pair<State, std::set<Symbol>>(state, tmpSymbols)); 
+          statesToGenerate.insert(std::pair<State, std::set<Symbol>>(state, tmpSymbols));
           tmpStates.erase(state);
           // remove all cycles with this state
           tmpCycles.clear();
@@ -1586,7 +1586,7 @@ std::map<State, std::set<Symbol>> BuchiAutomaton<State, Symbol> :: getCycleClosi
       allStates = tmpStates;
       if (removed)
         continue;
-    
+
       // pick min
       double min = -1.0;
       bool first = true;
@@ -1632,21 +1632,21 @@ std::map<State, std::set<Symbol>> BuchiAutomaton<State, Symbol> :: getCycleClosi
     for (auto cycle : allCycles){
       for (unsigned i = 0; i < cycle.size()-1; i++){
         if (cycle[i] == minState){
-          cycleSucc.insert(cycle[i+1]); 
+          cycleSucc.insert(cycle[i+1]);
           break;
         }
       }
     }
-    
+
     for (auto succ : cycleSucc){
       for (auto a : this->alph){
         std::set<State> reachStates = this->trans[std::pair<State, Symbol>(minState, a)];
-        if (reachStates.find(succ) != reachStates.end()) 
+        if (reachStates.find(succ) != reachStates.end())
           symbols.insert(a);
       }
     }
 
-    statesToGenerate.insert(std::pair<State, std::set<Symbol>>(minState, symbols)); 
+    statesToGenerate.insert(std::pair<State, std::set<Symbol>>(minState, symbols));
     // remove all cycles with this state
     tmpCycles.clear();
     for (std::vector<State> cycle : allCycles){
@@ -1657,7 +1657,7 @@ std::map<State, std::set<Symbol>> BuchiAutomaton<State, Symbol> :: getCycleClosi
     allStates.erase(minState);
 
   }
-  
+
   end = std::chrono::high_resolution_clock::now();
   stats->statesToGenerate = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 

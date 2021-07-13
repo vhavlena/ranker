@@ -818,7 +818,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
 
   // rank bound
   start = std::chrono::high_resolution_clock::now();
-  
+
   map<std::pair<StateSch, int>, set<StateSch>> prev = comp.getReverseTransitions();
   //std::cout << comp.toGraphwiz() << std::endl;
 
@@ -872,8 +872,8 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
   map<StateSch, DelayLabel> delayMp;
   for(const auto& st : comp.getStates())
   {
-    delayMp[st] = { 
-      .macrostateSize = (unsigned)st.S.size(), 
+    delayMp[st] = {
+      .macrostateSize = (unsigned)st.S.size(),
       .maxRank = (unsigned)this->rankBound[st.S]
     };
 
@@ -893,20 +893,20 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
   }
   end = std::chrono::high_resolution_clock::now();
   stats->cycleClosingStates = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
-  
+
   std::set<StateSch> tmpSet;
   if (delay){
     for(auto item : tightStartDelay)
       tmpSet.insert(item.first);
   }
-  std::set<StateSch> tmpStackSet;
+  //std::set<StateSch> tmpStackSet;
   for(const StateSch& tmp : (delay ? tmpSet : tightStart))
   {
     if(tmp.S.size() > 0)
     {
       stack.push(tmp);
     }
-    tmpStackSet.insert(tmp);
+    //tmpStackSet.insert(tmp);
   }
 
   StateSch init = {getInitials(), set<int>(), RankFunc(), 0, false};
@@ -973,7 +973,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
         {
             for(const auto& a : this->getAlphabet())
             {
-              for(const auto& d : prev[{st, a}]) { 
+              for(const auto& d : prev[{st, a}]) {
                 if ((not delay) or tightStartDelay[d].find(a) != tightStartDelay[d].end()){
                   mp[{d,a}].insert(dst.begin(), dst.end());
                   transitionsToTight += dst.size();
@@ -986,7 +986,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
           if (not delay)
             mp[pr].insert(dst.begin(), dst.end());
           else {
-            if (tightStartDelay[st].find(sym) != tightStartDelay[st].end()){ 
+            if (tightStartDelay[st].find(sym) != tightStartDelay[st].end()){
                 mp[pr].insert(dst.begin(), dst.end());
             }
           }
@@ -1282,7 +1282,7 @@ unsigned BuchiAutomatonSpec::elevatorStates(){
 
 /**
  * Updates rankBound of every state based on elevator automaton structure (minimum of these two options)
- */ 
+ */
 void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe){
   // topological sort
   std::vector<std::set<int>> sortedComponents = this->topologicalSort();
@@ -1347,7 +1347,7 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe){
   std::vector<std::pair<std::set<int>, sccType>> partition;
   std::pair<std::set<int>, sccType> tmpComponent;
   for (unsigned i = sortedComponents.size()-1; i > 0; i--){
-    
+
     if (typeMap[sortedComponents[i]] == BAD or typeMap[sortedComponents[i-1]] == BAD){
       tmpComponent.second = BAD;
       break;
@@ -1357,7 +1357,7 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe){
       tmpComponent.first.insert(sortedComponents[i].begin(), sortedComponents[i].end());
       tmpComponent.second = typeMap[sortedComponents[i]];
     }
-    
+
     // BOTH + BOTH - can happen only at the beginning -> check (non)determinism of transitions
     if (i == sortedComponents.size() and typeMap[sortedComponents[i]] == BOTH){
       tmpComponent.second = D;
@@ -1374,9 +1374,9 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe){
         // cannot be merged
         partition.push_back({tmpComponent.first, tmpComponent.second});
         tmpComponent.first.clear();
-      } 
-    } 
-    
+      }
+    }
+
     // 2) D + D or BOTH + D - can be merged only if transitions between them are deterministic
     else if (typeMap[sortedComponents[i]] == D){
       if (typeMap[sortedComponents[i-1]] == D or typeMap[sortedComponents[i-1]] == BOTH){
@@ -1457,7 +1457,7 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe){
   tmpComponent.first.clear();
 
   // assign rank to each state
-  std::map<int, unsigned> newRank; 
+  std::map<int, unsigned> newRank;
   // for every partition from back to front (rank is increasing)
   unsigned rank = 2;
   for (auto part : partition){
@@ -1468,7 +1468,7 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe){
       rank++;
     else if (part.second == BAD)
       continue;
-    
+
     for (auto state : part.first){
       newRank.insert({state, rank});
     }
@@ -2016,8 +2016,8 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchOpt(bool delay, s
   map<StateSch, DelayLabel> delayMp;
   for(const auto& st : comp.getStates())
   {
-    delayMp[st] = { 
-      .macrostateSize = (unsigned)st.S.size(), 
+    delayMp[st] = {
+      .macrostateSize = (unsigned)st.S.size(),
       .maxRank = (unsigned)this->rankBound[st.S]
     };
 
@@ -2084,10 +2084,10 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchOpt(bool delay, s
       }
       for (const StateSch& s : succ)
       {
-        dst.insert(s); 
+        dst.insert(s);
         if(comst.find(s) == comst.end())
         {
-          if (not delay or std::find(tmpStackSet.begin(), tmpStackSet.end(), s) == tmpStackSet.end()){ 
+          if (not delay or std::find(tmpStackSet.begin(), tmpStackSet.end(), s) == tmpStackSet.end()){
             stack.push(s);
             comst.insert(s);
           }
@@ -2105,7 +2105,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchOpt(bool delay, s
         {
             for(const auto& a : this->getAlphabet())
             {
-              for(const auto& d : prev[{st, a}]) { 
+              for(const auto& d : prev[{st, a}]) {
                 mp[{d,a}].insert(dst.begin(), dst.end());
               }
             }
@@ -2125,7 +2125,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchOpt(bool delay, s
       else {
         mp[pr] = dst;
       }
-      if(!cnt) break; 
+      if(!cnt) break;
     }
     //std::cout << comst.size() << " : " << stack.size() << std::endl;
   }

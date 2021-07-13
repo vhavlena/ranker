@@ -23,10 +23,10 @@ int main(int argc, char *argv[])
   Params params = { .output = "", .input = "", .stats = false};
   ifstream os;
   bool delay = false;
-  double w = 0.5; 
+  double w = 0.5;
   delayVersion version;
   bool error = false;
-  bool eta4 = false;
+  //bool eta4 = false;
 
   // without delay
   if(argc == 2)
@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
     else
       error = true;
   }
-  
+
   // error
   else
   {
@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
 		cerr << getHelpMsg(argv[0]);
     return 1;
   }
-  
+
   if (error or w < 0.0 or w > 1.0){
     cerr << "Unrecognized arguments" << endl;
 		cerr << "\n";

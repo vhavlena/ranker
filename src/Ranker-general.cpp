@@ -144,7 +144,7 @@ void printStat(Stat& st)
   cerr << "Engine: " << st.engine << endl;
   cerr << std::fixed;
   cerr << std::setprecision(2);
-  
+
   float duration = (float)(st.duration/1000.0);
   float rest = duration;
   cerr << "Time: " << (float)(st.duration/1000.0) << endl;

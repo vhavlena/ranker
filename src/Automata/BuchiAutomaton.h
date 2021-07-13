@@ -41,8 +41,8 @@ struct Stat
   string engine;
 
   // time
-  std::chrono::_V2::system_clock::time_point beginning;
-  std::chrono::_V2::system_clock::time_point end;
+  std::chrono::time_point<std::chrono::high_resolution_clock> beginning;
+  std::chrono::time_point<std::chrono::high_resolution_clock> end;
   long waitingPart;
   long rankBound;
   long elevatorRank = -1;
@@ -397,7 +397,7 @@ public:
   set<State> getEventReachable(set<State>& sls);
   set<State> getSelfLoops();
   vector<vector<State>> getAllCycles();
-  bool circuit(int state, std::vector<int> &stack, std::set<int> &blockedSet, std::map<int, std::set<int>> &blockedMap, 
+  bool circuit(int state, std::vector<int> &stack, std::set<int> &blockedSet, std::map<int, std::set<int>> &blockedMap,
     std::set<int> scc, AdjList adjlist, int startState, std::vector<std::vector<int>> &allCyclesRenamed);
   void unblock(int state, std::set<int> &blockedSet, std::map<int, std::set<int>> &blockedMap);
   set<State> getAllSuccessors(State state);

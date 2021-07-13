@@ -24,9 +24,9 @@ int main(int argc, char *argv[])
   Params params = { .output = "", .input = "", .stats = false};
   ifstream os;
   bool delay = false;
-  double w = 0.5; 
+  double w = 0.5;
   delayVersion version = oldVersion;
-  bool error = false;
+  //bool error = false;
   bool elevatorTest = false;
   bool elevatorRank = false;
   bool eta4 = false;
@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
   args::Flag elevatorFlag(parser, "elevator rank", "Update rank upper bound of each macrostate based on elevator automaton structure", {"elevator-rank"});
   args::Flag eta4Flag(parser, "eta4", "Max rank optimization - eta 4 only when going from some accepting state", {"eta4"});
   args::Flag elevatorTestFlag(parser, "elevator test", "Test if INPUT is an elevator automaton", {"elevator-test"});
-    
+
   try
   {
       parser.ParseCLI(argc, argv);
