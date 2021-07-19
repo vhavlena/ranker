@@ -32,6 +32,7 @@ struct Params
   string output;
   string input;
   bool stats;
+  string checkWord;
 };
 
 InFormat parseRenamedAutomaton(ifstream& os);

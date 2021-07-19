@@ -21,7 +21,7 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-  Params params = { .output = "", .input = "", .stats = false};
+  Params params = { .output = "", .input = "", .stats = false, .checkWord = ""};
   ifstream os;
   bool delay = false;
   double w = 0.5;
@@ -37,6 +37,7 @@ int main(int argc, char *argv[])
   args::Positional<std::string> inputFile(parser, "INPUT", "The name of a file in the HOA (Hanoi Omega Automata) format with the following restrictions:\n* only state-based acceptance is supported\n* transitions need to have the form of a single conjunction with exactly one positive atomic proposition\n* no aliases or any other fancy features of HOA are supported\n");
   args::Flag statsFlag(parser, "", "Print summary statistics", {"stats"});
   args::ValueFlag<std::string> delayFlag(parser, "version", "Use delay optimization, versions: old, new, random, subset, stirling", {"delay"});
+  args::ValueFlag<std::string> checkFlag(parser, "word", "Product of the result with a given word", {"check"});
   args::ValueFlag<double> weightFlag(parser, "value", "Weight parameter for delay - value in <0,1>", {'w', "weight"});
   args::Flag elevatorFlag(parser, "elevator rank", "Update rank upper bound of each macrostate based on elevator automaton structure", {"elevator-rank"});
   args::Flag eta4Flag(parser, "eta4", "Max rank optimization - eta 4 only when going from some accepting state", {"eta4"});
@@ -72,6 +73,11 @@ int main(int argc, char *argv[])
   // print statistics
   if (statsFlag){
     params.stats = true;
+  }
+
+  if(checkFlag)
+  {
+    params.checkWord = args::get(checkFlag);
   }
 
   // delay version
@@ -205,16 +211,22 @@ int main(int argc, char *argv[])
 
       map<int, APSymbol> symDict = Aux::reverseMap(ba.getRenameSymbolMap());
 
-      // Prepared for a debug product with a word
-      // string word = "cycle{!a0&a1}";
-      // auto appattern = comp.getAPPattern();
-      // pair<APWord, APWord> inf = BuchiAutomataParser::parseHoaInfWord(word, appattern);
-      // auto prefv = inf.first.getVector();
-      // auto loopv = inf.second.getVector();
-      // auto debugRename = comp.renameAlphabet<APSymbol>(symDict);
-      // BuchiAutomatonDebug<StateSch, APSymbol> compDebug(debugRename);
-      // auto ret = compDebug.getSubAutomatonWord(prefv, loopv);
-      // cout << ret.toGraphwiz() << endl;
+      //Product with a word
+      if(params.checkWord.size() > 0)
+      {
+        cout << "Product in Graphwiz:" << endl;
+        auto appattern = comp.getAPPattern();
+        pair<APWord, APWord> inf = BuchiAutomataParser::parseHoaInfWord(params.checkWord, appattern);
+        auto prefv = inf.first.getVector();
+        auto loopv = inf.second.getVector();
+        auto debugRename = comp.renameAlphabet<APSymbol>(symDict);
+        BuchiAutomatonDebug<StateSch, APSymbol> compDebug(debugRename);
+        auto ret = compDebug.getSubAutomatonWord(prefv, loopv);
+        cout << ret.toGraphwiz() << endl;
+
+        os.close();
+        return 0;
+      }
 
 
       BuchiAutomaton<int, APSymbol> outOrig = renCompl.renameAlphabet<APSymbol>(symDict);

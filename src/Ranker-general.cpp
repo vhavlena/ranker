@@ -195,6 +195,7 @@ std::string getHelpMsg(const std::string& progName)
   helpMsg += "  WEIGHT              Weight parameter - in <0,1>\n";
   helpMsg += "  --elevator-rank     Update rank upper bound of each macrostate based on elevator automaton structure";
   helpMsg += "  --eta4              Max rank optimization - eta 4 only when going from some accepting state";
+  helpMsg += "  --check=<word>      Product of the complementary automaton with the word\n";
   helpMsg += "\n\n";
   helpMsg += "2) Tests if INPUT is an elevator automaton\n";
   helpMsg += "  " + progName + " --elevator-test INPUT\n";
