@@ -251,13 +251,13 @@ bool suitCase(BuchiAutomatonSpec& sp)
   map<StateSch, DelayLabel> delayMp;
   for(const auto& st : comp.getStates())
   {
-    delayMp[st] = { .macrostateSize = (unsigned)st.S.size(), .maxRank = (unsigned)rankBound[st.S] };
+    delayMp[st] = { .macrostateSize = (unsigned)st.S.size(), .maxRank = (unsigned)rankBound[st.S].bound };
   }
 
   //for(auto t : comp.getCycleClosingStates(slIgnore, delayMp))
   for (auto t : comp.getCycleClosingStates(slIgnore))
   {
-    if((t.S.size() >= 9 && rankBound[t.S] >= 5) || (t.S.size() >= 8 && rankBound[t.S] >= 6))
+    if((t.S.size() >= 9 && rankBound[t.S].bound >= 5) || (t.S.size() >= 8 && rankBound[t.S].bound >= 6))
     {
       return false;
     }

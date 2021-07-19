@@ -26,6 +26,12 @@ using std::map;
 enum delayVersion : unsigned;
 enum sccType {D, ND, BAD, BOTH}; // deterministic with accepting states / nondeterministic without accepting states / bad = nondeterministic with accepting states / both = deterministic without accepting states
 
+struct RankBound
+{
+  int bound;
+  map<int, int> stateBound;
+};
+
 typedef set<int> DFAState;
 /*
  * Successor cache data type
@@ -40,7 +46,7 @@ class BuchiAutomatonSpec : public BuchiAutomaton<int, int>
 private:
   BackRel createBackRel(BuchiAutomaton<int, int>::StateRelation& rel);
 
-  map<DFAState, int> rankBound;
+  map<DFAState, RankBound> rankBound;
   SuccRankCache rankCache;
 
   ComplOptions opt;
@@ -99,7 +105,7 @@ public:
 
   set<StateSch> nfaSlAccept(BuchiAutomaton<StateSch, int>& nfaSchewe);
   set<pair<DFAState,int>> nfaSingleSlNoAccept(BuchiAutomaton<StateSch, int>& nfaSchewe);
-  map<DFAState, int> getRankBound(BuchiAutomaton<StateSch, int>& nfaSchewe, set<StateSch>& slignore, map<DFAState, int>& maxReachSize, map<int, int>& minReachSize);
+  map<DFAState, RankBound> getRankBound(BuchiAutomaton<StateSch, int>& nfaSchewe, set<StateSch>& slignore, map<DFAState, int>& maxReachSize, map<int, int>& minReachSize);
   map<DFAState, int> getMaxReachSize(BuchiAutomaton<StateSch, int>& nfaSchewe, set<StateSch>& slIgnore);
   map<int, int> getMaxReachSizeInd();
   map<int, int> getMinReachSize();
