@@ -13,6 +13,7 @@
 
 #include "../Algorithms/AuxFunctions.h"
 #include "../Automata/BuchiAutomaton.h"
+#include "BuchiDelay.h"
 #include "StateKV.h"
 #include "RankFunc.h"
 #include "StateSch.h"

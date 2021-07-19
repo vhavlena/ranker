@@ -886,7 +886,8 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
   set<StateSch> tightStart;
   map<StateSch, set<int>> tightStartDelay;
   if (delay){
-    tightStartDelay = comp.getCycleClosingStates(ignoreAll, delayMp, w, version, stats);
+    BuchiAutomatonDelay<int> delayB(comp);
+    tightStartDelay = delayB.getCycleClosingStates(ignoreAll, delayMp, w, version, stats);
   }
   else {
     tightStart = comp.getCycleClosingStates(ignoreAll);
@@ -2030,7 +2031,8 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchOpt(bool delay, s
   set<StateSch> tightStart;
   map<StateSch, set<int>> tightStartDelay;
   if (delay){
-    tightStartDelay = comp.getCycleClosingStates(ignoreAll, delayMp, w, version, stats);
+    BuchiAutomatonDelay<int> delayB(comp);
+    tightStartDelay = delayB.getCycleClosingStates(ignoreAll, delayMp, w, version, stats);
   }
   else
     tightStart = comp.getCycleClosingStates(ignoreAll);
