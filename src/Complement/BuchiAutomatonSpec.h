@@ -26,11 +26,25 @@ using std::map;
 enum delayVersion : unsigned;
 enum sccType {D, ND, BAD, BOTH}; // deterministic with accepting states / nondeterministic without accepting states / bad = nondeterministic with accepting states / both = deterministic without accepting states
 
+/*
+ * Data structure for rank bounding data flow analysis
+ */
 struct RankBound
 {
   int bound;
   map<int, int> stateBound;
+
+  bool operator==(RankBound &other)
+  {
+    return (bound == other.bound) && (stateBound == other.stateBound);
+  }
+
+  bool operator!=(RankBound &other)
+  {
+    return !(*this == other);
+  }
 };
+
 
 typedef set<int> DFAState;
 /*

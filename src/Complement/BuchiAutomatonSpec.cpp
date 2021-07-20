@@ -855,7 +855,8 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
 
 
   // Compute rank upper bound on the macrostates
-  this->rankBound = this->getRankBound(comp, ignoreAll, maxReach, reachCons);
+  auto invComp = comp.reverseBA(); //inverse automaton
+  this->rankBound = this->getRankBound(invComp, ignoreAll, maxReach, reachCons);
   end = std::chrono::high_resolution_clock::now();
   stats->rankBound = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
 
@@ -1587,19 +1588,32 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
   // cout << " end "  << endl;
 
 
-  auto updMaxFnc = [&slignore] (LabelState<StateSch>* a, const std::vector<LabelState<StateSch>*> sts) -> int
+  auto updPred = [this] (LabelState<StateSch, RankBound>* dest, LabelState<StateSch, RankBound>* pred, map<int, int>* restr)
+  {
+    set<int> syms;
+    for(int sym : this->getAlph())
+    {
+      if(succSet(pred->state.S, sym) == dest->state.S)
+        syms.insert(sym);
+    }
+    //TODO finish
+    map<int, int> ret;
+  };
+
+
+  auto updMaxFnc = [&slignore] (LabelState<StateSch, RankBound>* a, const std::vector<LabelState<StateSch, RankBound>*> sts) -> RankBound
   {
     int m = 0;
-    for(const LabelState<StateSch>* tmp : sts)
+    for(const LabelState<StateSch, RankBound>* tmp : sts)
     {
       if(tmp->state.S == a->state.S && slignore.find(a->state) != slignore.end())
         continue;
-      m = std::max(m, tmp->label);
+      m = std::max(m, tmp->label.bound);
     }
-    return std::min(a->label, m);
+    return { .bound = std::min(a->label.bound, m), .stateBound = a->label.stateBound };
   };
 
-  auto initMaxFnc = [this, &maxReachSize, &minReachSize, &rnkmap] (const StateSch& act) -> int
+  auto initMaxFnc = [this, &maxReachSize, &minReachSize, &rnkmap] (const StateSch& act) -> RankBound
   {
     set<int> ret;
     set<int> fin = this->getFinals();
@@ -1631,7 +1645,7 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
     for(int st : act.S)
     {
       if(fin.find(st) != fin.end() && minReachSize[st] == maxReach)
-        return 0;
+        return { .bound = 0, .stateBound = map<int, int>() };
     }
     if(maxCnt > 2)
       rank = std::min(rank, (int)ret.size() - maxCnt + 1);
@@ -1640,13 +1654,15 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
     // if(this->containsRankSimEq(ret) && ret.size() > 1)
     //   rank = std::min(rank, std::max((int)ret.size() - 1, 0));
     rank = std::min(rank, rnkmap[act]);
-    return rank;
+    return { .bound = rank, .stateBound = map<int, int>() };
   };
 
-  auto tmp = nfaSchewe.propagateGraphValues(updMaxFnc, initMaxFnc);
+  auto tmp = nfaSchewe.propagateGraphValues<RankBound>(updMaxFnc, initMaxFnc);
   map<DFAState, RankBound> ret;
   for(const auto& t : tmp)
-    ret[t.first.S] = { .bound = t.second, .stateBound = map<int, int>() };
+    ret[t.first.S] = t.second;
+
+  //return { .bound = ret, .stateBound = map<int, int>() };
   return ret;
 }
 
@@ -1659,10 +1675,10 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
  */
 map<DFAState, int> BuchiAutomatonSpec::getMaxReachSize(BuchiAutomaton<StateSch, int>& nfaSchewe, set<StateSch>& slIgnore)
 {
-  auto updMaxFnc = [&slIgnore] (LabelState<StateSch>* a, const std::vector<LabelState<StateSch>*> sts) -> int
+  auto updMaxFnc = [&slIgnore] (LabelState<StateSch, int>* a, const std::vector<LabelState<StateSch, int>*> sts) -> int
   {
     int m = 0;
-    for(const LabelState<StateSch>* tmp : sts)
+    for(const LabelState<StateSch, int>* tmp : sts)
     {
       if(tmp->state.S == a->state.S && slIgnore.find(a->state) != slIgnore.end())
         continue;
@@ -1676,7 +1692,7 @@ map<DFAState, int> BuchiAutomatonSpec::getMaxReachSize(BuchiAutomaton<StateSch, 
     return act.S.size();
   };
 
-  auto tmp = nfaSchewe.propagateGraphValues(updMaxFnc, initMaxFnc);
+  auto tmp = nfaSchewe.propagateGraphValues<int>(updMaxFnc, initMaxFnc);
   map<DFAState, int> ret;
   for(const auto& t : tmp)
     ret[t.first.S] = t.second;
@@ -1695,10 +1711,10 @@ map<int, int> BuchiAutomatonSpec::getMinReachSize()
   map<StateSch, int> mp;
   map<int, int> ret;
 
-  auto updMaxFnc = [&slIgnore] (LabelState<StateSch>* a, const std::vector<LabelState<StateSch>*> sts) -> int
+  auto updMaxFnc = [&slIgnore] (LabelState<StateSch, int>* a, const std::vector<LabelState<StateSch, int>*> sts) -> int
   {
     int m = 0;
-    for(const LabelState<StateSch>* tmp : sts)
+    for(const LabelState<StateSch, int>* tmp : sts)
     {
       if(tmp->state.S == a->state.S && slIgnore.find(a->state) != slIgnore.end())
         continue;
@@ -1718,7 +1734,7 @@ map<int, int> BuchiAutomatonSpec::getMinReachSize()
     comp = this->complementSchNFA(ini);
     slIgnore = this->nfaSlAccept(comp);
     auto sls = comp.getSelfLoops();
-    mp = comp.propagateGraphValues(updMaxFnc, initMaxFnc);
+    mp = comp.propagateGraphValues<int>(updMaxFnc, initMaxFnc);
 
     int val = 1000000;
     for(auto t : comp.getEventReachable(sls))
@@ -1743,10 +1759,10 @@ map<int, int> BuchiAutomatonSpec::getMaxReachSizeInd()
   map<StateSch, int> mp;
   map<int, int> ret;
 
-  auto updMaxFnc = [&slIgnore] (LabelState<StateSch>* a, const std::vector<LabelState<StateSch>*> sts) -> int
+  auto updMaxFnc = [&slIgnore] (LabelState<StateSch, int>* a, const std::vector<LabelState<StateSch, int>*> sts) -> int
   {
     int m = 0;
-    for(const LabelState<StateSch>* tmp : sts)
+    for(const LabelState<StateSch, int>* tmp : sts)
     {
       if(tmp->state.S == a->state.S && slIgnore.find(a->state) != slIgnore.end())
         continue;
@@ -1766,7 +1782,7 @@ map<int, int> BuchiAutomatonSpec::getMaxReachSizeInd()
     comp = this->complementSchNFA(ini);
     slIgnore = this->nfaSlAccept(comp);
     auto sls = comp.getSelfLoops();
-    mp = comp.propagateGraphValues(updMaxFnc, initMaxFnc);
+    mp = comp.propagateGraphValues<int>(updMaxFnc, initMaxFnc);
 
     int val = 1000000;
     for(auto t : comp.getEventReachable(sls))
@@ -2135,3 +2151,5 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchOpt(bool delay, s
   return BuchiAutomaton<StateSch, int>(comst, finals,
     initials, mp, alph, getAPPattern());
 }
+
+//template class LabelState<StateSch, RankBound>;

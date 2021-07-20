@@ -1047,62 +1047,6 @@ bool BuchiAutomaton<State, Symbol>::isRankLeq(std::set<State>& set1, std::set<St
 
 
 /*
- * Implementation of a simple data flow analysis. The values are iteratively
- * propagated through graph of the automaton.
- * @param updFnc Function updating values of the states
- * @param initFnc Function assigning initial values to states
- * @return Values assigned to each state after fixpoint
- */
-template <typename State, typename Symbol>
-std::map<State, int> BuchiAutomaton<State, Symbol>::propagateGraphValues(
-    const std::function<int(LabelState<State>*,VecLabelStatesPtr)>& updFnc, const std::function<int(const State&)>& initFnc)
-{
-  std::map<State, LabelState<State>*> lst;
-  VecLabelStatesPtr active;
-  std::map<State, std::vector<LabelState<State>*>> tr;
-  for(State st : this->states)
-  {
-    LabelState<State>* nst = new LabelState<State>;
-    nst->label = initFnc(st);
-    nst->state = st;
-
-    active.push_back(nst);
-    lst[st] = nst;
-    tr[st] = std::vector<LabelState<State>*>();
-  }
-
-  for(auto t : this->trans)
-  {
-    for(auto d : t.second)
-    {
-      tr[t.first.first].push_back(lst[d]);
-    }
-  }
-
-  bool change = false;
-  do {
-    change = false;
-    for(LabelState<State>* ls : active)
-    {
-      int nval = updFnc(ls, tr[ls->state]);
-      if(nval != ls->label)
-        change = true;
-      ls->label = nval;
-    }
-  } while(change);
-
-  map<State, int> activeVal;
-  for(unsigned i = 0; i < active.size(); i++)
-  {
-    activeVal[active[i]->state] = active[i]->label;
-    delete active[i];
-  }
-
-  return activeVal;
-}
-
-
-/*
  * Get self-loops symbols for a given state
  * @param state State for getting sl symbols
  * @return Set of self-loop symbols

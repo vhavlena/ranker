@@ -66,10 +66,10 @@ struct Transition {
 /*
  * States extended with labels
  */
-template <typename State>
+template <typename State, typename Label>
 struct LabelState {
   State state;
-  int label;
+  Label label;
 };
 
 /*
@@ -86,6 +86,7 @@ struct DelayLabel {
  * Transition function
  */
 template<typename State, typename Symbol> using Delta = std::map<std::pair<State, Symbol>, std::set<State>>;
+template<typename State, typename Label> using VecLabelStatesPtr = std::vector<LabelState<State, Label>* >;
 /*
  * State labels for the case of the DELAY optimization
  */
@@ -97,10 +98,10 @@ class BuchiAutomaton {
 
 public:
   typedef std::set<State> SetStates;
-  typedef std::set<LabelState<State> > SetLabelStates;
-  typedef std::set<LabelState<State>* > SetLabelStatesPtr;
-  typedef std::vector<LabelState<State>* > VecLabelStatesPtr;
-  typedef std::vector<LabelState<State>> VecLabelStates;
+  // typedef std::set<LabelState<State> > SetLabelStates;
+  // typedef std::set<LabelState<State>* > SetLabelStatesPtr;
+  //typedef std::vector<LabelState<State>* > VecLabelStatesPtr;
+  // typedef std::vector<LabelState<State>> VecLabelStates;
   typedef std::set<Symbol> SetSymbols;
   typedef Delta<State, Symbol> Transitions;
   typedef std::set<std::pair<State, State> > StateRelation;
@@ -408,8 +409,61 @@ public:
   set<State> getSelfLoops();
   set<State> getAllSuccessors(State state);
 
-  std::map<State, int> propagateGraphValues(const std::function<int(LabelState<State>*,VecLabelStatesPtr)>& updFnc,
-    const std::function<int(const State&)>& initFnc);
+  /*
+   * Implementation of a simple data flow analysis. The values are iteratively
+   * propagated through graph of the automaton.
+   * @param updFnc Function updating values of the states
+   * @param initFnc Function assigning initial values to states
+   * @return Values assigned to each state after fixpoint
+   */
+  template <typename Label>
+  std::map<State, Label> propagateGraphValues(const std::function<Label(LabelState<State, Label>*,VecLabelStatesPtr<State, Label>)>& updFnc,
+    const std::function<Label(const State&)>& initFnc)
+  {
+    std::map<State, LabelState<State, Label>*> lst;
+    VecLabelStatesPtr<State, Label> active;
+    std::map<State, std::vector<LabelState<State, Label>*>> tr;
+    for(State st : this->states)
+    {
+      LabelState<State, Label>* nst = new LabelState<State, Label>;
+      nst->label = initFnc(st);
+      nst->state = st;
+
+      active.push_back(nst);
+      lst[st] = nst;
+      tr[st] = std::vector<LabelState<State, Label>*>();
+    }
+
+    for(auto t : this->trans)
+    {
+      for(auto d : t.second)
+      {
+        tr[t.first.first].push_back(lst[d]);
+      }
+    }
+
+    bool change = false;
+    do {
+      change = false;
+      for(LabelState<State, Label>* ls : active)
+      {
+        Label nval = updFnc(ls, tr[ls->state]);
+        if(nval != ls->label)
+          change = true;
+        ls->label = nval;
+      }
+    } while(change);
+
+    map<State, Label> activeVal;
+    for(unsigned i = 0; i < active.size(); i++)
+    {
+      activeVal[active[i]->state] = active[i]->label;
+      delete active[i];
+    }
+
+    return activeVal;
+  }
+
 
   SetStates getCycleClosingStates(SetStates& slignore);
   bool reachWithRestriction(const State& from, const State& to, SetStates& restr, SetStates& high);
