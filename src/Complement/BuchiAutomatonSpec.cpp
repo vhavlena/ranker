@@ -1176,7 +1176,7 @@ void BuchiAutomatonSpec::topologicalSortUtil(std::set<int> currentScc, std::vect
   for (auto scc : allSccs){
     if (not visited[scc]){
       for (auto state : currentScc){
-        for (auto a : this->getAlph()){
+        for (auto a : this->getAlphabet()){
           if (std::any_of(scc.begin(), scc.end(), [this, state, a](int succ){auto trans = this->getTransitions(); return trans[{state, a}].find(succ) != trans[{state, a}].end();}))
             this->topologicalSortUtil(scc, allSccs, visited, Stack);
         }
@@ -1591,7 +1591,7 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
   auto updPred = [this] (LabelState<StateSch, RankBound>* dest, LabelState<StateSch, RankBound>* pred, map<int, int>* restr)
   {
     set<int> syms;
-    for(int sym : this->getAlph())
+    for(int sym : this->getAlphabet())
     {
       if(succSet(pred->state.S, sym) == dest->state.S)
         syms.insert(sym);
