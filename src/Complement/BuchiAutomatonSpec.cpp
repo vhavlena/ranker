@@ -1499,7 +1499,7 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe){
         }
       }
       // update rank upper bound if lower
-      if (not bad and this->rankBound[macrostate.S].bound > max){
+      if (!bad && this->rankBound[macrostate.S].bound > (int)max){
         std::cerr << "Update: " << this->rankBound[macrostate.S].bound << " -> " << max << std::endl;
         this->rankBound[macrostate.S].bound = max;
       }
@@ -1507,7 +1507,7 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe){
   }
 
   bool first = true;
-  unsigned maxRank;
+  int maxRank;
   for (auto macrostate : nfaSchewe.getStates()){
     if (first){
       maxRank = this->rankBound[macrostate.S].bound;
@@ -1598,6 +1598,7 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
     }
     //TODO finish
     map<int, int> ret;
+    *restr = ret;
   };
 
 
