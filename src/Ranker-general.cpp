@@ -55,11 +55,12 @@ void complementAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<StateSch, i
   BuchiAutomaton<StateSch, int> comp;
 
   comp = sp.complementSchReduced(delay, ren.getFinals(), w, version, elevatorRank, eta4, stats);
+  BuchiAutomatonDelay<int> compDelay(comp);
   *complOrig = comp;
 
   stats->generatedStates = comp.getStates().size();
   stats->generatedTrans = comp.getTransCount();
-  stats->generatedTransitionsToTight = comp.getTransitionsToTight();
+  stats->generatedTransitionsToTight = compDelay.getTransitionsToTight();
 
   map<int, int> id;
   for(auto al : comp.getAlphabet())
@@ -72,8 +73,9 @@ void complementAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<StateSch, i
   stats->reachStates = renCompl.getStates().size();
   stats->reachTrans = renCompl.getTransCount();
   stats->engine = "Ranker";
-  stats->transitionsToTight = comp.getTransitionsToTight();
-  stats->transitionsToTight = renCompl.getTransitionsToTight();
+  //stats->transitionsToTight = comp.getTransitionsToTight();
+  //stats->transitionsToTight = renCompl.getTransitionsToTight();
+  stats->transitionsToTight = -1;
   stats->elevator = ren.isElevator(); // original automaton before complementation
   stats->elevatorStates = sp.elevatorStates();
   stats->originalStates = sp.getStates().size();
@@ -89,9 +91,11 @@ void complementScheweAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<int, 
   sp.setComplOptions(opt);
   BuchiAutomaton<StateSch, int> comp;
   comp = sp.complementSchOpt(delay, ren.getFinals(), w, version, stats);
+  BuchiAutomatonDelay<int> compDelay(comp);
 
   stats->generatedStates = comp.getStates().size();
   stats->generatedTrans = comp.getTransCount();
+  stats->generatedTransitionsToTight = compDelay.getTransitionsToTight();
 
   map<int, int> id;
   for(auto al : comp.getAlphabet())
@@ -102,8 +106,8 @@ void complementScheweAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<int, 
   stats->reachStates = renCompl.getStates().size();
   stats->reachTrans = renCompl.getTransCount();
   stats->engine = "Ranker";
-  stats->transitionsToTight = comp.getTransitionsToTight();
-  stats->transitionsToTight = renCompl.getTransitionsToTight();
+  // stats->transitionsToTight = comp.getTransitionsToTight();
+  // stats->transitionsToTight = renCompl.getTransitionsToTight();
   stats->elevator = ren.isElevator(); // original automaton before complementation
   stats->elevatorStates = sp.elevatorStates();
   stats->originalStates = sp.getStates().size();

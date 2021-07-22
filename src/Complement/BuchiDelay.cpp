@@ -1,6 +1,20 @@
 
 #include "BuchiDelay.h"
 
+template<typename Symbol>
+unsigned BuchiAutomatonDelay<Symbol>::getTransitionsToTight(){
+  unsigned count = 0;
+  for (auto trans : this->trans){
+    if (!trans.first.first.tight){
+      for (auto succ : trans.second){
+        if (succ.tight)
+          count++;
+      }
+    }
+  }
+  return count;
+}
+
 int fact(int n)
 {
     int res = 1;
