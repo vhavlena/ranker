@@ -26,12 +26,12 @@ template <typename State, typename Symbol>
 class GeneralizedBuchiAutomaton : public AutomatonStruct<State, Symbol> {
 
 public:
-  typedef std::set<State> SetStates;
+  typedef std::set<std::set<State>> SetStates; // more sets of accepting states
   typedef std::set<Symbol> SetSymbols;
   typedef Delta<State, Symbol> Transitions;
 
 private:
-  SetStates finals; //Modify according to GBAs
+  SetStates finals;
 
 
 protected:
@@ -74,12 +74,12 @@ public:
   std::string toGraphwiz();
   std::string toGff();
   std::string toHOA();
-  BuchiAutomaton<int, int> renameAut(int start = 0);
-  BuchiAutomaton<int, int> renameAutDict(map<Symbol, int>& mpsymbol, int start = 0);
+  GeneralizedBuchiAutomaton<int, int> renameAut(int start = 0);
+  GeneralizedBuchiAutomaton<int, int> renameAutDict(map<Symbol, int>& mpsymbol, int start = 0);
 
   //bool isElevator();
 
-  /*
+  /*  
    * Rename symbols of the automaton.
    * @param mpsymbol Map assigning to each original state a new state
    * @return Renamed automaton
@@ -104,8 +104,8 @@ public:
   }
 
   /*
-   * Get automaton final states.
-   * @return Set of final states
+   * Get sets of accepting states of the automaton.
+   * @return Set of sets of final states
    */
   SetStates& getFinals()
   {
@@ -116,10 +116,10 @@ public:
   void removeUseless();
   bool isEmpty();
 
-  BuchiAutomaton<tuple<State, int, bool>, Symbol> productGBA(BuchiAutomaton<int, Symbol>& other);
-  BuchiAutomaton<pair<State, int>, Symbol> cartProductGBA(BuchiAutomaton<int, Symbol>& other);
-  BuchiAutomaton<State, Symbol> unionGBA(BuchiAutomaton<State, Symbol>& other);
-  BuchiAutomaton<State, Symbol> reverseGBA();
+  GeneralizedBuchiAutomaton<tuple<State, int, bool>, Symbol> productGBA(GeneralizedBuchiAutomaton<int, Symbol>& other);
+  GeneralizedBuchiAutomaton<pair<State, int>, Symbol> cartProductGBA(GeneralizedBuchiAutomaton<int, Symbol>& other);
+  GeneralizedBuchiAutomaton<State, Symbol> unionGBA(GeneralizedBuchiAutomaton<State, Symbol>& other);
+  GeneralizedBuchiAutomaton<State, Symbol> reverseGBA();
 
 };
 

@@ -78,7 +78,8 @@ test-classify: units/test-classify.cpp $(OBJ)/BuchiAutomataParser.o \
 ranker: ranker.cpp $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/BuchiAutomaton.o $(OBJ)/AutomatonStruct.o $(OBJ)/BuchiAutomatonSpec.o \
 	$(OBJ)/RankFunc.o $(OBJ)/AutGraph.o $(OBJ)/Simulations.o $(OBJ)/AuxFunctions.o \
-	$(OBJ)/ranker-general.o $(OBJ)/BuchiAutomatonDebug.o $(OBJ)/BuchiDelay.o
+	$(OBJ)/ranker-general.o $(OBJ)/BuchiAutomatonDebug.o $(OBJ)/BuchiDelay.o \
+	$(OBJ)/GeneralizedBuchiAutomaton.o
 	$(GCC) $(CPPFLAGS) -o $@ $^ $(SUFF)
 
 ranker-sim: ranker-sim.cpp $(OBJ)/BuchiAutomataParser.o \
@@ -90,13 +91,15 @@ ranker-sim: ranker-sim.cpp $(OBJ)/BuchiAutomataParser.o \
 ranker-composition: ranker-composition.cpp $(OBJ)/ranker-general.o $(OBJ)/AuxFunctions.o \
 	$(OBJ)/RankFunc.o $(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/Simulations.o   $(OBJ)/AutGraph.o  $(OBJ)/BuchiAutomatonSpec.o \
-	$(OBJ)/BuchiAutomatonDebug.o $(OBJ)/BuchiDelay.o $(OBJ)/AutomatonStruct.o
+	$(OBJ)/BuchiAutomatonDebug.o $(OBJ)/BuchiDelay.o $(OBJ)/AutomatonStruct.o \
+	$(OBJ)/GeneralizedBuchiAutomaton.o
 	$(GCC) $(CPPFLAGS) -o ranker-composition $^ $(SUFF)
 
 ranker-tight: ranker-tight.cpp $(OBJ)/AuxFunctions.o $(OBJ)/ranker-general.o \
 	$(OBJ)/RankFunc.o $(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/Simulations.o   $(OBJ)/AutGraph.o  $(OBJ)/BuchiAutomatonSpec.o \
-	$(OBJ)/BuchiAutomatonDebug.o $(OBJ)/BuchiDelay.o $(OBJ)/AutomatonStruct.o
+	$(OBJ)/BuchiAutomatonDebug.o $(OBJ)/BuchiDelay.o $(OBJ)/AutomatonStruct.o \
+	$(OBJ)/GeneralizedBuchiAutomaton.o 
 	$(GCC) $(CPPFLAGS) -o $@ $^ $(SUFF)
 
 $(OBJ)/ranker-general.o: Ranker-general.cpp $(OBJ)/BuchiAutomataParser.o \
@@ -142,13 +145,20 @@ $(OBJ)/BuchiAutomatonSpec.o: Complement/BuchiAutomatonSpec.cpp \
 	Automata/BuchiAutomaton.h Automata/AutomatonStruct.h Complement/StateKV.h \
 	Complement/StateSch.h Complement/BuchiAutomatonSpec.h Complement/Options.h \
 	$(OBJ)/RankFunc.o $(OBJ)/AuxFunctions.o $(OBJ)/BuchiDelay.o \
-	$(OBJ)/BuchiAutomaton.o $(OBJ)/AutomatonStruct.o
+	$(OBJ)/BuchiAutomaton.o $(OBJ)/AutomatonStruct.o \
+	$(OBJ)/GeneralizedBuchiAutomaton.o 
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 
 $(OBJ)/BuchiDelay.o: Complement/BuchiDelay.cpp \
 	Automata/BuchiAutomaton.h Automata/AutomatonStruct.h Complement/StateSch.h \
 	Complement/BuchiDelay.h $(OBJ)/RankFunc.o \
 	$(OBJ)/AuxFunctions.o $(OBJ)/BuchiAutomaton.o $(OBJ)/AutomatonStruct.o
+	$(GCC) $(CPPFLAGS) -c -o $@ $<
+
+$(OBJ)/GeneralizedBuchiAutomaton.o: Automata/GeneralizedBuchiAutomaton.cpp Automata/GeneralizedBuchiAutomaton.h \
+	Automata/AutomatonStruct.h Complement/StateSch.h Complement/StateKV.h \
+	Complement/RankFunc.h Automata/APSymbol.h $(OBJ)/AutGraph.o \
+	$(OBJ)/AuxFunctions.o $(OBJ)/AutomatonStruct.o
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 
 clean:
