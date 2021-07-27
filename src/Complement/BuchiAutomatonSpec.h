@@ -105,7 +105,7 @@ protected:
       map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel);
 
 public:
-  BuchiAutomatonSpec(BuchiAutomaton<int, int> &t) : BuchiAutomaton<int, int>(t), rankBound(), rankCache()
+  BuchiAutomatonSpec(BuchiAutomaton<int, int> *t) : BuchiAutomaton<int, int>(*t), rankBound(), rankCache()
   {
     opt = { .cutPoint = false};
   }

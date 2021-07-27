@@ -147,11 +147,11 @@ int main(int argc, char *argv[])
     if(fmt == BA)
     {
       BuchiAutomaton<string, string> ba;
-      BuchiAutomaton<int, int> ren = parseRenameBA(os, &ba);
+      AutomatonStruct<int, int> *ren = parseRenameBA(os, &ba);
 
       // elevator test
       if (elevatorTest){
-        std::cout << "Elevator automaton: " << (ren.isElevator() ? "Yes" : "No") << std::endl;
+        std::cout << "Elevator automaton: " << (ren->isElevator() ? "Yes" : "No") << std::endl;
         os.close();
         return 0;
       }
@@ -176,16 +176,19 @@ int main(int argc, char *argv[])
         printStat(stats);
       cout << outOrig.toHOA() << endl;
     }
+
     else if(fmt == HOA)
     {
-      BuchiAutomaton<int, APSymbol> ba;
-      BuchiAutomaton<int, int> ren;
+      AutomatonStruct<int, APSymbol> *ba;
+      AutomatonStruct<int, int> *ren;
       try
       {
-        ren = parseRenameHOA(os, &ba);
+        ba = parseRenameHOA(os);
+        ren = ba->renameAut();
+
         // elevator test
         if (elevatorTest){
-          std::cout << "Elevator automaton: " << (ren.isElevator() ? "Yes" : "No") << std::endl;
+          std::cout << "Elevator automaton: " << (ren->isElevator() ? "Yes" : "No") << std::endl;
           os.close();
           return 0;
         }
@@ -209,7 +212,7 @@ int main(int argc, char *argv[])
         return 2;
       }
 
-      map<int, APSymbol> symDict = Aux::reverseMap(ba.getRenameSymbolMap());
+      map<int, APSymbol> symDict = Aux::reverseMap(ba->getRenameSymbolMap());
 
       //Product with a word
       if(params.checkWord.size() > 0)
@@ -240,6 +243,7 @@ int main(int argc, char *argv[])
       if(params.stats)
         printStat(stats);
       cout << outOrig.toHOA() << endl;
+      
     }
   }
   else

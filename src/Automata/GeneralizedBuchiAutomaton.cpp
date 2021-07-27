@@ -30,7 +30,25 @@ std::string GeneralizedBuchiAutomaton<State,Symbol>::toStringWith(std::function<
 
 template<typename State, typename Symbol>
 std::string GeneralizedBuchiAutomaton<State, Symbol>::toGraphwizWith(std::function<std::string(State)>& stateStr,  std::function<std::string(Symbol)>& symStr){
-    //TODO
+  //TODO
+  std::string str = "digraph \" Automaton \" { rankdir=LR;\n { rank = LR }\n";
+  str += "node [shape = doublecircle];\n";
+  for(auto p : this->finals) //TODO
+    str += "\"" + stateStr(p) + "\"\n";
+  str += "node [shape = circle];";
+  for(auto st : this->states)
+    str += "\"" + stateStr(st) + "\"\n";
+  str += "\"init0\";\n";
+  for (auto p : this->initials)
+    str += "\"init0\" -> \"" + stateStr(p) + "\"\n";
+  for (auto p : this->trans)
+  {
+    for(auto d : p.second)
+      str +=  "\"" + stateStr(p.first.first) + "\" -> \"" + stateStr(d) +
+        + "\" [label = \"" + symStr(p.first.second) + "\"];\n";
+  }
+  str += "}\n";
+  return str;
 }
 
 template<typename State, typename Symbol>

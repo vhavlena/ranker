@@ -358,13 +358,14 @@ bool BuchiAutomatonDelay<Symbol> :: circuit(int state, std::vector<int> &stack, 
 
 template<typename Symbol>
 std::vector<std::vector<StateSch>> BuchiAutomatonDelay<Symbol> :: getAllCycles(){
-  BuchiAutomaton<int, int> renAut = this->renameAut();
+  AutomatonStruct<int, int> *renAut = this->renameAut();
+
   vector<vector<int>> adjList(this->getStates().size());
   vector<VertItem> vrt;
   vector<set<StateSch>> sccs;
 
-  renAut.getAutGraphComponents(adjList, vrt);
-  AutGraph gr(adjList, vrt, renAut.getFinals());
+  renAut->getAutGraphComponents(adjList, vrt);
+  AutGraph gr(adjList, vrt, renAut->getFinals());
   gr.computeSCCs(); // all sccs
 
   std::vector<std::vector<int>> allCyclesRenamed;

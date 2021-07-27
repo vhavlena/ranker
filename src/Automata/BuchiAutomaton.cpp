@@ -1,125 +1,6 @@
 #include "BuchiAutomaton.h"
 #include <boost/math/special_functions/factorials.hpp>
 
-
-/**
- * Is it an elevator automaton?
- */
-template<typename State, typename Symbol>
-bool BuchiAutomaton<State, Symbol>::isElevator(){
-  // get all sccs
-  std::vector<std::set<State>> sccs = this->getAutGraphSCCs();
-
-  for (auto scc : sccs){
-    // is scc deterministic?
-    bool det = true;
-    for (auto state : scc){
-      if (not det)
-        break;
-      for (auto a : this->alph){
-        if (not det)
-          break;
-        unsigned trans = 0;
-        for (auto succ : this->trans[{state, a}]){
-          if (scc.find(succ) != scc.end()){
-            if (trans > 0){
-              det = false;
-              break;
-            }
-            trans++;
-          }
-        }
-      }
-    }
-
-    // does scc contain accepting states?
-    bool finalStates = false;
-    if (std::any_of(scc.begin(), scc.end(), [this](State state){return this->getFinals().find(state) != this->getFinals().end();}))
-      finalStates = true;
-
-    // problem: nondeterministic scc with accepting states
-    if ((not det) and finalStates)
-      return false;
-  }
-
-  return true;
-}
-
-
-/*
- * Rename states and symbols of the automaton (to consecutive numbers).
- * @param start Starting number for states
- * @return Renamed automaton
- */
-template <typename State, typename Symbol>
-BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAut(int start)
-{
-  int stcnt = start;
-  int symcnt = 0;
-  std::map<State, int> mpstate;
-  std::map<Symbol, int> mpsymbol;
-  std::set<int> rstate;
-  Delta<int, int> rtrans;
-  std::set<int> rfin;
-  std::set<int> rini;
-  set<int> rsym;
-  this->invRenameMap = std::vector<State>(this->states.size() + start);
-
-  for(auto st : this->states)
-  {
-    auto it = mpstate.find(st);
-    this->invRenameMap[stcnt] = st;
-    if(it == mpstate.end())
-    {
-      mpstate[st] = stcnt++;
-    }
-  }
-  for(const auto& a : this->alph)
-  {
-    rsym.insert(symcnt);
-    mpsymbol[a] = symcnt++;
-  }
-
-  rstate = Aux::mapSet(mpstate, this->states);
-  rini = Aux::mapSet(mpstate, this->initials);
-  rfin = Aux::mapSet(mpstate, this->finals);
-  for(auto p : this->trans)
-  {
-    auto it = mpsymbol.find(p.first.second);
-    int val;
-    if(it == mpsymbol.end())
-    {
-      val = symcnt;
-      mpsymbol[p.first.second] = symcnt++;
-    }
-    else
-    {
-      val = it->second;
-    }
-    std::set<int> to = Aux::mapSet(mpstate, p.second);
-    rtrans.insert({std::make_pair(mpstate[p.first.first], val), to});
-  }
-
-  auto ret = BuchiAutomaton<int, int>(rstate, rfin, rini, rtrans, rsym);
-  this->renameStateMap = mpstate;
-  this->renameSymbolMap = mpsymbol;
-
-  std::set<std::pair<int, int> > rdirSim, roddSim;
-  for(auto item : this->directSim)
-  {
-    rdirSim.insert({mpstate[item.first], mpstate[item.second]});
-  }
-  for(auto item : this->oddRankSim)
-  {
-    roddSim.insert({mpstate[item.first], mpstate[item.second]});
-  }
-  ret.setDirectSim(rdirSim);
-  ret.setOddRankSim(roddSim);
-  ret.setAPPattern(this->apsPattern);
-  return ret;
-}
-
-
 /*
  * Rename states and symbols of the automaton to numbers (symbols are renamed
  * by the explicit map).
@@ -272,29 +153,14 @@ std::string BuchiAutomaton<State, Symbol>::toGffWith(std::function<std::string(S
   return str;
 }
 
-
 /*
  * Function converting the automaton <string, string> to gff format.
  * @return Gff representation of the automaton
  */
 template <>
-std::string BuchiAutomaton<std::string, std::string>::toGff()
-{
+std::string BuchiAutomaton<std::string, std::string>::toGff(){
   std::function<std::string(std::string)> f1 = [&] (std::string x) {return x;};
   std::function<std::string(std::string)> f2 = [&] (std::string x) {return x;};
-  return toGffWith(f1, f2);
-}
-
-
-/*
- * Function converting the automaton <int, int> to gff format.
- * @return Gff representation of the automaton
- */
-template <>
-std::string BuchiAutomaton<int, int>::toGff()
-{
-  std::function<std::string(int)> f1 = [=] (int x) {return std::to_string(x);};
-  std::function<std::string(int)> f2 = [=] (int x) {return std::to_string(x);};
   return toGffWith(f1, f2);
 }
 
@@ -957,35 +823,6 @@ bool BuchiAutomaton<State, Symbol>::isRankLeq(std::set<State>& set1, std::set<St
 
 
 /*
- * Get SCCs of the automaton
- * @return Vector of SCCs (represented as a set of states)
- */
-template <typename State, typename Symbol>
-vector<set<State>> BuchiAutomaton<State, Symbol>::getAutGraphSCCs()
-{
-  BuchiAutomaton<int, int> renAut = this->renameAut();
-  vector<vector<int>> adjList(this->states.size());
-  vector<VertItem> vrt;
-  vector<set<State>> sccs;
-
-  renAut.getAutGraphComponents(adjList, vrt);
-  AutGraph gr(adjList, vrt, renAut.getFinals());
-  gr.computeSCCs();
-
-  for(auto& scc : gr.getAllComponents())
-  {
-    set<State> singleScc;
-    for(auto &st : scc)
-    {
-      singleScc.insert(this->invRenameMap[st]);
-    }
-    sccs.push_back(singleScc);
-  }
-  return sccs;
-}
-
-
-/*
  * Get eventually reachable states
  * @params sls States containing self-loops over the whole alphabet
  * @return Set of eventually reachable states
@@ -993,9 +830,11 @@ vector<set<State>> BuchiAutomaton<State, Symbol>::getAutGraphSCCs()
 template <typename State, typename Symbol>
 set<State> BuchiAutomaton<State, Symbol>::getEventReachable(set<State>& sls)
 {
-  BuchiAutomaton<int, int> renAut = this->renameAut();
+  //BuchiAutomaton<int, int> renAut = this->renameAut();
+  AutomatonStruct<int, int> *renAut = this->renameAut();
+
   vector<vector<int>> adjList(this->states.size());
-  std::set<int> ini = renAut.getInitials();
+  std::set<int> ini = renAut->getInitials();
   vector<VertItem> vrt;
   std::stack<int> stack;
   std::set<int> done;
@@ -1005,8 +844,8 @@ set<State> BuchiAutomaton<State, Symbol>::getEventReachable(set<State>& sls)
   for(int i : ini)
     stack.push(i);
 
-  renAut.getAutGraphComponents(adjList, vrt);
-  AutGraph gr(adjList, vrt, renAut.getFinals());
+  renAut->getAutGraphComponents(adjList, vrt);
+  AutGraph gr(adjList, vrt, renAut->getFinals());
   gr.computeSCCs();
 
   for(auto& scc : gr.getAllComponents())

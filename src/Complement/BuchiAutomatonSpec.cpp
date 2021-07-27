@@ -852,6 +852,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
     comst.insert(ns);
     newState++;
   }
+  std::cerr << "Size: " << comst.size() << std::endl;
 
 
   // Compute rank upper bound on the macrostates
@@ -868,7 +869,6 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
     stats->elevatorRank = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
   }
 
-  // states necessary to generate in the tight part
   start = std::chrono::high_resolution_clock::now();
   map<StateSch, DelayLabel> delayMp;
   for(const auto& st : comp.getStates())
@@ -952,7 +952,8 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
         cnt = false;
         //auto tmp = succSetSchStart(st.S, rankBound[st.S], reachCons, maxReach, dirRel, oddRel);
         //std::cerr << "Size: " << tmp.size() << std::endl;
-        //std::cerr << "Rank bound: " << rankBound[st.S] << std::endl;
+        std::cerr << "Rank bound: " << rankBound[st.S].bound << std::endl;
+        std::cerr << "Tight size: " << succ.size() << std::endl;
       }
       for (const StateSch& s : succ)
       {
