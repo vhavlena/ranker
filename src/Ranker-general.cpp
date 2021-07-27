@@ -20,16 +20,21 @@ InFormat parseRenamedAutomaton(ifstream& os)
 AutomatonStruct<int, APSymbol>* parseRenameHOA(ifstream& os)
 {
   BuchiAutomataParser parser;
-  BuchiAutomaton<int, APSymbol> *orig = new BuchiAutomaton<int, APSymbol>;
-  *orig = parser.parseHoaFormat(os);
+  AutomatonStruct<int, APSymbol> *orig = parser.parseHoaFormat(os);
   Simulations sim;
 
-  auto ranksim = sim.directSimulation<int, APSymbol>(*orig, -1);
-  orig->setDirectSim(ranksim);
-  auto cl = set<int>();
+  // downcast to BuchiAutomaton/GeneralizedBuchiAutomaton
+  if (dynamic_cast<BuchiAutomaton<int, APSymbol>*>(orig)){
+    BuchiAutomaton<int, APSymbol> *origBuchi = (BuchiAutomaton<int, APSymbol>*)orig;
 
-  orig->computeRankSim(cl);
-  return orig;
+    auto ranksim = sim.directSimulation<int, APSymbol>(*origBuchi, -1);
+    origBuchi->setDirectSim(ranksim);
+    auto cl = set<int>();
+
+    origBuchi->computeRankSim(cl);
+    return origBuchi;
+  } 
+  //TODO generalized buchi automaton
 }
 
 
@@ -49,7 +54,9 @@ AutomatonStruct<int, int>* parseRenameBA(ifstream& os, BuchiAutomaton<string, st
 
 void complementAutWrap(AutomatonStruct<int, int>* ren, BuchiAutomaton<StateSch, int>* complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats, bool delay, double w, delayVersion version, bool elevatorRank, bool eta4)
 {
-  if (BuchiAutomaton<int, int>* renptr = dynamic_cast<BuchiAutomaton<int, int>*>(ren)){
+  if (dynamic_cast<BuchiAutomaton<int, int>*>(ren)){
+    BuchiAutomaton<int, int> *renptr = (BuchiAutomaton<int, int>*) ren;
+
     BuchiAutomatonSpec sp(renptr);
   
     ComplOptions opt = { .cutPoint = true, .succEmptyCheck = true, .ROMinState = 8,

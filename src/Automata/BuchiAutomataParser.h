@@ -46,7 +46,7 @@ public:
   BuchiAutomaton<string, string> parseBaFormat(ifstream & os);
   BuchiAutomaton<string, string> parseGffFormat(string& str);
   BuchiAutomaton<string, string> parseGffFormat(ifstream& is);
-  BuchiAutomaton<int, APSymbol> parseHoaFormat(ifstream & os);
+  AutomatonStruct<int, APSymbol>* parseHoaFormat(ifstream & os);
 
   static APSymbol parseHoaSymbol(string& line, map<string, int>& apInd);
   static pair<APWord, APWord> parseHoaInfWord(string& line, map<string, int>& apInd);

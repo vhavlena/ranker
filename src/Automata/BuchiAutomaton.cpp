@@ -164,6 +164,13 @@ std::string BuchiAutomaton<std::string, std::string>::toGff(){
   return toGffWith(f1, f2);
 }
 
+template<>
+std::string BuchiAutomaton<int, int>::toGff(){
+  std::function<std::string(int)> f1 = [&] (int x) {return std::to_string(x);};
+  std::function<std::string(int)> f2 = [&] (int x) {return std::to_string(x);};
+  return toGffWith(f1, f2);
+}
+
 
 /*
  * Function converting the automaton <int, string> to hoa format.

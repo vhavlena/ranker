@@ -185,10 +185,14 @@ int main(int argc, char *argv[])
       BuchiAutomaton<int, int> renCompl;
       BuchiAutomaton<StateSch, int> comp;
 
+      BuchiAutomaton<int, int> *renBuchi = nullptr;
+
       try
       {
         ba = parseRenameHOA(os);
         ren = ba->renameAut();
+        if (dynamic_cast<BuchiAutomaton<int, int>*>(ren))
+          renBuchi = (BuchiAutomaton<int, int>*)ren;
 
         // elevator test
         if (elevatorTest){
@@ -207,7 +211,7 @@ int main(int argc, char *argv[])
 
       try
       {
-        complementAutWrap(ren, &comp, &renCompl, &stats, delay, w, version, elevatorRank, eta4);
+        complementAutWrap(renBuchi, &comp, &renCompl, &stats, delay, w, version, elevatorRank, eta4);
       }
       catch (const std::bad_alloc&)
       {

@@ -184,7 +184,7 @@ int main(int argc, char *argv[])
           #pragma GCC diagnostic pop
         }
   
-        std::fputs(ren->toGff().c_str(), tmpf);
+        std::fputs(renptr->toGff().c_str(), tmpf);
         std::fflush(tmpf);
   
         BuchiAutomataParser parser;

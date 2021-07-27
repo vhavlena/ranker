@@ -199,7 +199,7 @@ Transition<string, string> BuchiAutomataParser::parseGffTransition(pt::ptree& tr
  * @param os Input stream
  * @return BA <int, APSymbol>
  */
-BuchiAutomaton<int, APSymbol> BuchiAutomataParser::parseHoaFormat(ifstream & os)
+AutomatonStruct<int, APSymbol>* BuchiAutomataParser::parseHoaFormat(ifstream & os)
 {
   set<int> states;
   set<int> ini;
@@ -267,7 +267,8 @@ BuchiAutomaton<int, APSymbol> BuchiAutomataParser::parseHoaFormat(ifstream & os)
     }
   }
 
-  return BuchiAutomaton<int, APSymbol>(states, fins, ini, trans, syms, aps);
+  BuchiAutomaton<int, APSymbol> *buchi = new BuchiAutomaton<int, APSymbol>(states, fins, ini, trans, syms, aps);
+  return buchi;
 }
 
 /*
