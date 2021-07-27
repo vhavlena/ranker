@@ -141,13 +141,13 @@ int main(int argc, char *argv[])
     Stat stats;
     stats.beginning = std::chrono::high_resolution_clock::now();
 
-    BuchiAutomaton<int, int> renCompl;
-    BuchiAutomaton<StateSch, int> comp;
-
     if(fmt == BA)
     {
       BuchiAutomaton<string, string> ba;
       AutomatonStruct<int, int> *ren = parseRenameBA(os, &ba);
+
+      BuchiAutomaton<int, int> renCompl;
+      BuchiAutomaton<StateSch, int> comp;
 
       // elevator test
       if (elevatorTest){
@@ -181,6 +181,10 @@ int main(int argc, char *argv[])
     {
       AutomatonStruct<int, APSymbol> *ba;
       AutomatonStruct<int, int> *ren;
+
+      BuchiAutomaton<int, int> renCompl;
+      BuchiAutomaton<StateSch, int> comp;
+
       try
       {
         ba = parseRenameHOA(os);

@@ -36,7 +36,7 @@ struct Params
 };
 
 InFormat parseRenamedAutomaton(ifstream& os);
-BuchiAutomaton<int, APSymbol>* parseRenameHOA(ifstream& os/*, BuchiAutomaton<int, APSymbol>* orig*/); 
+AutomatonStruct<int, APSymbol>* parseRenameHOA(ifstream& os); 
 AutomatonStruct<int, int>* parseRenameBA(ifstream& os, BuchiAutomaton<string, string>* orig);
 
 void complementScheweAutWrap(AutomatonStruct<int, int>* ren, BuchiAutomaton<int, int>* complRes, Stat* stats, bool delay, double w, delayVersion version); 

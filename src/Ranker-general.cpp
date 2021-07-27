@@ -17,7 +17,7 @@ InFormat parseRenamedAutomaton(ifstream& os)
 }
 
 
-BuchiAutomaton<int, APSymbol>* parseRenameHOA(ifstream& os/*, BuchiAutomaton<int, APSymbol>* orig*/)
+AutomatonStruct<int, APSymbol>* parseRenameHOA(ifstream& os)
 {
   BuchiAutomataParser parser;
   BuchiAutomaton<int, APSymbol> *orig = new BuchiAutomaton<int, APSymbol>;
@@ -30,7 +30,6 @@ BuchiAutomaton<int, APSymbol>* parseRenameHOA(ifstream& os/*, BuchiAutomaton<int
 
   orig->computeRankSim(cl);
   return orig;
-  //return orig->renameAut();
 }
 
 
