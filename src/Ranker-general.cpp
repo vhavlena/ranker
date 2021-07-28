@@ -108,7 +108,7 @@ void complementAutWrap(AutomatonStruct<int, int>* ren, BuchiAutomaton<StateSch, 
     ComplOptions opt = { .cutPoint = true, .succEmptyCheck = true, .ROMinState = 8,
         .ROMinRank = 6, .CacheMaxState = 6, .CacheMaxRank = 8, .semidetOpt = false };
     sp.setComplOptions(opt);
-    BuchiAutomaton<StateSch, int> comp;
+    BuchiAutomaton<StateSchGBA, int> comp;
 
     comp = sp.complementSchReduced(delay, renptr->getFinals(), w, version, stats);
     /*

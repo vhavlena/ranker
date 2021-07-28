@@ -20,6 +20,7 @@
 #include "RankFunc.h"
 #include "StateSch.h"
 #include "Options.h"
+#include "StateSchGBA.h"
 
 using std::vector;
 using std::set;
@@ -47,7 +48,7 @@ public:
   void setComplOptions(ComplOptions& co) { this->opt = co; }
   ComplOptions getComplOptions() const { return this->opt; }
 
-  BuchiAutomaton<StateSch, int> complementSchReduced(bool delay, std::map<int,std::set<int>> originalFinals, double w, delayVersion version, Stat *stats);
+  BuchiAutomaton<StateSchGBA, int> complementSchReduced(bool delay, std::map<int,std::set<int>> originalFinals, double w, delayVersion version, Stat *stats);
 };
 
 #endif

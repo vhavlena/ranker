@@ -19,6 +19,7 @@
 #include "../Complement/StateSch.h"
 #include "../Algorithms/AuxFunctions.h"
 #include "APSymbol.h"
+#include "../Complement/StateSchGBA.h"
 
 using std::tuple;
 
@@ -289,7 +290,7 @@ public:
   }
 
   void complete(State trap, bool fin = false);
-  void completeAPComplement();
+  void completeAPComplement();    
   void removeUseless();
   void restriction(set<State>& st);
 
@@ -313,7 +314,7 @@ public:
       vector<VertItem> vrt;
       vector<set<State>> sccs;
 
-      renAut->getAutGraphComponents(adjList, vrt);
+      renAut->getAutGraphComponents(adjList, vrt);  
       AutGraph gr(adjList, vrt, renAutBA->getFinals());
       gr.computeSCCs();
 
