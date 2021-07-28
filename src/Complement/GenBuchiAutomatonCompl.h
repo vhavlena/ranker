@@ -39,6 +39,10 @@ private:
 
   ComplOptions opt;
 
+protected:
+  bool isSchGBAFinal(StateSchGBA& state) const { return state.tight ? state.O.size() == 0 : state.S.size() == 0; }
+  set<int> succSet(set<int>& state, int symbol);
+
 public:
   GeneralizedBuchiAutomatonCompl(GeneralizedBuchiAutomaton<int, int> *t) : GeneralizedBuchiAutomaton<int, int>(*t)
   {
@@ -49,6 +53,7 @@ public:
   ComplOptions getComplOptions() const { return this->opt; }
 
   BuchiAutomaton<StateSchGBA, int> complementSchReduced(bool delay, std::map<int,std::set<int>> originalFinals, double w, delayVersion version, Stat *stats);
+  BuchiAutomaton<StateSchGBA, int> complementSchNFA(set<int>& start);
 };
 
 #endif
