@@ -76,10 +76,10 @@ std::string GeneralizedBuchiAutomaton<State,Symbol>::toHOA(){
     //TODO
 }
 
-template<typename State, typename Symbol>
-GeneralizedBuchiAutomaton<int, int> GeneralizedBuchiAutomaton<State,Symbol>::renameAut(int start){
+/*template<typename State, typename Symbol>
+GeneralizedBuchiAutomaton<int, int>* GeneralizedBuchiAutomaton<State,Symbol>::renameAut(int start){
     //TODO
-}
+}*/
 
 template<typename State, typename Symbol>
 GeneralizedBuchiAutomaton<int, int> GeneralizedBuchiAutomaton<State,Symbol>::renameAutDict(map<Symbol, int>& mpsymbol, int start){

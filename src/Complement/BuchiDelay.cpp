@@ -360,48 +360,52 @@ template<typename Symbol>
 std::vector<std::vector<StateSch>> BuchiAutomatonDelay<Symbol> :: getAllCycles(){
   AutomatonStruct<int, int> *renAut = this->renameAut();
 
-  vector<vector<int>> adjList(this->getStates().size());
-  vector<VertItem> vrt;
-  vector<set<StateSch>> sccs;
+  if (dynamic_cast<BuchiAutomaton<int, int>*>(renAut)){
+    BuchiAutomaton<int, int> *renAutBA = (BuchiAutomaton<int, int>*)renAut;
 
-  renAut->getAutGraphComponents(adjList, vrt);
-  AutGraph gr(adjList, vrt, renAut->getFinals());
-  gr.computeSCCs(); // all sccs
+    vector<vector<int>> adjList(this->getStates().size());
+    vector<VertItem> vrt;
+    vector<set<StateSch>> sccs;
 
-  std::vector<std::vector<int>> allCyclesRenamed;
-  std::vector<std::vector<StateSch>> allCycles;
-  const std::set<int> emptySet;
-  std::vector<std::set<int>> tmpVector;
+    renAut->getAutGraphComponents(adjList, vrt);
+    AutGraph gr(adjList, vrt, renAutBA->getFinals());
+    gr.computeSCCs(); // all sccs
 
-  for(auto& scc : gr.getAllComponents()){ // for every scc
-    auto tmpScc = scc;
-    for (auto &state : scc){ // for every state in scc
-      std::vector<int> stack;
-      std::set<int> blockedSet;
-      std::map<int, std::set<int>> blockedMap;
+    std::vector<std::vector<int>> allCyclesRenamed;
+    std::vector<std::vector<StateSch>> allCycles;
+    const std::set<int> emptySet;
+    std::vector<std::set<int>> tmpVector;
 
-      // insert all states in scc to blockedMap
-      for(auto &state : scc){
-        blockedMap.insert(std::pair<int, std::set<int>>(state, emptySet));
+    for(auto& scc : gr.getAllComponents()){ // for every scc
+      auto tmpScc = scc;
+      for (auto &state : scc){ // for every state in scc
+        std::vector<int> stack;
+        std::set<int> blockedSet;
+        std::map<int, std::set<int>> blockedMap;
+
+        // insert all states in scc to blockedMap
+        for(auto &state : scc){
+          blockedMap.insert(std::pair<int, std::set<int>>(state, emptySet));
+        }
+
+        // circuit method: returns all cycles in allCyclesRenamed
+        this->circuit(state, stack, blockedSet, blockedMap, tmpScc, adjList, state, allCyclesRenamed);
+
+        tmpScc.erase(state);
+        adjList[state].erase(std::remove(adjList[state].begin(), adjList[state].end(), state), adjList[state].end());
       }
-
-      // circuit method: returns all cycles in allCyclesRenamed
-      this->circuit(state, stack, blockedSet, blockedMap, tmpScc, adjList, state, allCyclesRenamed);
-
-      tmpScc.erase(state);
-      adjList[state].erase(std::remove(adjList[state].begin(), adjList[state].end(), state), adjList[state].end());
     }
-  }
 
-  for (auto &cycle : allCyclesRenamed){
-    std::vector<StateSch> oneCycle;
-    for (auto &state : cycle){
-      oneCycle.push_back(this->getInvRenameSymbolMap()[state]);
+    for (auto &cycle : allCyclesRenamed){
+      std::vector<StateSch> oneCycle;
+      for (auto &state : cycle){
+        oneCycle.push_back(this->getInvRenameSymbolMap()[state]);
+      }
+      allCycles.push_back(oneCycle);
     }
-    allCycles.push_back(oneCycle);
-  }
 
-  return allCycles;
+    return allCycles;
+  }
 }
 
 template class BuchiAutomatonDelay<int>;

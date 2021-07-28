@@ -2,6 +2,45 @@
 #include <boost/math/special_functions/factorials.hpp>
 
 /*
+* Is it an elevator automaton?
+*/
+template <typename State, typename Symbol>
+bool BuchiAutomaton<State, Symbol>::isElevator() {
+  // get all sccs
+  std::vector<std::set<State>> sccs = this->getAutGraphSCCs();
+  for (auto scc : sccs){
+    // is scc deterministic?
+    bool det = true;
+    for (auto state : scc){
+      if (not det)
+        break;
+      for (auto a : this->alph){
+        if (not det)
+          break;
+        unsigned trans = 0;
+        for (auto succ : this->trans[{state, a}]){
+          if (scc.find(succ) != scc.end()){
+            if (trans > 0){
+              det = false;
+              break;
+            }
+            trans++;
+          }
+        }
+      }
+    }
+    // does scc contain accepting states?
+    bool finalStates = false;
+    if (std::any_of(scc.begin(), scc.end(), [this](State state){return this->getFinals().find(state) !=  this->getFinals().end();}))
+      finalStates = true;
+    // problem: nondeterministic scc with accepting states
+    if ((not det) and finalStates)
+      return false;
+  }
+  return true;
+}
+
+/*
  * Rename states and symbols of the automaton to numbers (symbols are renamed
  * by the explicit map).
  * @param mpsymbol Explicit map assigning numbers to original symbols
@@ -837,44 +876,47 @@ bool BuchiAutomaton<State, Symbol>::isRankLeq(std::set<State>& set1, std::set<St
 template <typename State, typename Symbol>
 set<State> BuchiAutomaton<State, Symbol>::getEventReachable(set<State>& sls)
 {
-  //BuchiAutomaton<int, int> renAut = this->renameAut();
   AutomatonStruct<int, int> *renAut = this->renameAut();
 
-  vector<vector<int>> adjList(this->states.size());
-  std::set<int> ini = renAut->getInitials();
-  vector<VertItem> vrt;
-  std::stack<int> stack;
-  std::set<int> done;
-  std::set<State> ret;
-  std::vector<int> sccSizeMp(this->states.size());
+  if (dynamic_cast<BuchiAutomaton<int, int>*>(renAut)){
+    BuchiAutomaton<int, int> *renAutBA = (BuchiAutomaton<int, int>*)renAut;
 
-  for(int i : ini)
-    stack.push(i);
+    vector<vector<int>> adjList(this->states.size());
+    std::set<int> ini = renAut->getInitials();
+    vector<VertItem> vrt;
+    std::stack<int> stack;
+    std::set<int> done;
+    std::set<State> ret;
+    std::vector<int> sccSizeMp(this->states.size());
 
-  renAut->getAutGraphComponents(adjList, vrt);
-  AutGraph gr(adjList, vrt, renAut->getFinals());
-  gr.computeSCCs();
+    for(int i : ini)
+      stack.push(i);
 
-  for(auto& scc : gr.getAllComponents())
-  {
-    for(auto &st : scc)
+    renAut->getAutGraphComponents(adjList, vrt);
+    AutGraph gr(adjList, vrt, renAutBA->getFinals());
+    gr.computeSCCs();
+
+    for(auto& scc : gr.getAllComponents())
     {
-      if(scc.size() == 1 && sls.find(this->invRenameMap[st]) == sls.end())
-        sccSizeMp[st] = 0;
-      else
+      for(auto &st : scc)
       {
-        sccSizeMp[st] = scc.size();
-        done.insert(st);
+        if(scc.size() == 1 && sls.find(this->invRenameMap[st]) == sls.end())
+          sccSizeMp[st] = 0;
+        else
+        {
+          sccSizeMp[st] = scc.size();
+          done.insert(st);
+        }
       }
     }
-  }
 
-  done = gr.reachableVertices(done);
-  for(int st : done)
-  {
-    ret.insert(this->invRenameMap[st]);
+    done = gr.reachableVertices(done);
+    for(int st : done)
+    {
+      ret.insert(this->invRenameMap[st]);
+    }
+    return ret;
   }
-  return ret;
 }
 
 

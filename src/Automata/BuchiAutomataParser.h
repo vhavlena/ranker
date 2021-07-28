@@ -7,6 +7,7 @@
 #include <streambuf>
 #include <exception>
 #include <algorithm>
+#include <regex>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -16,9 +17,12 @@
 
 #include "BuchiAutomaton.h"
 #include "APSymbol.h"
+#include "GeneralizedBuchiAutomaton.h"
 
 using namespace std;
 namespace pt = boost::property_tree;
+
+enum automatonType {autBA, autGBA};
 
 /*
  * Parser exception
@@ -41,12 +45,20 @@ class BuchiAutomataParser {
 private:
   // Current line in a file
   int line;
+  automatonType type;
 
 public:
   BuchiAutomaton<string, string> parseBaFormat(ifstream & os);
   BuchiAutomaton<string, string> parseGffFormat(string& str);
   BuchiAutomaton<string, string> parseGffFormat(ifstream& is);
-  AutomatonStruct<int, APSymbol>* parseHoaFormat(ifstream & os);
+  AutomatonStruct<int, APSymbol>* parseHoaFormat(ifstream & os); 
+  
+  automatonType getAutomatonType(){
+    return this->type;
+  }
+  void setAutomatonType(automatonType type){
+    this->type = type;
+  }
 
   static APSymbol parseHoaSymbol(string& line, map<string, int>& apInd);
   static pair<APWord, APWord> parseHoaInfWord(string& line, map<string, int>& apInd);
@@ -58,7 +70,7 @@ private:
   BuchiAutomaton<string, string> parseGffTree(pt::ptree& tr);
 
   Transition<int, APSymbol> parseHoaTransition(int srcstate, int apNum, string& line);
-  Delta<int, APSymbol> parseHoaBody(int apNum, ifstream & os, set<int>& fin);
+  Delta<int, APSymbol> parseHoaBody(int apNum, ifstream & os, set<int>& finsBA, map<int, set<int>>& finsGBA);
   APSymbol parseHoaExpression(string & line, int apNum);
 };
 

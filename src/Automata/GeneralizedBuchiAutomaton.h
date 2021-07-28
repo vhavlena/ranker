@@ -26,12 +26,13 @@ template <typename State, typename Symbol>
 class GeneralizedBuchiAutomaton : public AutomatonStruct<State, Symbol> {
 
 public:
-  typedef std::set<std::set<State>> SetStates; // more sets of accepting states
+  typedef std::set<State> SetStates; // more sets of accepting states
   typedef std::set<Symbol> SetSymbols;
   typedef Delta<State, Symbol> Transitions;
+  typedef std::map<int, SetStates> GBAFinals;
 
 private:
-  SetStates finals;
+  GBAFinals finals;
 
 
 protected:
@@ -40,17 +41,17 @@ protected:
   std::string toGffWith(std::function<std::string(State)>& stateStr,  std::function<std::string(Symbol)>& symStr);
 
 public:
-  GeneralizedBuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans) : AutomatonStruct<State, Symbol>(st, ini, trans)
+  GeneralizedBuchiAutomaton(SetStates st, GBAFinals fin, SetStates ini, Transitions trans) : AutomatonStruct<State, Symbol>(st, ini, trans)
   {
     this->finals = fin;
   }
 
-  GeneralizedBuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans, SetSymbols alp) : AutomatonStruct<State, Symbol>(st, ini, trans, alp)
+  GeneralizedBuchiAutomaton(SetStates st, GBAFinals fin, SetStates ini, Transitions trans, SetSymbols alp) : AutomatonStruct<State, Symbol>(st, ini, trans, alp)
   {
     this->finals = fin;
   }
 
-  GeneralizedBuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans, SetSymbols alp, map<string, int> aps) : AutomatonStruct<State, Symbol>(st, ini, trans, alp, aps)
+  GeneralizedBuchiAutomaton(SetStates st, GBAFinals fin, SetStates ini, Transitions trans, SetSymbols alp, map<string, int> aps) : AutomatonStruct<State, Symbol>(st, ini, trans, alp, aps)
   {
     this->finals = fin;
   }
@@ -74,7 +75,11 @@ public:
   std::string toGraphwiz();
   std::string toGff();
   std::string toHOA();
-  GeneralizedBuchiAutomaton<int, int> renameAut(int start = 0);
+  
+  AutomatonStruct<int, int>* renameAut(int start = 0) override {
+    //TODO
+  } 
+
   GeneralizedBuchiAutomaton<int, int> renameAutDict(map<Symbol, int>& mpsymbol, int start = 0);
 
   //bool isElevator();

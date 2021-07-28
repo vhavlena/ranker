@@ -203,11 +203,13 @@ AutomatonStruct<int, APSymbol>* BuchiAutomataParser::parseHoaFormat(ifstream & o
 {
   set<int> states;
   set<int> ini;
-  set<int> fins;
-  BuchiAutomaton<int, APSymbol>::Transitions trans;
+  set<int> finsBA;
+  map<int, set<int>> finsGBA;
+  AutomatonStruct<int, APSymbol>::Transitions trans;
   set<APSymbol> syms;
   int statesnum = 0;
   map<string, int> aps;
+  int accSetsCount = 0;
 
   string line;
   string linecp;
@@ -247,28 +249,58 @@ AutomatonStruct<int, APSymbol>* BuchiAutomataParser::parseHoaFormat(ifstream & o
     {
       linecp = string(line.begin() + 11, line.end());
       linecp.erase(remove_if(linecp.begin(), linecp.end(), ::isspace), linecp.end());
-      if(linecp.rfind("1Inf(0)", 0) != 0)
+      if(linecp.rfind("1Inf(0)", 0) != 0 and this->getAutomatonType() == autBA)
       {
         throw ParserException("Unsupported acceptance condition. Expected: \"1 Inf(0)\"", this->line);
+      } 
+      else if (this->getAutomatonType() == autGBA)
+      {
+        std::regex gbaAcceptance("([0-9]+)(\\s)*(\\()*Inf\\([0-9]+\\)((\\s)*&(\\s)*Inf\\([0-9]+\\))*(\\))*");
+        if (not std::regex_match(linecp, gbaAcceptance))
+          throw ParserException("Unsupported acceptance condition.");
+        else {
+          std::smatch match;
+          if (std::regex_search(linecp, match, gbaAcceptance)){
+            accSetsCount = std::stoi(match.str(1));
+            for (unsigned i=0; i<accSetsCount; i++){
+              std::set<int> tmpSet;
+              finsGBA.insert({i, tmpSet});
+            }
+          }
+        }
       }
     }
     else if(line.rfind("acc-name:", 0) == 0)
     {
       linecp = string(line.begin() + 9, line.end());
       boost::algorithm::trim_left(linecp);
-      if(linecp.rfind("Buchi", 0) != 0)
-      {
-        throw ParserException("Unsupported automaton type. Expected: \"Buchi\"", this->line);
-      }
+
+      std::regex baRegex("Buchi(\\s)*");
+      std::regex gbaRegex("generalized-Buchi(\\s)*[0-9]+(\\s)*");
+      if (std::regex_match(linecp, baRegex))
+        this->setAutomatonType(autBA);
+      else if (std::regex_match(linecp, gbaRegex))
+        this->setAutomatonType(autGBA);
+      else
+        throw ParserException("Unsupported automaton type.");
     }
     else if(line.rfind("--BODY--", 0) == 0)
     {
-      trans = parseHoaBody(aps.size(), os, fins);
+      trans = parseHoaBody(aps.size(), os, finsBA, finsGBA);
     }
   }
 
-  BuchiAutomaton<int, APSymbol> *buchi = new BuchiAutomaton<int, APSymbol>(states, fins, ini, trans, syms, aps);
-  return buchi;
+  BuchiAutomaton<int, APSymbol> *buchi;
+  GeneralizedBuchiAutomaton<int, APSymbol> *gba;
+
+  switch (this->getAutomatonType()){
+    case autBA:
+      buchi = new BuchiAutomaton<int, APSymbol>(states, finsBA, ini, trans, syms, aps);
+      return buchi;
+    case autGBA:
+      gba = new GeneralizedBuchiAutomaton<int, APSymbol>(states, finsGBA, ini, trans, syms, aps); 
+      return gba;
+  }
 }
 
 /*
@@ -302,7 +334,7 @@ Transition<int, APSymbol> BuchiAutomataParser::parseHoaTransition(int srcstate, 
  * @param fin Final states (out parameter)
  * @return Transition function
  */
-Delta<int, APSymbol> BuchiAutomataParser::parseHoaBody(int apNum, ifstream & os, set<int>& fin)
+Delta<int, APSymbol> BuchiAutomataParser::parseHoaBody(int apNum, ifstream & os, set<int>& finsBA, map<int, set<int>>& finsGBA)
 {
   Delta<int, APSymbol> trans;
   int src;
@@ -317,9 +349,10 @@ Delta<int, APSymbol> BuchiAutomataParser::parseHoaBody(int apNum, ifstream & os,
     else if(line.rfind("State:", 0) == 0)
     {
       string linecp(line.begin()+7, line.end());
-      boost::regex e("([0-9]+)\\s*(\\{\\s*0\\s*\\})?");
+      boost::regex baRegex("([0-9]+)\\s*(\\{\\s*0\\s*\\})?");
+      boost::regex gbaRegex("([0-9]+)\\s*(\\{\\s*[0-9]+((\\s)+[0-9]+)*\\s*\\})?");
       boost::smatch what;
-      if(boost::regex_match(linecp, what, e))
+      if(this->getAutomatonType() == autBA and boost::regex_match(linecp, what, baRegex))
       {
         src = std::stoi(what[1]);
         if(what.size() == 3)
@@ -327,8 +360,39 @@ Delta<int, APSymbol> BuchiAutomataParser::parseHoaBody(int apNum, ifstream & os,
           string v = what[2];
           if(v.size() > 0)
           {
-            fin.insert(src);
+            finsBA.insert(src);
           }
+        }
+      }
+      else if (this->getAutomatonType() == autGBA and boost::regex_match(linecp, what, gbaRegex))
+      {
+        src = std::stoi(what[1]);
+        if (what.size() >= 3){
+          string v = what[2];
+          v.erase(v.begin(), v.begin()+1);
+          v.erase(v.end()-1, v.end());
+          // get each acceptance condition
+          std::string delimiter = " ";
+          size_t pos = 0;
+          std::string token = v;
+          while ((pos = v.find(delimiter)) != std::string::npos){
+            token = v.substr(0, pos);
+            //std::cerr << token << std::endl;
+            // insert state in finals
+            auto it = finsGBA.find(std::stoi(token));
+            if (it == finsGBA.end())
+              throw ParserException("Wrong number of accepting set.");
+            else
+              it->second.insert(src);
+            v.erase(0, pos + delimiter.length());
+          }
+          //std::cerr << v << std::endl; 
+          // last element outside of the loop
+          auto it = finsGBA.find(std::stoi(v));
+          if (it == finsGBA.end())
+            throw ParserException("Wrong number of accepting set.");
+          else
+            it->second.insert(src);
         }
       }
       else

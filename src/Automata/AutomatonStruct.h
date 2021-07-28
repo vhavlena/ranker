@@ -120,8 +120,8 @@ public:
 
   // virtual methods
   virtual AutomatonStruct<int, int>* renameAut(int start=0){};
-  virtual SetStates& getFinals(){};
-  virtual bool isElevator(){};
+  //virtual SetStates& getFinals(){};
+  //virtual bool isElevator(){};
   
   bool isReachDeterministic(set<State>& start);
 

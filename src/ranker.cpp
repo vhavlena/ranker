@@ -146,12 +146,16 @@ int main(int argc, char *argv[])
       BuchiAutomaton<string, string> ba;
       AutomatonStruct<int, int> *ren = parseRenameBA(os, &ba);
 
+      BuchiAutomaton<int, int> *renBA = nullptr;
+      if (dynamic_cast<BuchiAutomaton<int, int>*>(ren))
+        renBA = (BuchiAutomaton<int, int>*)ren;
+
       BuchiAutomaton<int, int> renCompl;
       BuchiAutomaton<StateSch, int> comp;
 
       // elevator test
       if (elevatorTest){
-        std::cout << "Elevator automaton: " << (ren->isElevator() ? "Yes" : "No") << std::endl;
+        std::cout << "Elevator automaton: " << (renBA->isElevator() ? "Yes" : "No") << std::endl;
         os.close();
         return 0;
       }
@@ -186,20 +190,30 @@ int main(int argc, char *argv[])
       BuchiAutomaton<StateSch, int> comp;
 
       BuchiAutomaton<int, int> *renBuchi = nullptr;
+      GeneralizedBuchiAutomaton<int, int> *renGBA = nullptr;
 
       try
       {
         ba = parseRenameHOA(os);
         ren = ba->renameAut();
+
         if (dynamic_cast<BuchiAutomaton<int, int>*>(ren))
           renBuchi = (BuchiAutomaton<int, int>*)ren;
+        else if (dynamic_cast<GeneralizedBuchiAutomaton<int, int>*>(ren))
+          renGBA = (GeneralizedBuchiAutomaton<int, int>*)ren;
 
         // elevator test
-        if (elevatorTest){
-          std::cout << "Elevator automaton: " << (ren->isElevator() ? "Yes" : "No") << std::endl;
+        if (elevatorTest and renBuchi != nullptr){
+          std::cout << "Elevator automaton: " << (renBuchi->isElevator() ? "Yes" : "No") << std::endl;
           os.close();
           return 0;
-        }
+        } 
+        // TODO gba elevator?
+        /*else if (elevatorTest and renGBA != nullptr){
+          std::cout << "Elevator automaton: " << (renGBA->isElevator() ? "Yes" : "No") << std::endl;
+          os.close();
+          return 0;
+        }*/
       }
       catch(const ParserException& e)
       {

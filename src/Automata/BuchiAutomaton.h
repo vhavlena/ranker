@@ -205,47 +205,7 @@ public:
 
   BuchiAutomaton<int, int> renameAutDict(map<Symbol, int>& mpsymbol, int start = 0);
 
-  /*
-  * Is it an elevator automaton?
-  */
-  bool isElevator() override {
-    // get all sccs
-    std::vector<std::set<State>> sccs = this->getAutGraphSCCs();
-
-    for (auto scc : sccs){
-      // is scc deterministic?
-      bool det = true;
-      for (auto state : scc){
-        if (not det)
-          break;
-        for (auto a : this->alph){
-          if (not det)
-            break;
-          unsigned trans = 0;
-          for (auto succ : this->trans[{state, a}]){
-            if (scc.find(succ) != scc.end()){
-              if (trans > 0){
-                det = false;
-                break;
-              }
-              trans++;
-            }
-          }
-        }
-      }
-
-      // does scc contain accepting states?
-      bool finalStates = false;
-      if (std::any_of(scc.begin(), scc.end(), [this](State state){return this->getFinals().find(state) !=   this->getFinals().end();}))
-        finalStates = true;
-
-      // problem: nondeterministic scc with accepting states
-      if ((not det) and finalStates)
-        return false;
-    }
-
-    return true;
-    }
+  bool isElevator();
 
   /*
    * Rename symbols of the automaton.
@@ -346,24 +306,28 @@ public:
   vector<set<State>> getAutGraphSCCs(){
     AutomatonStruct<int, int> *renAut = this->renameAut();
 
-    vector<vector<int>> adjList(this->states.size());
-    vector<VertItem> vrt;
-    vector<set<State>> sccs;
-  
-    renAut->getAutGraphComponents(adjList, vrt);
-    AutGraph gr(adjList, vrt, renAut->getFinals());
-    gr.computeSCCs();
-  
-    for(auto& scc : gr.getAllComponents())
-    {
-      set<State> singleScc;
-      for(auto &st : scc)
+    if (dynamic_cast<BuchiAutomaton<int, int>*>(renAut)){
+      BuchiAutomaton<int, int> *renAutBA = (BuchiAutomaton<int, int>*)renAut;
+
+      vector<vector<int>> adjList(this->states.size());
+      vector<VertItem> vrt;
+      vector<set<State>> sccs;
+
+      renAut->getAutGraphComponents(adjList, vrt);
+      AutGraph gr(adjList, vrt, renAutBA->getFinals());
+      gr.computeSCCs();
+
+      for(auto& scc : gr.getAllComponents())
       {
-        singleScc.insert(this->invRenameMap[st]);
+        set<State> singleScc;
+        for(auto &st : scc)
+        {
+          singleScc.insert(this->invRenameMap[st]);
+        }
+        sccs.push_back(singleScc);
       }
-      sccs.push_back(singleScc);
+      return sccs;
     }
-    return sccs;
   }
 
   bool isEmpty();
