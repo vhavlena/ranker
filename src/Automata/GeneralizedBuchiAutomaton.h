@@ -78,6 +78,72 @@ public:
   
   AutomatonStruct<int, int>* renameAut(int start = 0) override {
     //TODO
+    int stcnt = start;
+    int symcnt = 0;
+    std::map<State, int> mpstate;
+    std::map<Symbol, int> mpsymbol;
+    std::set<int> rstate;
+    Delta<int, int> rtrans;
+    std::map<int, std::set<int>> rfin;
+    std::set<int> rini;
+    set<int> rsym;
+    this->invRenameMap = std::vector<State>(this->states.size() + start);
+
+    for(auto st : this->states)
+    {
+      auto it = mpstate.find(st);
+      this->invRenameMap[stcnt] = st;
+      if(it == mpstate.end())
+      {
+        mpstate[st] = stcnt++;
+      }
+    }
+    for(const auto& a : this->alph)
+    {
+      rsym.insert(symcnt);
+      mpsymbol[a] = symcnt++;
+    }
+
+    rstate = Aux::mapSet(mpstate, this->states);
+    rini = Aux::mapSet(mpstate, this->initials);
+    rfin = Aux::mapMap(mpstate, this->finals);
+    for(auto p : this->trans)
+    {
+      auto it = mpsymbol.find(p.first.second);
+      int val;
+      if(it == mpsymbol.end())
+      {
+        val = symcnt;
+        mpsymbol[p.first.second] = symcnt++;
+      }
+      else
+      {
+        val = it->second;
+      }
+      std::set<int> to = Aux::mapSet(mpstate, p.second);
+      rtrans.insert({std::make_pair(mpstate[p.first.first], val), to});
+    }
+
+    GeneralizedBuchiAutomaton<int, int> *ret = new GeneralizedBuchiAutomaton<int, int>(rstate, rfin, rini, rtrans, rsym);
+    this->renameStateMap = mpstate;
+    this->renameSymbolMap = mpsymbol;
+
+    // TODO simulations for gbas
+    /*std::set<std::pair<int, int> > rdirSim, roddSim;
+    for(auto item : this->directSim)
+    {
+      rdirSim.insert({mpstate[item.first], mpstate[item.second]});
+    }
+    for(auto item : this->oddRankSim)
+    {
+      roddSim.insert({mpstate[item.first], mpstate[item.second]});
+    }
+    ret->setDirectSim(rdirSim); 
+    ret->setOddRankSim(roddSim); 
+    */
+    
+    ret->setAPPattern(this->apsPattern);
+    return ret;
   } 
 
   GeneralizedBuchiAutomaton<int, int> renameAutDict(map<Symbol, int>& mpsymbol, int start = 0);
@@ -112,7 +178,7 @@ public:
    * Get sets of accepting states of the automaton.
    * @return Set of sets of final states
    */
-  SetStates& getFinals()
+  GBAFinals& getFinals()
   {
     return this->finals;
   }

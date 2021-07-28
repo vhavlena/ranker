@@ -17,8 +17,8 @@ std::string GeneralizedBuchiAutomaton<State,Symbol>::toStringWith(std::function<
       str += symStr(p.first.second) + "," + stateStr(p.first.first)
         + "->" + stateStr(d) + "\n";
   }
-  for (auto s : this->finals){
-    for(auto p : s)
+  for (auto it = this->finals.begin(); it != this->finals.end(); it++){
+    for(State p : it->second)
         str += stateStr(p) + "\n";
     str += "---\n"; // divider between accepting sets
   }
@@ -31,24 +31,6 @@ std::string GeneralizedBuchiAutomaton<State,Symbol>::toStringWith(std::function<
 template<typename State, typename Symbol>
 std::string GeneralizedBuchiAutomaton<State, Symbol>::toGraphwizWith(std::function<std::string(State)>& stateStr,  std::function<std::string(Symbol)>& symStr){
   //TODO
-  std::string str = "digraph \" Automaton \" { rankdir=LR;\n { rank = LR }\n";
-  str += "node [shape = doublecircle];\n";
-  for(auto p : this->finals) //TODO
-    str += "\"" + stateStr(p) + "\"\n";
-  str += "node [shape = circle];";
-  for(auto st : this->states)
-    str += "\"" + stateStr(st) + "\"\n";
-  str += "\"init0\";\n";
-  for (auto p : this->initials)
-    str += "\"init0\" -> \"" + stateStr(p) + "\"\n";
-  for (auto p : this->trans)
-  {
-    for(auto d : p.second)
-      str +=  "\"" + stateStr(p.first.first) + "\" -> \"" + stateStr(d) +
-        + "\" [label = \"" + symStr(p.first.second) + "\"];\n";
-  }
-  str += "}\n";
-  return str;
 }
 
 template<typename State, typename Symbol>
@@ -79,7 +61,7 @@ std::string GeneralizedBuchiAutomaton<State,Symbol>::toHOA(){
 /*template<typename State, typename Symbol>
 GeneralizedBuchiAutomaton<int, int>* GeneralizedBuchiAutomaton<State,Symbol>::renameAut(int start){
     //TODO
-}*/
+}*/     
 
 template<typename State, typename Symbol>
 GeneralizedBuchiAutomaton<int, int> GeneralizedBuchiAutomaton<State,Symbol>::renameAutDict(map<Symbol, int>& mpsymbol, int start){
@@ -115,3 +97,9 @@ template<typename State, typename Symbol>
 GeneralizedBuchiAutomaton<State, Symbol> GeneralizedBuchiAutomaton<State,Symbol>::reverseGBA(){
     //TODO
 }
+
+template class GeneralizedBuchiAutomaton<int, int>;
+template class GeneralizedBuchiAutomaton<std::string, std::string>;
+template class GeneralizedBuchiAutomaton<StateSch, int>;
+template class GeneralizedBuchiAutomaton<int, APSymbol>;
+template class GeneralizedBuchiAutomaton<StateSch, APSymbol>;

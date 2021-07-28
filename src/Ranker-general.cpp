@@ -37,7 +37,7 @@ AutomatonStruct<int, APSymbol>* parseRenameHOA(ifstream& os)
   else if (dynamic_cast<GeneralizedBuchiAutomaton<int, APSymbol>*>(orig)){
     GeneralizedBuchiAutomaton<int, APSymbol> *origGBA = (GeneralizedBuchiAutomaton<int, APSymbol>*)orig;
 
-    // TODO 
+    // TODO simulations
     //auto ranksim = sim.directSimulation<int, APSymbol>(*origGBA, -1);
     //origGBA->setDirectSim(ranksim);
     //auto cl = set<int>();
@@ -99,6 +99,43 @@ void complementAutWrap(AutomatonStruct<int, int>* ren, BuchiAutomaton<StateSch, 
     stats->elevatorStates = sp.elevatorStates();
     stats->originalStates = sp.getStates().size();
     *complRes = renCompl;
+  }
+  else if (dynamic_cast<GeneralizedBuchiAutomaton<int, int>*>(ren)){
+    GeneralizedBuchiAutomaton<int, int> *renptr = (GeneralizedBuchiAutomaton<int, int>*) ren;
+
+    GeneralizedBuchiAutomatonCompl sp(renptr);
+
+    ComplOptions opt = { .cutPoint = true, .succEmptyCheck = true, .ROMinState = 8,
+        .ROMinRank = 6, .CacheMaxState = 6, .CacheMaxRank = 8, .semidetOpt = false };
+    sp.setComplOptions(opt);
+    BuchiAutomaton<StateSch, int> comp;
+
+    comp = sp.complementSchReduced(delay, renptr->getFinals(), w, version, stats);
+    /*
+    BuchiAutomatonDelay<int> compDelay(comp);
+    *complOrig = comp;
+
+    stats->generatedStates = comp.getStates().size();
+    stats->generatedTrans = comp.getTransCount();
+    stats->generatedTransitionsToTight = compDelay.getTransitionsToTight();
+
+    map<int, int> id;
+    for(auto al : comp.getAlphabet())
+      id[al] = al;
+    BuchiAutomaton<int, int> renCompl = comp.renameAutDict(id);
+    renCompl.removeUseless();
+    renCompl = renCompl.renameAutDict(id);
+
+    stats->reachStates = renCompl.getStates().size();
+    stats->reachTrans = renCompl.getTransCount();
+    stats->engine = "Ranker";
+    //stats->transitionsToTight = comp.getTransitionsToTight();
+    //stats->transitionsToTight = renCompl.getTransitionsToTight();
+    stats->transitionsToTight = -1;
+    stats->elevator = renptr->isElevator(); // original automaton before complementation
+    stats->elevatorStates = sp.elevatorStates();
+    stats->originalStates = sp.getStates().size();
+    *complRes = renCompl;*/
   }
 }
 

@@ -30,14 +30,24 @@ using std::map;
  */
 class GeneralizedBuchiAutomatonCompl : public GeneralizedBuchiAutomaton<int, int>
 {
+private:
+  BackRel createBackRel(BuchiAutomaton<int, int>::StateRelation& rel);
+
+  map<DFAState, RankBound> rankBound;
+  SuccRankCache rankCache;
+
+  ComplOptions opt;
 
 public:
-  BuchiAutomatonSpec(BuchiAutomaton<int, int> &t) : GeneralizedBuchiAutomaton<int, int>(t)
+  GeneralizedBuchiAutomatonCompl(GeneralizedBuchiAutomaton<int, int> *t) : GeneralizedBuchiAutomaton<int, int>(*t)
   {
+    opt = {.cutPoint = false};
   }
 
+  void setComplOptions(ComplOptions& co) { this->opt = co; }
+  ComplOptions getComplOptions() const { return this->opt; }
 
-  GeneralizedBuchiAutomaton<int, int> complementSchReduced(bool delay, std::set<int> originalFinals, double w, delayVersion version, Stat *stats);
+  BuchiAutomaton<StateSch, int> complementSchReduced(bool delay, std::map<int,std::set<int>> originalFinals, double w, delayVersion version, Stat *stats);
 };
 
 #endif

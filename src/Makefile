@@ -79,34 +79,33 @@ ranker: ranker.cpp $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/BuchiAutomaton.o $(OBJ)/AutomatonStruct.o $(OBJ)/BuchiAutomatonSpec.o \
 	$(OBJ)/RankFunc.o $(OBJ)/AutGraph.o $(OBJ)/Simulations.o $(OBJ)/AuxFunctions.o \
 	$(OBJ)/ranker-general.o $(OBJ)/BuchiAutomatonDebug.o $(OBJ)/BuchiDelay.o \
-	$(OBJ)/GeneralizedBuchiAutomaton.o
+	$(OBJ)/GeneralizedBuchiAutomaton.o $(OBJ)/GenBuchiAutomatonCompl.o
 	$(GCC) $(CPPFLAGS) -o $@ $^ $(SUFF)
 
 ranker-sim: ranker-sim.cpp $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/BuchiAutomaton.o  $(OBJ)/Simulations.o $(OBJ)/BuchiAutomatonSpec.o \
 	$(OBJ)/RankFunc.o $(OBJ)/AutGraph.o $(OBJ)/AuxFunctions.o \
-	$(OBJ)/BuchiAutomatonDebug.o \
-	$(OBJ)/GeneralizedBuchiAutomaton.o
+	$(OBJ)/BuchiAutomatonDebug.o 
 	$(GCC) $(CPPFLAGS) -o $@ $^ $(SUFF)
 
 ranker-composition: ranker-composition.cpp $(OBJ)/ranker-general.o $(OBJ)/AuxFunctions.o \
 	$(OBJ)/RankFunc.o $(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/Simulations.o   $(OBJ)/AutGraph.o  $(OBJ)/BuchiAutomatonSpec.o \
 	$(OBJ)/BuchiAutomatonDebug.o $(OBJ)/BuchiDelay.o $(OBJ)/AutomatonStruct.o \
-	$(OBJ)/GeneralizedBuchiAutomaton.o
+	$(OBJ)/GeneralizedBuchiAutomaton.o $(OBJ)/GenBuchiAutomatonCompl.o
 	$(GCC) $(CPPFLAGS) -o ranker-composition $^ $(SUFF)
 
 ranker-tight: ranker-tight.cpp $(OBJ)/AuxFunctions.o $(OBJ)/ranker-general.o \
 	$(OBJ)/RankFunc.o $(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/Simulations.o   $(OBJ)/AutGraph.o  $(OBJ)/BuchiAutomatonSpec.o \
 	$(OBJ)/BuchiAutomatonDebug.o $(OBJ)/BuchiDelay.o $(OBJ)/AutomatonStruct.o \
-	$(OBJ)/GeneralizedBuchiAutomaton.o
+	$(OBJ)/GeneralizedBuchiAutomaton.o $(OBJ)/GenBuchiAutomatonCompl.o	
 	$(GCC) $(CPPFLAGS) -o $@ $^ $(SUFF)
 
 $(OBJ)/ranker-general.o: Ranker-general.cpp $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/BuchiAutomaton.o $(OBJ)/AutomatonStruct.o $(OBJ)/BuchiAutomatonSpec.o \
 	$(OBJ)/RankFunc.o $(OBJ)/AutGraph.o $(OBJ)/Simulations.o $(OBJ)/AuxFunctions.o \
-	$(OBJ)/BuchiAutomatonDebug.o
+	$(OBJ)/BuchiAutomatonDebug.o $(OBJ)/GeneralizedBuchiAutomaton.o $(OBJ)/GenBuchiAutomatonCompl.o 
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 
 $(OBJ)/BuchiAutomatonDebug.o: Debug/BuchiAutomatonDebug.cpp \
@@ -161,6 +160,15 @@ $(OBJ)/GeneralizedBuchiAutomaton.o: Automata/GeneralizedBuchiAutomaton.cpp Autom
 	Automata/AutomatonStruct.h Complement/StateSch.h Complement/StateKV.h \
 	Complement/RankFunc.h Automata/APSymbol.h $(OBJ)/AutGraph.o \
 	$(OBJ)/AuxFunctions.o $(OBJ)/AutomatonStruct.o
+	$(GCC) $(CPPFLAGS) -c -o $@ $<
+
+$(OBJ)/GenBuchiAutomatonCompl.o: Complement/GenBuchiAutomatonCompl.cpp \
+	Automata/GeneralizedBuchiAutomaton.h Automata/AutomatonStruct.h Complement/StateKV.h \
+	Complement/StateSch.h Complement/GenBuchiAutomatonCompl.h Complement/Options.h \
+	Complement/BuchiAutomatonSpec.h Automata/BuchiAutomaton.h \
+	$(OBJ)/RankFunc.o $(OBJ)/AuxFunctions.o \
+	$(OBJ)/BuchiAutomaton.o  $(OBJ)/BuchiAutomatonSpec.o \
+	$(OBJ)/GeneralizedBuchiAutomaton.o $(OBJ)/AutomatonStruct.o 
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 
 clean:

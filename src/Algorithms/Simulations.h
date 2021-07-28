@@ -16,6 +16,7 @@
 
 #include <boost/algorithm/string.hpp>
 #include "../Automata/BuchiAutomaton.h"
+#include "../Automata/GeneralizedBuchiAutomaton.h"
 
 using namespace std;
 
@@ -78,6 +79,18 @@ public:
       }
     }
     return dir;
+  };
+
+  /*
+   * Compute direct simulation
+   * @param gba generalized Buchi automaton
+   * @param sink Sink state
+   * @return Direct simulation
+   */
+  template<typename State, typename Symbol>
+  Relation<State> directSimulation(GeneralizedBuchiAutomaton<State, Symbol>& gba, State sink)
+  {
+    //TODO
   };
 
 protected:

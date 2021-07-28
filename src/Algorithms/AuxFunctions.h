@@ -74,6 +74,21 @@ namespace Aux
     return ret;
   }
 
+  template<typename T, typename S>
+  std::map<int, std::set<S>> mapMap(std::map<T, S> &mp, std::map<int, std::set<T>> &st){
+    std::map<int, std::set<S>> ret;
+    for (unsigned i = 0; i < st.size(); i++){
+      std::set<int> emptySet;
+      ret.insert({i, emptySet});
+      auto it = ret.find(i);
+      for (const auto& p : st[i]){
+        // TODO insert
+        it->second.insert(mp[p]);
+      }
+    }
+    return ret;
+  }
+
 
   /*
    * Reverse a given mapping (assume it is a bijection)

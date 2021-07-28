@@ -13,6 +13,7 @@
 //#include "Compl-config.h"
 #include "Complement/Options.h"
 #include "Complement/BuchiAutomatonSpec.h"
+#include "Complement/GenBuchiAutomatonCompl.h"
 #include "Algorithms/AuxFunctions.h"
 #include "Automata/BuchiAutomaton.h"
 #include "Automata/BuchiAutomataParser.h"
