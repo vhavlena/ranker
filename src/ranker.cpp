@@ -187,7 +187,8 @@ int main(int argc, char *argv[])
       AutomatonStruct<int, int> *ren;
 
       BuchiAutomaton<int, int> renCompl;
-      BuchiAutomaton<StateSch, int> comp;
+      BuchiAutomaton<StateSch, int> compBA;
+      BuchiAutomaton<StateSchGBA, int> compGBA;
 
       BuchiAutomaton<int, int> *renBuchi = nullptr;
       GeneralizedBuchiAutomaton<int, int> *renGBA = nullptr;
@@ -225,7 +226,10 @@ int main(int argc, char *argv[])
 
       try
       {
-        complementAutWrap(renBuchi, &comp, &renCompl, &stats, delay, w, version, elevatorRank, eta4);
+        if (renBuchi != nullptr)
+          complementAutWrap(renBuchi, &compBA, &renCompl, &stats, delay, w, version, elevatorRank, eta4);
+        else if (renGBA != nullptr)
+          complementAutWrap(renGBA, &compGBA, &renCompl, &stats,delay, w, version, elevatorRank, eta4);
       }
       catch (const std::bad_alloc&)
       {
@@ -237,7 +241,8 @@ int main(int argc, char *argv[])
       map<int, APSymbol> symDict = Aux::reverseMap(ba->getRenameSymbolMap());
 
       //Product with a word
-      if(params.checkWord.size() > 0)
+      //TODO uncomment + extend to gbas
+      /*if(params.checkWord.size() > 0)
       {
         cout << "Product in Graphwiz:" << endl;
         auto appattern = comp.getAPPattern();
@@ -251,7 +256,7 @@ int main(int argc, char *argv[])
 
         os.close();
         return 0;
-      }
+      }*/
 
 
       BuchiAutomaton<int, APSymbol> outOrig = renCompl.renameAlphabet<APSymbol>(symDict);

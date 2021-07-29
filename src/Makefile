@@ -168,7 +168,7 @@ $(OBJ)/GenBuchiAutomatonCompl.o: Complement/GenBuchiAutomatonCompl.cpp \
 	Complement/BuchiAutomatonSpec.h Automata/BuchiAutomaton.h \
 	$(OBJ)/RankFunc.o $(OBJ)/AuxFunctions.o \
 	$(OBJ)/BuchiAutomaton.o  $(OBJ)/BuchiAutomatonSpec.o \
-	$(OBJ)/GeneralizedBuchiAutomaton.o $(OBJ)/AutomatonStruct.o 
+	$(OBJ)/GeneralizedBuchiAutomaton.o $(OBJ)/AutomatonStruct.o $(OBJ)/BuchiAutomatonSpec.o
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 
 clean:

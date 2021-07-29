@@ -58,12 +58,10 @@ typedef map<std::tuple<DFAState, int, int>, vector<std::pair<RankFunc,vector<Ran
 class BuchiAutomatonSpec : public BuchiAutomaton<int, int>
 {
 private:
-  BackRel createBackRel(BuchiAutomaton<int, int>::StateRelation& rel);
-
   map<DFAState, RankBound> rankBound;
   SuccRankCache rankCache;
 
-  ComplOptions opt;
+  ComplOptions opt; 
 
 protected:
   RankConstr rankConstr(vector<int>& max, set<int>& states);
@@ -84,15 +82,6 @@ protected:
   bool isSchFinal(StateSch& state) const { return state.tight ? state.O.size() == 0 : state.S.size() == 0; }
   bool getRankSuccCache(vector<RankFunc>& out, StateSch& state, int symbol);
 
-
-  void getSchRanksTightReduced(vector<RankFunc>& out, vector<int>& max,
-      set<int>& states, int symbol, StateSch& macrostate,
-      map<int, int> reachCons, int reachMax, BackRel& dirRel, BackRel& oddRel);
-  vector<StateSch> succSetSchStartReduced(set<int>& state, int rankBound, map<int, int> reachCons,
-      map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel);
-  vector<StateSch> succSetSchTightReduced(StateSch& state, int symbol, map<int, int> reachCons,
-      map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel, bool eta4);
-
   bool acceptSl(StateSch& state, vector<int>& alp);
 
 
@@ -110,6 +99,8 @@ public:
     opt = { .cutPoint = false};
   }
 
+  BackRel createBackRel(BuchiAutomaton<int, int>::StateRelation& rel);
+  
   BuchiAutomaton<StateKV, int> complementKV();
   BuchiAutomaton<StateSch, int> complementSch();
   BuchiAutomaton<StateSch, int> complementSchReduced(bool delay, std::set<int> originalFinals, double w, delayVersion version, bool elevatorRank, bool eta4, Stat *stats);
@@ -120,7 +111,9 @@ public:
   set<StateSch> nfaSlAccept(BuchiAutomaton<StateSch, int>& nfaSchewe);
   set<pair<DFAState,int>> nfaSingleSlNoAccept(BuchiAutomaton<StateSch, int>& nfaSchewe);
   map<DFAState, RankBound> getRankBound(BuchiAutomaton<StateSch, int>& nfaSchewe, set<StateSch>& slignore, map<DFAState, int>& maxReachSize, map<int, int>& minReachSize);
+  map<DFAState, RankBound> getRankBound(BuchiAutomaton<StateSchGBA, int>& nfaSchewe, set<StateSchGBA>& slignore, map<DFAState, int>& maxReachSize, map<int, int>& minReachSize);
   map<DFAState, int> getMaxReachSize(BuchiAutomaton<StateSch, int>& nfaSchewe, set<StateSch>& slIgnore);
+  map<DFAState, int> getMaxReachSize(BuchiAutomaton<StateSchGBA, int>& nfaSchewe, set<StateSchGBA>& slIgnore);
   map<int, int> getMaxReachSizeInd();
   map<int, int> getMinReachSize();
 
@@ -131,6 +124,14 @@ public:
   unsigned elevatorStates();
   vector<set<int>> topologicalSort();
   void topologicalSortUtil(set<int> currentScc, vector<set<int>> allSccs, map<set<int>, bool> &visited, stack<set<int>> &Stack);
+
+  void getSchRanksTightReduced(vector<RankFunc>& out, vector<int>& max,
+      set<int>& states, int symbol, StateSch& macrostate,
+      map<int, int> reachCons, int reachMax, BackRel& dirRel, BackRel& oddRel);
+  vector<StateSch> succSetSchStartReduced(set<int>& state, int rankBound, map<int, int> reachCons,
+      map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel, set<int> finals);
+  vector<StateSch> succSetSchTightReduced(StateSch& state, int symbol, map<int, int> reachCons,
+      map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel, bool eta4, set<int> finals);
 };
 
 #endif

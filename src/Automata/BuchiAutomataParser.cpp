@@ -367,7 +367,7 @@ Delta<int, APSymbol> BuchiAutomataParser::parseHoaBody(int apNum, ifstream & os,
       else if (this->getAutomatonType() == autGBA and boost::regex_match(linecp, what, gbaRegex))
       {
         src = std::stoi(what[1]);
-        if (what.size() >= 3){
+        if (what.size() >= 3 and what[2].length()>0){
           string v = what[2];
           v.erase(v.begin(), v.begin()+1);
           v.erase(v.end()-1, v.end());

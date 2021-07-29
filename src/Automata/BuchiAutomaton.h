@@ -253,6 +253,22 @@ public:
     return this->finals;
   }
 
+  void addStates(State state){
+    this->states.insert(state);
+  }
+
+  void addFinals(State state){
+    this->finals.insert(state);
+  }
+
+  void addNewTransition(std::pair<State, Symbol> src, std::set<State> dst){
+    this->trans.insert({src, dst});
+  }
+
+  void addNewStatesToTransition(std::pair<State, Symbol> src, std::set<State> dst){
+    this->trans[src].insert(dst.begin(), dst.end());
+  }
+
   /*
    * Get odd rank simulation (aka rank simulation) between states
    * @return Set of pairs of states
@@ -340,6 +356,10 @@ public:
   bool isSemiDeterministic()
   {
     return this->isReachDeterministic(this->finals);
+  }
+
+  void setFinals(SetStates finals){
+    this->finals = finals;
   }
 
   BuchiAutomaton<tuple<State, int, bool>, Symbol> productBA(BuchiAutomaton<int, Symbol>& other);

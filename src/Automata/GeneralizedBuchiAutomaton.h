@@ -77,7 +77,6 @@ public:
   std::string toHOA();
   
   AutomatonStruct<int, int>* renameAut(int start = 0) override {
-    //TODO
     int stcnt = start;
     int symcnt = 0;
     std::map<State, int> mpstate;
