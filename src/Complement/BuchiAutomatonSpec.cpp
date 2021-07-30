@@ -596,12 +596,9 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
   vector<int> maxRank(getStates().size(), state.f.getMaxRank());
   map<int, set<int> > succ;
   map<int, bool > pre;
-  //auto fin = getFinals();
 
   this->setFinals(finals);
   auto fin = getFinals();
-
-  std::cerr << "Fin size for this condition: " << fin.size() << std::endl;
 
   for(int st : state.S)
   {
@@ -618,11 +615,8 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
 
   if(this->rankBound[state.S].bound*2-1 < state.f.getMaxRank() || this->rankBound[sprime].bound*2-1 < state.f.getMaxRank())
   {
-    std::cerr << "Returning early from succSetSchTightReduced... " << std::endl;
-    std::cerr << "rankbound S: " << this->rankBound[state.S].bound << ", rankbound S': " << this->rankBound[sprime].bound << ", maxrank: " << state.f.getMaxRank() << std::endl;
     return ret;
   }
-  std::cerr << "rankbound S: " << this->rankBound[state.S].bound << ", rankbound S': " << this->rankBound[sprime].bound << ", maxrank: " << state.f.getMaxRank() << std::endl;
 
   vector<int> rnkBnd;
   for(int i : sprime)
@@ -652,7 +646,6 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
   getSchRanksTightReduced(maxRanks, maxRank, sprime, symbol, state,
       reachCons, maxReachAct, dirRel, oddRel);
 
-  std::cerr << "Max ranks vector size: " << maxRanks.size() << std::endl;
   for (auto& r : maxRanks)
   {
     set<int> oprime_tmp;
@@ -681,14 +674,12 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
       iprime = 0;
     }
     ret.push_back({sprime, oprime_tmp, r, iprime, true});
-    std::cerr << "Insert into ret" << std::endl;  
   }
 
   set<StateSch> retAll;
   for(const StateSch& st : ret)
   {
     retAll.insert(st);
-    std::cerr << "Insert 1" << std::endl;
     map<int, int> rnkMap((map<int, int>)st.f);
 
     if (eta4){
@@ -713,7 +704,6 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
             no.insert(o);
         }
         retAll.insert({st.S, no, RankFunc(rnkMap, this->opt.cutPoint), st.i, true});
-        std::cerr << "Insert 2" << std::endl;
       }
     }
     else
@@ -730,7 +720,6 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
       // if(!cnt)
       //   continue;
       retAll.insert({st.S, no, RankFunc(rnkMap, this->opt.cutPoint), st.i, true});
-      std::cerr << "Insert 3" << std::endl;
     }
   }
 
@@ -836,15 +825,12 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
   map<std::pair<StateSch, int>, set<StateSch>> prev = comp.getReverseTransitions();
   //std::cout << comp.toGraphwiz() << std::endl;
 
-  set<StateSch> slIgnore;
-  set<StateSch> ignoreAll;
-  //TODO uncomment - experiment
-  /*set<StateSch> slIgnore = this->nfaSlAccept(comp);
+  set<StateSch> slIgnore = this->nfaSlAccept(comp);
   set<pair<DFAState,int>> slNonEmpty = this->nfaSingleSlNoAccept(comp);
   set<StateSch> ignoreAll;
   for(const auto& t : slNonEmpty)
     ignoreAll.insert({t.first, set<int>(), RankFunc(), 0, false});
-  ignoreAll.insert(slIgnore.begin(), slIgnore.end());*/
+  ignoreAll.insert(slIgnore.begin(), slIgnore.end());
   
   set<StateSch> nfaStates = comp.getStates();
   comst.insert(nfaStates.begin(), nfaStates.end());
@@ -856,12 +842,10 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
   mp.insert(comp.getTransitions().begin(), comp.getTransitions().end());
   finals = set<StateSch>(comp.getFinals());
 
-  //TODO uncomment - experiment
-  /*int newState = this->getStates().size(); //Assumes numbered states: from 0, no gaps
+  int newState = this->getStates().size(); //Assumes numbered states: from 0, no gaps
   map<pair<DFAState,int>, StateSch> slTrans;
   for(const auto& pr : slNonEmpty)
   {
-    //std::cout << StateSch::printSet(pr.first) << std::endl;
     StateSch ns = { set<int>({newState}), set<int>(), RankFunc(), 0, false };
     StateSch src = { pr.first, set<int>(), RankFunc(), 0, false };
     slTrans[pr] = ns;
@@ -871,8 +855,6 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
     comst.insert(ns);
     newState++;
   }
-  std::cerr << "Size: " << comst.size() << std::endl;*/
-
 
   // Compute rank upper bound on the macrostates
   auto invComp = comp.reverseBA(); //inverse automaton
@@ -921,14 +903,12 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
     for(auto item : tightStartDelay)
       tmpSet.insert(item.first);
   }
-  //std::set<StateSch> tmpStackSet;
   for(const StateSch& tmp : (delay ? tmpSet : tightStart))
   {
     if(tmp.S.size() > 0)
     {
       stack.push(tmp);
     }
-    //tmpStackSet.insert(tmp);
   }
 
   StateSch init = {getInitials(), set<int>(), RankFunc(), 0, false};
@@ -964,18 +944,11 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
       if(st.tight)
       {
         succ = succSetSchTightReduced(st, sym, reachCons, maxReach, dirRel, oddRel, eta4, this->getFinals());
-        std::cerr << "BA succSetSchTightReduced states: " << succ.size() << std::endl;
       }
       else
       {
         succ = succSetSchStartReduced(st.S, rankBound[st.S].bound, reachCons, maxReach, dirRel, oddRel, this->getFinals());
-        std::cerr << "BA succSetSchStartReduced states: " << succ.size() << std::endl;
-        //cout << st.toString() << " : " << succ.size() << endl;
         cnt = false;
-        //auto tmp = succSetSchStart(st.S, rankBound[st.S], reachCons, maxReach, dirRel, oddRel);
-        //std::cerr << "Size: " << tmp.size() << std::endl;
-        std::cerr << "Rank bound: " << rankBound[st.S].bound << std::endl;
-        std::cerr << "Tight size: " << succ.size() << std::endl;
       }
       for (const StateSch& s : succ)
       {
@@ -987,12 +960,11 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
         }
       }
 
-      // TODO uncomment - experiment
-      /*auto it = slTrans.find({st.S, sym});
+      auto it = slTrans.find({st.S, sym});
       if(it != slTrans.end())
       {
         dst.insert(it->second);
-      }*/
+      }
       if(!st.tight)
       {
         if(!cnt)
@@ -1023,10 +995,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
       }
       if(!cnt) break;
     }
-    //std::cout << comst.size() << " : " << stack.size() << std::endl;
   }
-
-  //std::cerr << "Transitions to tight: " << transitionsToTight << std::endl;
 
   end = std::chrono::high_resolution_clock::now();
   stats->tightPart = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
@@ -1524,7 +1493,6 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe){
       }
       // update rank upper bound if lower
       if (!bad && this->rankBound[macrostate.S].bound > (int)max){
-        std::cerr << "Update: " << this->rankBound[macrostate.S].bound << " -> " << max << std::endl;
         this->rankBound[macrostate.S].bound = max;
       }
     }
@@ -1539,7 +1507,6 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe){
     } else if (this->rankBound[macrostate.S].bound > maxRank)
       maxRank = this->rankBound[macrostate.S].bound;
   }
-  std::cerr << "Max rank: " << maxRank << std::endl;
 }
 
 /*
@@ -1554,11 +1521,9 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
 {
   set<int> nofin;
   set<int> fin = this->getFinals();
-  std::cerr << "rank bound fin size: " << fin.size() << std::endl;
   std::set_difference(this->getStates().begin(), this->getStates().end(), fin.begin(),
     fin.end(), std::inserter(nofin, nofin.begin()));
   vector<int> states(nofin.begin(), nofin.end());
-  std::cerr << "rank bound no fin size: " << nofin.size() << std::endl;
   map<StateSch, int> rnkmap;
   map<set<int>, int> classesMap;
   int classes;
@@ -1566,7 +1531,6 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
   bool sd = false;
   if(this->opt.semidetOpt && this->isSemiDeterministic()){
     sd = true;
-    std::cerr << "semideterministic" << std::endl;
   }
 
   for(const StateSch& s : nfaSchewe.getStates())
@@ -1590,32 +1554,12 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
         classes = classesMap[st];
       }
       rnkmap[s] = std::max(rnkmap[s], classes);
-      std::cerr << "rnkmap[s] = " << rnkmap[s] << std::endl;
       if(sd)
       {
         rnkmap[s] = std::min(rnkmap[s], 3);
       }
     }
   }
-
-
-  // cout << " : " << states.size() << endl;
-  // for(vector<int>& sub : Aux::getAllSubsets(states))
-  // {
-  //   set<int> st(sub.begin(), sub.end());
-  //   this->computeRankSim(st);
-  //   int classes = Aux::countEqClasses(this->getStates().size(), st, this->getOddRankSim());
-  //   //cout << StateSch::printSet(st) << " : " << classes << endl;
-  //   for(const StateSch& s : nfaSchewe.getStates())
-  //   {
-  //     if(std::includes(s.S.begin(), s.S.end(), st.begin(), st.end()))
-  //     {
-  //       rnkmap[s] = std::max(rnkmap[s], classes);
-  //     }
-  //   }
-  // }
-  // cout << " end "  << endl;
-
 
   auto updPred = [this] (LabelState<StateSch, RankBound>* dest, LabelState<StateSch, RankBound>* pred, map<int, int>* restr)
   {
@@ -1625,7 +1569,6 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
       if(succSet(pred->state.S, sym) == dest->state.S)
         syms.insert(sym);
     }
-    std::cerr << "syms size: " << syms.size() << std::endl;
     //TODO finish
     map<int, int> ret;
     *restr = ret;
@@ -1641,7 +1584,6 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
         continue;
       m = std::max(m, tmp->label.bound);
     }
-    std::cerr << ".bound = " << std::min(a->label.bound, m) << std::endl;
     return { .bound = std::min(a->label.bound, m), .stateBound = a->label.stateBound };
   };
 
@@ -1686,7 +1628,6 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
     // if(this->containsRankSimEq(ret) && ret.size() > 1)
     //   rank = std::min(rank, std::max((int)ret.size() - 1, 0));
     rank = std::min(rank, rnkmap[act]);
-    std::cerr << ".bound = " << rank << std::endl;
     return { .bound = rank, .stateBound = map<int, int>() };
   };
 
@@ -1694,7 +1635,6 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
   map<DFAState, RankBound> ret;
   for(const auto& t : tmp){
     ret[t.first.S] = t.second;
-    std::cerr << "ret[t.first.S] = " << t.second.bound << std::endl;
   }  
 
   //return { .bound = ret, .stateBound = map<int, int>() };
@@ -1705,11 +1645,9 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
 {
   set<int> nofin;
   set<int> fin = this->getFinals();
-  std::cerr << "rank bound fin size: " << fin.size() << std::endl;
   std::set_difference(this->getStates().begin(), this->getStates().end(), fin.begin(),
     fin.end(), std::inserter(nofin, nofin.begin()));
   vector<int> states(nofin.begin(), nofin.end());
-  std::cerr << "rank bound no fin size: " << nofin.size() << std::endl;
   map<StateSchGBA, int> rnkmap;
   map<set<int>, int> classesMap;
   int classes;
@@ -1717,7 +1655,6 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
   bool sd = false;
   if(this->opt.semidetOpt && this->isSemiDeterministic()){
     sd = true;
-    std::cerr << "semideterministic" << std::endl;
   }
 
   for(const StateSchGBA& s : nfaSchewe.getStates())
@@ -1741,7 +1678,6 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
         classes = classesMap[st];
       }
       rnkmap[s] = std::max(rnkmap[s], classes);
-      std::cerr << "rnkmap[s] = " << rnkmap[s] << std::endl;
       if(sd)
       {
         rnkmap[s] = std::min(rnkmap[s], 3);
@@ -1757,7 +1693,6 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
       if(succSet(pred->state.S, sym) == dest->state.S)
         syms.insert(sym);
     }
-    std::cerr << "syms size: " << syms.size() << std::endl;
     map<int, int> ret;
     *restr = ret;
   };
@@ -1772,7 +1707,6 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
         continue;
       m = std::max(m, tmp->label.bound);
     }
-    std::cerr << ".bound = " << std::min(a->label.bound, m) << std::endl;
     return { .bound = std::min(a->label.bound, m), .stateBound = a->label.stateBound };
   };
 
@@ -1817,7 +1751,6 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
     // if(this->containsRankSimEq(ret) && ret.size() > 1)
     //   rank = std::min(rank, std::max((int)ret.size() - 1, 0));
     rank = std::min(rank, rnkmap[act]);
-    std::cerr << ".bound = " << rank << std::endl;
     return { .bound = rank, .stateBound = map<int, int>() };
   };
 
@@ -1825,7 +1758,6 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
   map<DFAState, RankBound> ret;
   for(const auto& t : tmp){
     ret[t.first.S] = t.second;
-    std::cerr << "ret[t.first.S] = " << t.second.bound << std::endl;
   }
 
   //return { .bound = ret, .stateBound = map<int, int>() };
@@ -1898,7 +1830,6 @@ map<DFAState, int> BuchiAutomatonSpec::getMaxReachSize(BuchiAutomaton<StateSchGB
  */
 map<int, int> BuchiAutomatonSpec::getMinReachSize()
 {
-  std::cerr << "get min reach size" << std::endl;
   set<StateSch> slIgnore;
   BuchiAutomaton<StateSch, int> comp;
   map<StateSch, int> mp;
@@ -2323,7 +2254,6 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchOpt(bool delay, s
         }
         else
         {
-          //mp[pr].insert(dst.begin(), dst.end());
           if (not delay)
             mp[pr].insert(dst.begin(), dst.end());
           else {
@@ -2338,7 +2268,6 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchOpt(bool delay, s
       }
       if(!cnt) break;
     }
-    //std::cout << comst.size() << " : " << stack.size() << std::endl;
   }
 
   return BuchiAutomaton<StateSch, int>(comst, finals,

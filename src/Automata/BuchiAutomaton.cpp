@@ -80,17 +80,7 @@ BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAutDict(map<Symbol
   rfin = Aux::mapSet(mpstate, this->finals);
   for(auto p : this->trans)
   {
-    //auto it = mpsymbol.find(p.first.second);
     int val = mpsymbol[p.first.second];
-    // if(it == mpsymbol.end())
-    // {
-    //   val = symcnt;
-    //   mpsymbol[p.first.second] = symcnt++;
-    // }
-    // else
-    // {
-    //   val = it->second;
-    // }
     std::set<int> to = Aux::mapSet(mpstate, p.second);
     rtrans.insert({std::make_pair(mpstate[p.first.first], val), to});
   }

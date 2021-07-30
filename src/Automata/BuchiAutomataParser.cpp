@@ -377,7 +377,6 @@ Delta<int, APSymbol> BuchiAutomataParser::parseHoaBody(int apNum, ifstream & os,
           std::string token = v;
           while ((pos = v.find(delimiter)) != std::string::npos){
             token = v.substr(0, pos);
-            //std::cerr << token << std::endl;
             // insert state in finals
             auto it = finsGBA.find(std::stoi(token));
             if (it == finsGBA.end())
@@ -386,7 +385,6 @@ Delta<int, APSymbol> BuchiAutomataParser::parseHoaBody(int apNum, ifstream & os,
               it->second.insert(src);
             v.erase(0, pos + delimiter.length());
           }
-          //std::cerr << v << std::endl; 
           // last element outside of the loop
           auto it = finsGBA.find(std::stoi(v));
           if (it == finsGBA.end())

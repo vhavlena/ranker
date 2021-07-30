@@ -42,7 +42,6 @@ private:
 protected:
   bool isSchGBAFinal(StateSchGBA& state) const { return state.tight ? state.O.size() == 0 : state.S.size() == 0; }
   set<int> succSet(set<int>& state, int symbol);
-  //RankConstr rankConstr(vector<int>& max, set<int>& states, unsigned number);
 
 public:
   GeneralizedBuchiAutomatonCompl(GeneralizedBuchiAutomaton<int, int> *t) : GeneralizedBuchiAutomaton<int, int>(*t)
@@ -57,17 +56,6 @@ public:
   BuchiAutomaton<StateSchGBA, int> complementSchNFA(set<int>& start);
 
   BuchiAutomaton<StateSchGBA, int> getOneTightPart(std::set<int> originalFinals, unsigned number, std::stack<StateSchGBA> stack, std::map<int, int> reachCons, std::map<DFAState, int> maxReach, BackRel dirRel, BackRel oddRel, bool eta4, std::set<StateSchGBA> comst, map<std::pair<StateSchGBA, int>, set<StateSchGBA> > mp, map<std::pair<StateSchGBA, int>, set<StateSchGBA>> prev, BuchiAutomatonSpec &buchi, std::set<StateSchGBA> initials);
-
-  //vector<StateSch> succSetSchTightReduced(StateSch& state, int symbol, map<int, int> reachCons,
-  //    map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel, bool eta4, unsigned number );
-  //vector<StateSch> succSetSchStartReduced(set<int>& state, int rankBound, map<int, int> reachCons,
-  //    map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel, unsigned number);
-
-  //void getSchRanksTightReduced(vector<RankFunc>& out, vector<int>& max,
-  //    set<int>& states, int symbol, StateSch& macrostate,
-  //    map<int, int> reachCons, int reachMax, BackRel& dirRel, BackRel& oddRel, unsigned number);
-
-  //bool getRankSuccCache(vector<RankFunc>& out, StateSch& state, int symbol);
 };
 
 #endif

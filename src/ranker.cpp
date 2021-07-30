@@ -200,8 +200,10 @@ int main(int argc, char *argv[])
 
         if (dynamic_cast<BuchiAutomaton<int, int>*>(ren))
           renBuchi = (BuchiAutomaton<int, int>*)ren;
-        else if (dynamic_cast<GeneralizedBuchiAutomaton<int, int>*>(ren))
+        else if (dynamic_cast<GeneralizedBuchiAutomaton<int, int>*>(ren)){
           renGBA = (GeneralizedBuchiAutomaton<int, int>*)ren;
+          //std::cerr << renGBA->toGraphwiz() << std::endl;
+        }
 
         // elevator test
         if (elevatorTest and renBuchi != nullptr){
@@ -241,22 +243,22 @@ int main(int argc, char *argv[])
       map<int, APSymbol> symDict = Aux::reverseMap(ba->getRenameSymbolMap());
 
       //Product with a word
-      //TODO uncomment + extend to gbas
-      /*if(params.checkWord.size() > 0)
+      //TODO extend to gbas
+      if(params.checkWord.size() > 0 and renBuchi != nullptr)
       {
         cout << "Product in Graphwiz:" << endl;
-        auto appattern = comp.getAPPattern();
+        auto appattern = compBA.getAPPattern();
         pair<APWord, APWord> inf = BuchiAutomataParser::parseHoaInfWord(params.checkWord, appattern);
         auto prefv = inf.first.getVector();
         auto loopv = inf.second.getVector();
-        auto debugRename = comp.renameAlphabet<APSymbol>(symDict);
+        auto debugRename = compBA.renameAlphabet<APSymbol>(symDict);
         BuchiAutomatonDebug<StateSch, APSymbol> compDebug(debugRename);
         auto ret = compDebug.getSubAutomatonWord(prefv, loopv);
         cout << ret.toGraphwiz() << endl;
 
         os.close();
         return 0;
-      }*/
+      }
 
 
       BuchiAutomaton<int, APSymbol> outOrig = renCompl.renameAlphabet<APSymbol>(symDict);
@@ -270,7 +272,7 @@ int main(int argc, char *argv[])
       if(params.stats)
         printStat(stats);
       cout << outOrig.toHOA() << endl;
-      
+      //cout << renCompl.toGraphwiz() <<std::endl;
     }
   }
   else

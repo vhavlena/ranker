@@ -75,6 +75,8 @@ public:
   std::string toGraphwiz();
   std::string toGff();
   std::string toHOA();
+
+  void restriction(set<State>& st);
   
   AutomatonStruct<int, int>* renameAut(int start = 0) override {
     int stcnt = start;
@@ -186,8 +188,8 @@ public:
   void removeUseless();
   bool isEmpty();
 
-  GeneralizedBuchiAutomaton<tuple<State, int, bool>, Symbol> productGBA(GeneralizedBuchiAutomaton<int, Symbol>& other);
-  GeneralizedBuchiAutomaton<pair<State, int>, Symbol> cartProductGBA(GeneralizedBuchiAutomaton<int, Symbol>& other);
+  GeneralizedBuchiAutomaton<tuple<State, int>, Symbol> productGBA(GeneralizedBuchiAutomaton<int, Symbol>& other);
+  GeneralizedBuchiAutomaton<tuple<State, int>, Symbol> cartProductGBA(GeneralizedBuchiAutomaton<int, Symbol>& other);
   GeneralizedBuchiAutomaton<State, Symbol> unionGBA(GeneralizedBuchiAutomaton<State, Symbol>& other);
   GeneralizedBuchiAutomaton<State, Symbol> reverseGBA();
 

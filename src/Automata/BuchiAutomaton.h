@@ -224,17 +224,7 @@ public:
     }
     for(auto p : this->trans)
     {
-      //auto it = mpsymbol.find(p.first.second);
       NewSymbol val = mpsymbol[p.first.second];
-      // if(it == mpsymbol.end())
-      // {
-      //   val = symcnt;
-      //   mpsymbol[p.first.second] = symcnt++;
-      // }
-      // else
-      // {
-      //   val = it->second;
-      // }
       rtrans.insert({std::make_pair(p.first.first, val), p.second});
     }
     auto ret = BuchiAutomaton<State, NewSymbol>(this->states, this->finals, this->initials, rtrans, ralph, this->apsPattern);

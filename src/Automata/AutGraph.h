@@ -37,6 +37,7 @@ class AutGraph
 private:
   AdjList adjList;
   set<int> finals;
+  map<int, set<int>> finalsGBA;
   Vertices vertices;
   SCCs finalComponents;
   SCCs allComponents;
@@ -46,6 +47,7 @@ private:
 
 protected:
   void strongConnect(int v);
+  void strongConnect(int v, map<int, set<int>> finals);
 
 public:
   AutGraph(AdjList& adj, Vertices& vert, set<int>& finals)
@@ -55,7 +57,15 @@ public:
     this->finals = finals;
   }
 
+  AutGraph(AdjList &adj, Vertices &vert, map<int, set<int>> finalsGBA)
+  {
+    this->adjList = adj;
+    this->vertices = vert;
+    this->finalsGBA = finalsGBA;
+  }
+
   void computeSCCs();
+  void computeSCCs(map<int, set<int>> finals);
   set<int> reachableVertices(set<int>& from);
   static set<int> reachableVertices(AdjList &lst, set<int>& from);
 

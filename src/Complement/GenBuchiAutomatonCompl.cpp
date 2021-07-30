@@ -11,7 +11,6 @@ BuchiAutomaton<StateSchGBA, int> GeneralizedBuchiAutomatonCompl::getOneTightPart
     bool delay = false; //TODO
   
     // tight part construction
-    //start = std::chrono::high_resolution_clock::now();
     while(stack.size() > 0)
     {
       StateSchGBA st = stack.top();
@@ -28,7 +27,6 @@ BuchiAutomaton<StateSchGBA, int> GeneralizedBuchiAutomatonCompl::getOneTightPart
         {
           StateSch tmpState = {.S =  st.S, .O = st.O, .f = st.f, .i = st.i, .tight = st.tight};
           succBA = buchi.succSetSchTightReduced(tmpState, sym, reachCons, maxReach, dirRel, oddRel, eta4, this->getFinals()[number-1]);
-          std::cerr << "GBA succSetSchTightReduced states: " << succBA.size() << std::endl;
           succGBA.clear();
           for (auto state : succBA){
             StateSchGBA tmpState = {.S = state.S, .O = state.O, .f = state.f, .i = state.i, .j = number, .tight = state.tight};
@@ -38,20 +36,12 @@ BuchiAutomaton<StateSchGBA, int> GeneralizedBuchiAutomatonCompl::getOneTightPart
         else
         {
           succBA = buchi.succSetSchStartReduced(st.S, rankBound[st.S].bound, reachCons, maxReach, dirRel, oddRel, this->getFinals()[number-1]);
-          std::cerr << "GBA succSetSchStartReduced states: " << succBA.size() << std::endl;
           succGBA.clear();
           for (auto state : succBA){
             StateSchGBA tmpState = {.S = state.S, .O = state.O, .f = state.f, .i = state.i, .j = number, .tight = state.tight};
             succGBA.push_back(tmpState);
           }
-          //cout << st.toString() << " : " << succ.size() << endl;
           cnt = false;
-          //auto tmp = succSetSchStart(st.S, rankBound[st.S], reachCons, maxReach, dirRel, oddRel);
-          //std::cerr << "Size: " << tmp.size() << std::endl;
-          //std::cerr << "Rank bound: " << rankBound[st.S].bound << std::endl;
-          //std::cerr << "Tight size: " << succ.size() << std::endl;
-          std::cerr << "Rank bound: " << rankBound[st.S].bound << std::endl;
-          std::cerr << "Tight size: " << succGBA.size() << std::endl; 
         }
         for (const StateSchGBA& s : succGBA)
         {
@@ -63,7 +53,7 @@ BuchiAutomaton<StateSchGBA, int> GeneralizedBuchiAutomatonCompl::getOneTightPart
           }
         }
   
-        // TODO self-loops
+        // TODO self-loops in gbas
         /*auto it = slTrans.find({st.S, sym});
         if(it != slTrans.end())
         {
@@ -99,12 +89,11 @@ BuchiAutomaton<StateSchGBA, int> GeneralizedBuchiAutomatonCompl::getOneTightPart
         }
         if(!cnt) break;
       }
-      //std::cout << comst.size() << " : " << stack.size() << std::endl;
     }
     return BuchiAutomaton<StateSchGBA, int>(comst, finals, initials, mp, alph, getAPPattern());
 }
 
-//TODO gba complement
+
 BuchiAutomaton<StateSchGBA, int> GeneralizedBuchiAutomatonCompl::complementSchReduced(bool delay, std::map<int,std::set<int>> originalFinals, double w, delayVersion version, Stat *stats){
     std::stack<StateSchGBA> stack;
     set<StateSchGBA> comst;
@@ -118,11 +107,6 @@ BuchiAutomaton<StateSchGBA, int> GeneralizedBuchiAutomatonCompl::complementSchRe
 
     // original buchi automaton without accepting states
     set<int> buchiFinals;
-    //TODO simulations for GBAs !!!!!!!!!!!!!!!!!!
-    //TODO uncomment??? check!
-    /*for (auto it = originalFinals.begin(); it != originalFinals.end(); it++){
-      buchiFinals.insert(it->second.begin(), it->second.end());
-    }*/
     BuchiAutomaton<int, int> *ba = new BuchiAutomaton<int, int>(this->states, buchiFinals, this->initials, this->trans, this->alph);
     BuchiAutomatonSpec buchi(ba);
   
@@ -131,13 +115,11 @@ BuchiAutomaton<StateSchGBA, int> GeneralizedBuchiAutomatonCompl::complementSchRe
     BuchiAutomaton<StateSchGBA, int> comp = this->complementSchNFA(this->getInitials());
     auto end = std::chrono::high_resolution_clock::now();
     stats->waitingPart = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
-    std::cerr << "Waiting part states: " << comp.getStates().size() << std::endl;
   
     // rank bound
     start = std::chrono::high_resolution_clock::now();
   
     map<std::pair<StateSchGBA, int>, set<StateSchGBA>> prev = comp.getReverseTransitions();
-    //std::cout << comp.toGraphwiz() << std::endl;
 
     set<StateSchGBA> nfaStates = comp.getStates();
     comst.insert(nfaStates.begin(), nfaStates.end());
@@ -154,10 +136,7 @@ BuchiAutomaton<StateSchGBA, int> GeneralizedBuchiAutomatonCompl::complementSchRe
       ignoreAll.insert({t.first, set<int>(), RankFunc(), 0, false});
     ignoreAll.insert(slIgnore.begin(), slIgnore.end());*/
   
-    //TODO reachability restrictions for gbas
     // Compute reachability restrictions
-    //map<int, int> reachCons;
-    //map<DFAState, int> maxReach;
     map<int, int> reachCons = buchi.getMinReachSize();
     map<DFAState, int> maxReach = buchi.getMaxReachSize(comp, slIgnore);
   
@@ -180,20 +159,14 @@ BuchiAutomaton<StateSchGBA, int> GeneralizedBuchiAutomatonCompl::complementSchRe
     std::cerr << "Size: " << comst.size() << std::endl;
     */
   
-    //TODO compute rank upper bound for gbas
     // Compute rank upper bound on the macrostates
     auto invComp = comp.reverseBA(); //inverse automaton
-    std::cerr << "BEFORE" << std::endl;
     this->rankBound = buchi.getRankBound(invComp, ignoreAll, maxReach, reachCons); 
     buchi.setRankBound(buchi.getRankBound(invComp, ignoreAll, maxReach, reachCons));
-    for (auto it = this->rankBound.begin(); it != this->rankBound.end(); it++){
-      std::cerr << "BOUND: " << it->second.bound << std::endl;
-    }
-    std::cerr << "AFTER" << std::endl;
     end = std::chrono::high_resolution_clock::now();
     stats->rankBound = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
   
-    //TODO gba elevator???
+    //TODO gba elevator
     // update rank upper bound of each macrostate based on elevator automaton structure
     /*if (elevatorRank){
       start = std::chrono::high_resolution_clock::now();
@@ -248,7 +221,6 @@ BuchiAutomaton<StateSchGBA, int> GeneralizedBuchiAutomatonCompl::complementSchRe
     StateSchGBA init = {getInitials(), set<int>(), RankFunc(), 0, 0, false};
     initials.insert(init);
   
-    //TODO simulations for gbas
     // simulations
     start = std::chrono::high_resolution_clock::now();
     set<int> cl;
@@ -261,14 +233,13 @@ BuchiAutomaton<StateSchGBA, int> GeneralizedBuchiAutomatonCompl::complementSchRe
   
     bool eta4 = false;
 
-    // TIGHT PARTS CONSTRUCTION
+    // tight parts construction
     BuchiAutomaton<StateSchGBA, int> final(comst, finals, initials, mp, alph, getAPPattern()); // waiting part
     unsigned j = 1;
     BuchiAutomaton<StateSchGBA, int> oneTightPart;
     for (auto it = originalFinals.begin(); it != originalFinals.end(); it++){
+      // get tight part for one accepting condition
       oneTightPart = getOneTightPart(it->second, j, stack, reachCons, maxReach, dirRel, oddRel, eta4, comst, mp, prev, buchi, initials);
-      // TODO merge with the current automaton
-      std::cerr << "Tight part size: " << oneTightPart.getStates().size() << std::endl;
       // merge states
       for (auto state : oneTightPart.getStates()){
         if (final.getStates().find(state) == final.getStates().end()){
@@ -290,12 +261,9 @@ BuchiAutomaton<StateSchGBA, int> GeneralizedBuchiAutomatonCompl::complementSchRe
       j++;
     }
   
-    //std::cerr << "Transitions to tight: " << transitionsToTight << std::endl;
-  
     end = std::chrono::high_resolution_clock::now();
     stats->tightPart = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count(); 
   
-    //std::cerr << "States: " << final.getStates().size() << std::endl; 
     return final;
 }
 
@@ -304,7 +272,6 @@ BuchiAutomaton<StateSchGBA, int> GeneralizedBuchiAutomatonCompl::complementSchNF
     set<StateSchGBA> comst;
     set<StateSchGBA> initials;
     set<StateSchGBA> finals;
-    //set<StateSch> succ;
     set<int> alph = getAlphabet();
     map<std::pair<StateSchGBA, int>, set<StateSchGBA> > mp;
     map<std::pair<StateSchGBA, int>, set<StateSchGBA> >::iterator it;
