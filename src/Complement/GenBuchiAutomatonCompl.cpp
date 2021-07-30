@@ -119,9 +119,10 @@ BuchiAutomaton<StateSchGBA, int> GeneralizedBuchiAutomatonCompl::complementSchRe
     // original buchi automaton without accepting states
     set<int> buchiFinals;
     //TODO simulations for GBAs !!!!!!!!!!!!!!!!!!
-    for (auto it = originalFinals.begin(); it != originalFinals.end(); it++){
+    //TODO uncomment??? check!
+    /*for (auto it = originalFinals.begin(); it != originalFinals.end(); it++){
       buchiFinals.insert(it->second.begin(), it->second.end());
-    }
+    }*/
     BuchiAutomaton<int, int> *ba = new BuchiAutomaton<int, int>(this->states, buchiFinals, this->initials, this->trans, this->alph);
     BuchiAutomatonSpec buchi(ba);
   
