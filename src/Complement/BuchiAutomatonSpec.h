@@ -117,6 +117,10 @@ public:
   map<int, int> getMaxReachSizeInd();
   map<int, int> getMinReachSize();
 
+  void setRankBound(map<DFAState, RankBound> rankbound){
+    this->rankBound = rankbound;
+  }
+
   void setComplOptions(ComplOptions& co) { this->opt = co; }
   ComplOptions getComplOptions() const { return this->opt; }
 

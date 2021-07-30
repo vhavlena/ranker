@@ -27,7 +27,9 @@ BuchiAutomaton<StateSchGBA, int> GeneralizedBuchiAutomatonCompl::getOneTightPart
         if(st.tight)
         {
           StateSch tmpState = {.S =  st.S, .O = st.O, .f = st.f, .i = st.i, .tight = st.tight};
-          succBA = buchi.succSetSchTightReduced(tmpState, sym, reachCons, maxReach, dirRel, oddRel, eta4, this->getFinals()[number]);
+          succBA = buchi.succSetSchTightReduced(tmpState, sym, reachCons, maxReach, dirRel, oddRel, eta4, this->getFinals()[number-1]);
+          std::cerr << "GBA succSetSchTightReduced states: " << succBA.size() << std::endl;
+          succGBA.clear();
           for (auto state : succBA){
             StateSchGBA tmpState = {.S = state.S, .O = state.O, .f = state.f, .i = state.i, .j = number, .tight = state.tight};
             succGBA.push_back(tmpState);
@@ -35,7 +37,9 @@ BuchiAutomaton<StateSchGBA, int> GeneralizedBuchiAutomatonCompl::getOneTightPart
         }
         else
         {
-          succBA = buchi.succSetSchStartReduced(st.S, rankBound[st.S].bound, reachCons, maxReach, dirRel, oddRel, this->getFinals()[number]);
+          succBA = buchi.succSetSchStartReduced(st.S, rankBound[st.S].bound, reachCons, maxReach, dirRel, oddRel, this->getFinals()[number-1]);
+          std::cerr << "GBA succSetSchStartReduced states: " << succBA.size() << std::endl;
+          succGBA.clear();
           for (auto state : succBA){
             StateSchGBA tmpState = {.S = state.S, .O = state.O, .f = state.f, .i = state.i, .j = number, .tight = state.tight};
             succGBA.push_back(tmpState);
@@ -46,6 +50,8 @@ BuchiAutomaton<StateSchGBA, int> GeneralizedBuchiAutomatonCompl::getOneTightPart
           //std::cerr << "Size: " << tmp.size() << std::endl;
           //std::cerr << "Rank bound: " << rankBound[st.S].bound << std::endl;
           //std::cerr << "Tight size: " << succ.size() << std::endl;
+          std::cerr << "Rank bound: " << rankBound[st.S].bound << std::endl;
+          std::cerr << "Tight size: " << succGBA.size() << std::endl; 
         }
         for (const StateSchGBA& s : succGBA)
         {
@@ -111,7 +117,12 @@ BuchiAutomaton<StateSchGBA, int> GeneralizedBuchiAutomatonCompl::complementSchRe
     map<std::pair<StateSchGBA, int>, set<StateSchGBA> >::iterator it;
 
     // original buchi automaton without accepting states
-    BuchiAutomaton<int, int> *ba = new BuchiAutomaton<int, int>(this->states, set<int>(), this->initials, this->trans, this->alph);
+    set<int> buchiFinals;
+    //TODO simulations for GBAs !!!!!!!!!!!!!!!!!!
+    for (auto it = originalFinals.begin(); it != originalFinals.end(); it++){
+      buchiFinals.insert(it->second.begin(), it->second.end());
+    }
+    BuchiAutomaton<int, int> *ba = new BuchiAutomaton<int, int>(this->states, buchiFinals, this->initials, this->trans, this->alph);
     BuchiAutomatonSpec buchi(ba);
   
     // NFA part of the Schewe construction
@@ -171,7 +182,13 @@ BuchiAutomaton<StateSchGBA, int> GeneralizedBuchiAutomatonCompl::complementSchRe
     //TODO compute rank upper bound for gbas
     // Compute rank upper bound on the macrostates
     auto invComp = comp.reverseBA(); //inverse automaton
-    this->rankBound = buchi.getRankBound(invComp, ignoreAll, maxReach, reachCons);
+    std::cerr << "BEFORE" << std::endl;
+    this->rankBound = buchi.getRankBound(invComp, ignoreAll, maxReach, reachCons); 
+    buchi.setRankBound(buchi.getRankBound(invComp, ignoreAll, maxReach, reachCons));
+    for (auto it = this->rankBound.begin(); it != this->rankBound.end(); it++){
+      std::cerr << "BOUND: " << it->second.bound << std::endl;
+    }
+    std::cerr << "AFTER" << std::endl;
     end = std::chrono::high_resolution_clock::now();
     stats->rankBound = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
   
@@ -269,6 +286,7 @@ BuchiAutomaton<StateSchGBA, int> GeneralizedBuchiAutomatonCompl::complementSchRe
         else if (trans.second != final.getTransitions().find(trans.first)->second)
           final.addNewStatesToTransition(trans.first, trans.second);
       }
+      j++;
     }
   
     //std::cerr << "Transitions to tight: " << transitionsToTight << std::endl;
