@@ -1,2 +1,0 @@
-
-#include "GeneralizedBuchiAutomaton.h"
