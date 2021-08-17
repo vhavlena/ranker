@@ -29,9 +29,10 @@ public:
   typedef std::set<State> SetStates;
   typedef std::set<Symbol> SetSymbols;
   typedef Delta<State, Symbol> Transitions;
+  typedef std::map<int, std::set<int>> SetFins;
 
 private:
-  SetStates finals; //Modify according to GBAs
+  SetFins finals;
 
 
 protected:
@@ -74,8 +75,63 @@ public:
   std::string toGraphwiz();
   std::string toGff();
   std::string toHOA();
-  BuchiAutomaton<int, int> renameAut(int start = 0);
-  BuchiAutomaton<int, int> renameAutDict(map<Symbol, int>& mpsymbol, int start = 0);
+
+  AutomatonStruct<int, int>* renameAut(int start = 0) override {
+    int stcnt = start;
+    int symcnt = 0;
+    std::map<State, int> mpstate;
+    std::map<Symbol, int> mpsymbol;
+    std::set<int> rstate;
+    Delta<int, int> rtrans;
+    std::map<int, std::set<int>> rfin;
+    std::set<int> rini;
+    set<int> rsym;
+    this->invRenameMap = std::vector<State>(this->states.size() + start);
+
+    for(auto st : this->states)
+    {
+      auto it = mpstate.find(st);
+      this->invRenameMap[stcnt] = st;
+      if(it == mpstate.end())
+      {
+        mpstate[st] = stcnt++;
+      }
+    }
+    for(const auto& a : this->alph)
+    {
+      rsym.insert(symcnt);
+      mpsymbol[a] = symcnt++;
+    }
+
+    rstate = Aux::mapSet(mpstate, this->states);
+    rini = Aux::mapSet(mpstate, this->initials);
+    rfin = Aux::mapMap(mpstate, this->finals);
+    for(auto p : this->trans)
+    {
+      auto it = mpsymbol.find(p.first.second);
+      int val;
+      if(it == mpsymbol.end())
+      {
+        val = symcnt;
+        mpsymbol[p.first.second] = symcnt++;
+      }
+      else
+      {
+        val = it->second;
+      }
+      std::set<int> to = Aux::mapSet(mpstate, p.second);
+      rtrans.insert({std::make_pair(mpstate[p.first.first], val), to});
+    }
+
+    GeneralizedCoBuchiAutomaton<int, int> *ret = new GeneralizedCoBuchiAutomaton<int, int>(rstate, rfin, rini, rtrans, rsym);
+    this->renameStateMap = mpstate;
+    this->renameSymbolMap = mpsymbol;
+    
+    ret->setAPPattern(this->apsPattern);
+    return ret;
+  } 
+
+  GeneralizedCoBuchiAutomaton<int, int> renameAutDict(map<Symbol, int>& mpsymbol, int start = 0);
 
   //bool isElevator();
 
@@ -98,7 +154,7 @@ public:
       NewSymbol val = mpsymbol[p.first.second];
       rtrans.insert({std::make_pair(p.first.first, val), p.second});
     }
-    auto ret = BuchiAutomaton<State, NewSymbol>(this->states, this->finals, this->initials, rtrans, ralph, this->apsPattern);
+    auto ret = GeneralizedCoBuchiAutomaton<State, NewSymbol>(this->states, this->finals, this->initials, rtrans, ralph, this->apsPattern);
     ret.setAPPattern(this->apsPattern);
     return ret;
   }
@@ -111,7 +167,6 @@ public:
   {
     return this->finals;
   }
-
 
   void removeUseless();
   bool isEmpty();

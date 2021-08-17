@@ -1145,7 +1145,15 @@ BuchiAutomaton<State, Symbol> BuchiAutomaton<State, Symbol>::unionBA(BuchiAutoma
     other.getInitials().end(), std::inserter(nini, nini.begin()));
   set_union(this->getFinals().begin(), this->getFinals().end(), other.getFinals().begin(),
     other.getFinals().end(), std::inserter(nfin, nfin.begin()));
-  ntr.insert(other.getTransitions().begin(), other.getTransitions().end());
+  
+  // merge transitions
+  for (auto it = other.getTransitions().begin(); it != other.getTransitions().end(); it++){
+      if (ntr.find(it->first) != ntr.end())
+        ntr[it->first].insert(it->second.begin(), it->second.end());
+      else
+        ntr.insert({it->first, it->second});
+  }
+
   return BuchiAutomaton<State, Symbol>(nstates, nfin, nini, ntr, this->getAlphabet());
 }
 

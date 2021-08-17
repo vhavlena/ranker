@@ -631,7 +631,7 @@ GeneralizedBuchiAutomaton<tuple<State, int>, Symbol> GeneralizedBuchiAutomaton<S
 
 template<typename State, typename Symbol>
 GeneralizedBuchiAutomaton<State, Symbol> GeneralizedBuchiAutomaton<State,Symbol>::unionGBA(GeneralizedBuchiAutomaton<State, Symbol>& other){
-    set<State> nstates;
+  set<State> nstates;
   set<State> nini;
   Transitions ntr(this->getTransitions());
   map<int,set<State>> nfin;
@@ -641,14 +641,21 @@ GeneralizedBuchiAutomaton<State, Symbol> GeneralizedBuchiAutomaton<State,Symbol>
   set_union(this->getInitials().begin(), this->getInitials().end(), other.getInitials().begin(),
     other.getInitials().end(), std::inserter(nini, nini.begin()));
   nfin = this->getFinals();
+
+  // acceptance sets union
+  unsigned i=0;
   for (auto it = other.getFinals().begin(); it != other.getFinals().end(); it++){
-      nfin.insert({(it->first)+this->getFinals().size(), it->second});
+      if (i <= nfin.size())
+        nfin[i].insert(it->second.begin(), it->second.end());
+      else
+        nfin.insert(i, it->second});
+      i++;
   }
 
   // merge transitions
   for (auto it = other.getTransitions().begin(); it != other.getTransitions().end(); it++){
       if (ntr.find(it->first) != ntr.end())
-        ntr[it->first].insert(it->second.begin(); it->second.end());
+        ntr[it->first].insert(it->second.begin(), it->second.end());
       else
         ntr.insert({it->first, it->second});
   }
