@@ -192,7 +192,6 @@ public:
   GeneralizedBuchiAutomaton<tuple<State, int>, Symbol> cartProductGBA(GeneralizedBuchiAutomaton<int, Symbol>& other);
   GeneralizedBuchiAutomaton<State, Symbol> unionGBA(GeneralizedBuchiAutomaton<State, Symbol>& other);
   GeneralizedBuchiAutomaton<State, Symbol> reverseGBA();
-
 };
 
 #endif
