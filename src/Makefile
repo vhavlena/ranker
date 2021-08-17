@@ -1,4 +1,3 @@
-
 CPPFLAGS=-std=c++17 -O2 -Wall -Wextra #-Wl,-no_pie
 OBJ=obj
 GCC=g++
@@ -78,54 +77,50 @@ test-classify: units/test-classify.cpp $(OBJ)/BuchiAutomataParser.o \
 ranker: ranker.cpp $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/BuchiAutomaton.o $(OBJ)/AutomatonStruct.o $(OBJ)/BuchiAutomatonSpec.o \
 	$(OBJ)/RankFunc.o $(OBJ)/AutGraph.o $(OBJ)/Simulations.o $(OBJ)/AuxFunctions.o \
-	$(OBJ)/ranker-general.o $(OBJ)/BuchiAutomatonDebug.o $(OBJ)/BuchiDelay.o \
-	$(OBJ)/GeneralizedBuchiAutomaton.o $(OBJ)/GenBuchiAutomatonCompl.o
+	$(OBJ)/ranker-general.o $(OBJ)/BuchiAutomatonDebug.o $(OBJ)/BuchiDelay.o
 	$(GCC) $(CPPFLAGS) -o $@ $^ $(SUFF)
 
 ranker-sim: ranker-sim.cpp $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/BuchiAutomaton.o  $(OBJ)/Simulations.o $(OBJ)/BuchiAutomatonSpec.o \
 	$(OBJ)/RankFunc.o $(OBJ)/AutGraph.o $(OBJ)/AuxFunctions.o \
-	$(OBJ)/BuchiAutomatonDebug.o 
+	$(OBJ)/BuchiAutomatonDebug.o
 	$(GCC) $(CPPFLAGS) -o $@ $^ $(SUFF)
 
 ranker-composition: ranker-composition.cpp $(OBJ)/ranker-general.o $(OBJ)/AuxFunctions.o \
 	$(OBJ)/RankFunc.o $(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/Simulations.o   $(OBJ)/AutGraph.o  $(OBJ)/BuchiAutomatonSpec.o \
-	$(OBJ)/BuchiAutomatonDebug.o $(OBJ)/BuchiDelay.o $(OBJ)/AutomatonStruct.o \
-	$(OBJ)/GeneralizedBuchiAutomaton.o $(OBJ)/GenBuchiAutomatonCompl.o
+	$(OBJ)/BuchiAutomatonDebug.o $(OBJ)/BuchiDelay.o $(OBJ)/AutomatonStruct.o
 	$(GCC) $(CPPFLAGS) -o ranker-composition $^ $(SUFF)
 
 ranker-tight: ranker-tight.cpp $(OBJ)/AuxFunctions.o $(OBJ)/ranker-general.o \
 	$(OBJ)/RankFunc.o $(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/Simulations.o   $(OBJ)/AutGraph.o  $(OBJ)/BuchiAutomatonSpec.o \
-	$(OBJ)/BuchiAutomatonDebug.o $(OBJ)/BuchiDelay.o $(OBJ)/AutomatonStruct.o \
-	$(OBJ)/GeneralizedBuchiAutomaton.o $(OBJ)/GenBuchiAutomatonCompl.o	
+	$(OBJ)/BuchiAutomatonDebug.o $(OBJ)/BuchiDelay.o $(OBJ)/AutomatonStruct.o
 	$(GCC) $(CPPFLAGS) -o $@ $^ $(SUFF)
 
 $(OBJ)/ranker-general.o: Ranker-general.cpp $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/BuchiAutomaton.o $(OBJ)/AutomatonStruct.o $(OBJ)/BuchiAutomatonSpec.o \
 	$(OBJ)/RankFunc.o $(OBJ)/AutGraph.o $(OBJ)/Simulations.o $(OBJ)/AuxFunctions.o \
-	$(OBJ)/BuchiAutomatonDebug.o $(OBJ)/GeneralizedBuchiAutomaton.o $(OBJ)/GenBuchiAutomatonCompl.o 
+	$(OBJ)/BuchiAutomatonDebug.o
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 
 $(OBJ)/BuchiAutomatonDebug.o: Debug/BuchiAutomatonDebug.cpp \
-	Automata/BuchiAutomaton.h Complement/StateSch.h Complement/StateSchGBA.h Debug/BuchiAutomatonDebug.h \
+	Automata/BuchiAutomaton.h Complement/StateSch.h Debug/BuchiAutomatonDebug.h \
 	Automata/BuchiAutomatonException.h $(OBJ)/BuchiAutomaton.o $(OBJ)/RankFunc.o
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 
 $(OBJ)/BuchiAutomataParser.o: Automata/BuchiAutomataParser.cpp \
-	Automata/BuchiAutomataParser.h $(OBJ)/BuchiAutomaton.o $(OBJ)/AutomatonStruct.o $(OBJ)/GeneralizedBuchiAutomaton.o 
+	Automata/BuchiAutomataParser.h $(OBJ)/BuchiAutomaton.o $(OBJ)/AutomatonStruct.o
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 
 $(OBJ)/BuchiAutomaton.o: Automata/BuchiAutomaton.cpp Automata/BuchiAutomaton.h \
-	Automata/AutomatonStruct.h Complement/StateSch.h Complement/StateSchGBA.h Complement/StateKV.h \
+	Automata/AutomatonStruct.h Complement/StateSch.h Complement/StateKV.h \
 	Complement/RankFunc.h Automata/APSymbol.h $(OBJ)/AutGraph.o \
 	$(OBJ)/AuxFunctions.o $(OBJ)/AutomatonStruct.o
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 
 $(OBJ)/AutomatonStruct.o: Automata/AutomatonStruct.cpp Automata/AutomatonStruct.h \
-	Complement/StateSch.h Complement/StateSchGBA.h Complement/StateKV.h Complement/RankFunc.h \
-	Automata/BuchiAutomaton.h Automata/BuchiAutomaton.cpp \
+	Complement/StateSch.h Complement/StateKV.h Complement/RankFunc.h \
 	Automata/APSymbol.h $(OBJ)/AutGraph.o $(OBJ)/AuxFunctions.o
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 
@@ -142,38 +137,22 @@ $(OBJ)/AutGraph.o: Automata/AutGraph.cpp Automata/AutGraph.h
 $(OBJ)/AuxFunctions.o: Algorithms/AuxFunctions.cpp Algorithms/AuxFunctions.h
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 
-$(OBJ)/BuchiDelay.o: Complement/BuchiDelay.cpp \
-	Automata/BuchiAutomaton.h Automata/AutomatonStruct.h Complement/StateSch.h Complement/StateSchGBA.h \
-	Complement/BuchiDelay.h $(OBJ)/RankFunc.o \
-	$(OBJ)/AuxFunctions.o $(OBJ)/BuchiAutomaton.o $(OBJ)/AutomatonStruct.o
-	$(GCC) $(CPPFLAGS) -c -o $@ $<
-
 $(OBJ)/BuchiAutomatonSpec.o: Complement/BuchiAutomatonSpec.cpp \
 	Automata/BuchiAutomaton.h Automata/AutomatonStruct.h Complement/StateKV.h \
-	Complement/StateSch.h Complement/StateSchGBA.h Complement/BuchiAutomatonSpec.h Complement/Options.h \
+	Complement/StateSch.h Complement/BuchiAutomatonSpec.h Complement/Options.h \
 	$(OBJ)/RankFunc.o $(OBJ)/AuxFunctions.o $(OBJ)/BuchiDelay.o \
-	$(OBJ)/BuchiAutomaton.o $(OBJ)/AutomatonStruct.o \
-	$(OBJ)/GeneralizedBuchiAutomaton.o 
+	$(OBJ)/BuchiAutomaton.o $(OBJ)/AutomatonStruct.o
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 
-$(OBJ)/GeneralizedBuchiAutomaton.o: Automata/GeneralizedBuchiAutomaton.cpp Automata/GeneralizedBuchiAutomaton.h \
-	Automata/AutomatonStruct.h Complement/StateSch.h Complement/StateSchGBA.h Complement/StateKV.h \
-	Complement/RankFunc.h Automata/APSymbol.h $(OBJ)/AutGraph.o \
-	$(OBJ)/AuxFunctions.o $(OBJ)/AutomatonStruct.o
-	$(GCC) $(CPPFLAGS) -c -o $@ $<
-
-$(OBJ)/GenBuchiAutomatonCompl.o: Complement/GenBuchiAutomatonCompl.cpp \
-	Automata/GeneralizedBuchiAutomaton.h Automata/AutomatonStruct.h Complement/StateKV.h \
-	Complement/StateSch.h  Complement/StateSchGBA.h Complement/GenBuchiAutomatonCompl.h Complement/Options.h \
-	Complement/BuchiAutomatonSpec.h Automata/BuchiAutomaton.h \
-	$(OBJ)/RankFunc.o $(OBJ)/AuxFunctions.o \
-	$(OBJ)/BuchiAutomaton.o  $(OBJ)/BuchiAutomatonSpec.o \
-	$(OBJ)/GeneralizedBuchiAutomaton.o $(OBJ)/AutomatonStruct.o $(OBJ)/BuchiAutomatonSpec.o
+$(OBJ)/BuchiDelay.o: Complement/BuchiDelay.cpp \
+	Automata/BuchiAutomaton.h Automata/AutomatonStruct.h Complement/StateSch.h \
+	Complement/BuchiDelay.h $(OBJ)/RankFunc.o \
+	$(OBJ)/AuxFunctions.o $(OBJ)/BuchiAutomaton.o $(OBJ)/AutomatonStruct.o
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 
 clean:
 	rm -f obj/*.o units/test-parser units/test-kv-compl units/test-sch-red-compl \
 	units/test-sch-compl units/test-nfa-prop units/test-sch-hard \
-	units/test-simulation units/test-process units/test-simulation ../ranker \
-	units/test-hoa-parser units/test-classify ../ranker-composition ../ranker-sim \
-	units/test-hoa-word ../ranker-tight
+	units/test-simulation units/test-process units/test-simulation ranker \
+	units/test-hoa-parser units/test-classify ranker-composition ranker-sim \
+	units/test-hoa-word ranker-tight

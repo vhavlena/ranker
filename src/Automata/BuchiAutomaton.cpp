@@ -1194,4 +1194,3 @@ template class BuchiAutomaton<std::string, std::string>;
 template class BuchiAutomaton<StateSch, int>;
 template class BuchiAutomaton<int, APSymbol>;
 template class BuchiAutomaton<StateSch, APSymbol>;
-template class BuchiAutomaton<StateSchGBA, int>;

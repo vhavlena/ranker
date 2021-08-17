@@ -16,7 +16,6 @@
 #include "AutGraph.h"
 #include "../Complement/StateKV.h"
 #include "../Complement/StateSch.h"
-#include "../Complement/StateSchGBA.h"
 #include "../Algorithms/AuxFunctions.h"
 #include "APSymbol.h"
 

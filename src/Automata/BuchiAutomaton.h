@@ -19,7 +19,6 @@
 #include "../Complement/StateSch.h"
 #include "../Algorithms/AuxFunctions.h"
 #include "APSymbol.h"
-#include "../Complement/StateSchGBA.h"
 
 using std::tuple;
 

@@ -17,7 +17,7 @@
 
 #include "BuchiAutomaton.h"
 #include "APSymbol.h"
-#include "GeneralizedBuchiAutomaton.h"
+#include "GenBuchiAutomaton.h"
 
 using namespace std;
 namespace pt = boost::property_tree;

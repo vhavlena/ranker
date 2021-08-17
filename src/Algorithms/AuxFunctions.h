@@ -82,7 +82,6 @@ namespace Aux
       ret.insert({i, emptySet});
       auto it = ret.find(i);
       for (const auto& p : st[i]){
-        // TODO insert
         it->second.insert(mp[p]);
       }
     }

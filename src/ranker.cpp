@@ -188,7 +188,6 @@ int main(int argc, char *argv[])
 
       BuchiAutomaton<int, int> renCompl;
       BuchiAutomaton<StateSch, int> compBA;
-      BuchiAutomaton<StateSchGBA, int> compGBA;
 
       BuchiAutomaton<int, int> *renBuchi = nullptr;
       GeneralizedBuchiAutomaton<int, int> *renGBA = nullptr;
@@ -211,12 +210,6 @@ int main(int argc, char *argv[])
           os.close();
           return 0;
         } 
-        // TODO gba elevator?
-        /*else if (elevatorTest and renGBA != nullptr){
-          std::cout << "Elevator automaton: " << (renGBA->isElevator() ? "Yes" : "No") << std::endl;
-          os.close();
-          return 0;
-        }*/
       }
       catch(const ParserException& e)
       {
@@ -230,8 +223,8 @@ int main(int argc, char *argv[])
       {
         if (renBuchi != nullptr)
           complementAutWrap(renBuchi, &compBA, &renCompl, &stats, delay, w, version, elevatorRank, eta4);
-        else if (renGBA != nullptr)
-          complementAutWrap(renGBA, &compGBA, &renCompl, &stats,delay, w, version, elevatorRank, eta4);
+        /*else if (renGBA != nullptr)
+          complementAutWrap(renGBA, &compGBA, &renCompl, &stats,delay, w, version, elevatorRank, eta4);*/
       }
       catch (const std::bad_alloc&)
       {
@@ -243,7 +236,6 @@ int main(int argc, char *argv[])
       map<int, APSymbol> symDict = Aux::reverseMap(ba->getRenameSymbolMap());
 
       //Product with a word
-      //TODO extend to gbas
       if(params.checkWord.size() > 0 and renBuchi != nullptr)
       {
         cout << "Product in Graphwiz:" << endl;

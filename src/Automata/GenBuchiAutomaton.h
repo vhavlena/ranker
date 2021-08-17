@@ -26,7 +26,7 @@ template <typename State, typename Symbol>
 class GeneralizedBuchiAutomaton : public AutomatonStruct<State, Symbol> {
 
 public:
-  typedef std::set<State> SetStates; // more sets of accepting states
+  typedef std::set<State> SetStates; 
   typedef std::set<Symbol> SetSymbols;
   typedef Delta<State, Symbol> Transitions;
   typedef std::map<int, SetStates> GBAFinals;
@@ -128,20 +128,6 @@ public:
     GeneralizedBuchiAutomaton<int, int> *ret = new GeneralizedBuchiAutomaton<int, int>(rstate, rfin, rini, rtrans, rsym);
     this->renameStateMap = mpstate;
     this->renameSymbolMap = mpsymbol;
-
-    // TODO simulations for gbas
-    /*std::set<std::pair<int, int> > rdirSim, roddSim;
-    for(auto item : this->directSim)
-    {
-      rdirSim.insert({mpstate[item.first], mpstate[item.second]});
-    }
-    for(auto item : this->oddRankSim)
-    {
-      roddSim.insert({mpstate[item.first], mpstate[item.second]});
-    }
-    ret->setDirectSim(rdirSim); 
-    ret->setOddRankSim(roddSim); 
-    */
     
     ret->setAPPattern(this->apsPattern);
     return ret;
