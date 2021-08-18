@@ -570,7 +570,7 @@ GeneralizedBuchiAutomaton<tuple<State, int>, Symbol> GeneralizedBuchiAutomaton<S
 
 template<typename State, typename Symbol>
 GeneralizedBuchiAutomaton<tuple<State, int>, Symbol> GeneralizedBuchiAutomaton<State,Symbol>::cartProductGBA(GeneralizedBuchiAutomaton<int, Symbol>& other){
-    typedef tuple<State, int> ProdState;
+  typedef tuple<State, int> ProdState;
   set<ProdState> nstates;
   set<ProdState> nini;
   stack<ProdState> stack;

@@ -171,10 +171,10 @@ public:
   void removeUseless();
   bool isEmpty();
 
-  BuchiAutomaton<tuple<State, int, bool>, Symbol> product(BuchiAutomaton<int, Symbol>& other);
-  BuchiAutomaton<pair<State, int>, Symbol> cartProduct(BuchiAutomaton<int, Symbol>& other);
-  BuchiAutomaton<State, Symbol> union(BuchiAutomaton<State, Symbol>& other);
-  BuchiAutomaton<State, Symbol> reverse();
+  GeneralizedCoBuchiAutomaton<tuple<State, int>, Symbol> product(GeneralizedCoBuchiAutomaton<int, Symbol>& other);
+  GeneralizedCoBuchiAutomaton<tuple<State, int>, Symbol> cartProduct(GeneralizedCoBuchiAutomaton<int, Symbol>& other);
+  GeneralizedCoBuchiAutomaton<State, Symbol> unionGcoBA(GeneralizedCoBuchiAutomaton<State, Symbol>& other);
+  GeneralizedCoBuchiAutomaton<State, Symbol> reverse();
 
 };
 

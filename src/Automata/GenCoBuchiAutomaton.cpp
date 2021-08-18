@@ -361,17 +361,115 @@ GeneralizedCoBuchiAutomaton<int, int> GeneralizedCoBuchiAutomaton<State,Symbol>:
 template<>
 void GeneralizedCoBuchiAutomaton<int,int>::removeUseless(){
     //TODO
+    // remove inherently weak sccs (for all fins) which do not have any non-inherently weak scc successor
 }
     
 template<>
 bool GeneralizedCoBuchiAutomaton<int,int>::isEmpty(){
     //TODO
+    // empty <=> there are only inherently weak sccs (for all fins)
 }
 
-//BuchiAutomaton<tuple<State, int, bool>, Symbol> product(BuchiAutomaton<int, Symbol>& other);
-//BuchiAutomaton<pair<State, int>, Symbol> cartProduct(BuchiAutomaton<int, Symbol>& other);
-//BuchiAutomaton<State, Symbol> union(BuchiAutomaton<State, Symbol>& other);
-//BuchiAutomaton<State, Symbol> reverse();
+template<typename State, typename Symbol>
+GeneralizedCoBuchiAutomaton<std::tuple<State, int>, Symbol> GeneralizedCoBuchiAutomaton<State, Symbol>::product(GeneralizedCoBuchiAutomaton<int, Symbol> &other){
+  //TODO
+  // product automaton + distribution of fins
+}
+
+template<typename State, typename Symbol>
+GeneralizedCoBuchiAutomaton<std::tuple<State, int>, Symbol> GeneralizedCoBuchiAutomaton<State, Symbol>::cartProduct(GeneralizedCoBuchiAutomaton<int, Symbol> &other){
+  typedef tuple<State, int> ProdState;
+  set<ProdState> nstates;
+  set<ProdState> nini;
+  stack<ProdState> stack;
+  map<int,set<State>> fin1 = this->getFinals();
+  map<int,set<int>> fin2 = other.getFinals();
+  auto tr1 = this->getTransitions();
+  auto tr2 = other.getTransitions();
+  map<std::pair<ProdState, Symbol>, set<ProdState>> ntr;
+  map<int,set<ProdState>> nfin;
+
+  for(const State& st1 : this->getInitials())
+  {
+    for(const int& st2 : other.getInitials())
+    {
+      stack.push({st1, st2});
+      nstates.insert({st1, st2});
+      nini.insert({st1, st2});
+    }
+  }
+
+  while(stack.size() > 0)
+  {
+    ProdState act = stack.top();
+    stack.pop();
+
+    for(const Symbol& sym : this->getAlphabet())
+    {
+      set<ProdState> dst;
+      for(const State& d1 : tr1[{std::get<0>(act), sym}])
+      {
+        for(const int& d2 : tr2[{std::get<1>(act), sym}])
+        {
+          dst.insert({d1,d2});
+        }
+      }
+      for(auto& item : dst)
+      {
+        if(nstates.find(item) == nstates.end())
+        {
+          nstates.insert(item);
+          stack.push(item);
+          for (auto it = this->getFinals().begin(); it != this->getFinals().end(); it++){
+              if (it->second.find(std::get<0>(item)) != it->second.end())
+                nfin[it->first].insert(item);
+          }
+          for (auto it = other.getFinals().begin(); it != other.getFinals().end(); it++){
+              if (it->second.find(std::get<1>(item)) != it->second.end())
+                nfin[(it->first)+this->getFinals().size()].insert(item);
+          }
+        }
+      }
+      ntr[{act, sym}] = dst;
+    }
+  }
+
+  return GeneralizedCoBuchiAutomaton<tuple<State, int>, Symbol>(nstates, nfin, nini, ntr);
+}
+
+template<typename State, typename Symbol>
+GeneralizedCoBuchiAutomaton<State, Symbol> GeneralizedCoBuchiAutomaton<State, Symbol>::unionGcoBA(GeneralizedCoBuchiAutomaton<State, Symbol> &other){
+  set<State> nstates;
+  set<State> nini;
+  Transitions ntr(this->getTransitions());
+  map<int,set<State>> nfin;
+
+  set_union(this->getStates().begin(), this->getStates().end(), other.getStates().begin(),
+    other.getStates().end(), std::inserter(nstates, nstates.begin()));
+  set_union(this->getInitials().begin(), this->getInitials().end(), other.getInitials().begin(),
+    other.getInitials().end(), std::inserter(nini, nini.begin()));
+  
+  nfin = this->getFinals();
+  // add acceptance sets
+  for (auto it = other->getFinals().begin(); it != other->getFinals().end(); it++){
+    nfin.insert{nfin.size(), it->second};
+  }
+
+  // merge transitions
+  for (auto it = other.getTransitions().begin(); it != other.getTransitions().end(); it++){
+      if (ntr.find(it->first) != ntr.end())
+        ntr[it->first].insert(it->second.begin(), it->second.end());
+      else
+        ntr.insert({it->first, it->second});
+  }
+
+  return GeneralizedCoBuchiAutomaton<State, Symbol>(nstates, nfin, nini, ntr, this->getAlphabet());
+}
+
+template<typename State, typename Symbol>
+GeneralizedCoBuchiAutomaton<State, Symbol> GeneralizedCoBuchiAutomaton<State, Symbol>::reverse(){
+  //TODO
+}
 
 template class GeneralizedCoBuchiAutomaton<int, int>;
 template class GeneralizedCoBuchiAutomaton<std::string, std::string>;
