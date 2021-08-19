@@ -17,12 +17,12 @@
 
 #include "BuchiAutomaton.h"
 #include "APSymbol.h"
-#include "GenBuchiAutomaton.h"
+#include "GenCoBuchiAutomaton.h"
 
 using namespace std;
 namespace pt = boost::property_tree;
 
-enum automatonType {autBA, autGBA};
+enum automatonType {autBA, autGcoBA, autGBA};
 
 /*
  * Parser exception

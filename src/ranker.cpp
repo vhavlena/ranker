@@ -16,6 +16,8 @@
 #include "Automata/BuchiAutomaton.h"
 #include "Automata/BuchiAutomataParser.h"
 #include "Algorithms/Simulations.h"
+#include "Automata/GenCoBuchiAutomaton.h"
+#include "Complement/GenCoBuchiAutomatonCompl.h"
 
 using namespace std;
 
@@ -190,7 +192,7 @@ int main(int argc, char *argv[])
       BuchiAutomaton<StateSch, int> compBA;
 
       BuchiAutomaton<int, int> *renBuchi = nullptr;
-      GeneralizedBuchiAutomaton<int, int> *renGBA = nullptr;
+      GeneralizedCoBuchiAutomaton<int, int> *renGcoBA = nullptr;
 
       try
       {
@@ -199,9 +201,8 @@ int main(int argc, char *argv[])
 
         if (dynamic_cast<BuchiAutomaton<int, int>*>(ren))
           renBuchi = (BuchiAutomaton<int, int>*)ren;
-        else if (dynamic_cast<GeneralizedBuchiAutomaton<int, int>*>(ren)){
-          renGBA = (GeneralizedBuchiAutomaton<int, int>*)ren;
-          //std::cerr << renGBA->toGraphwiz() << std::endl;
+        else if (dynamic_cast<GeneralizedCoBuchiAutomaton<int, int>*>(ren)){
+          renGcoBA = (GeneralizedCoBuchiAutomaton<int, int>*)ren;
         }
 
         // elevator test
@@ -223,8 +224,8 @@ int main(int argc, char *argv[])
       {
         if (renBuchi != nullptr)
           complementAutWrap(renBuchi, &compBA, &renCompl, &stats, delay, w, version, elevatorRank, eta4);
-        /*else if (renGBA != nullptr)
-          complementAutWrap(renGBA, &compGBA, &renCompl, &stats,delay, w, version, elevatorRank, eta4);*/
+        else if (renGcoBA != nullptr)
+          std::cout << "G-coBA!!!" << std::endl;
       }
       catch (const std::bad_alloc&)
       {

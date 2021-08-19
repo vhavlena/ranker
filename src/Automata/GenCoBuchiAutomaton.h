@@ -29,7 +29,7 @@ public:
   typedef std::set<State> SetStates;
   typedef std::set<Symbol> SetSymbols;
   typedef Delta<State, Symbol> Transitions;
-  typedef std::map<int, std::set<int>> SetFins;
+  typedef std::map<int, std::set<State>> SetFins;
 
 private:
   SetFins finals;
@@ -41,17 +41,17 @@ protected:
   std::string toGffWith(std::function<std::string(State)>& stateStr,  std::function<std::string(Symbol)>& symStr);
 
 public:
-  GeneralizedCoBuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans) : AutomatonStruct<State, Symbol>(st, ini, trans)
+  GeneralizedCoBuchiAutomaton(SetStates st, SetFins fin, SetStates ini, Transitions trans) : AutomatonStruct<State, Symbol>(st, ini, trans)
   {
     this->finals = fin;
   }
 
-  GeneralizedCoBuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans, SetSymbols alp) : AutomatonStruct<State, Symbol>(st, ini, trans, alp)
+  GeneralizedCoBuchiAutomaton(SetStates st, SetFins fin, SetStates ini, Transitions trans, SetSymbols alp) : AutomatonStruct<State, Symbol>(st, ini, trans, alp)
   {
     this->finals = fin;
   }
 
-  GeneralizedCoBuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans, SetSymbols alp, map<string, int> aps) : AutomatonStruct<State, Symbol>(st, ini, trans, alp, aps)
+  GeneralizedCoBuchiAutomaton(SetStates st, SetFins fin, SetStates ini, Transitions trans, SetSymbols alp, map<string, int> aps) : AutomatonStruct<State, Symbol>(st, ini, trans, alp, aps)
   {
     this->finals = fin;
   }
@@ -163,7 +163,7 @@ public:
    * Get automaton final states.
    * @return Set of final states
    */
-  SetStates& getFinals()
+  SetFins& getFinals()
   {
     return this->finals;
   }

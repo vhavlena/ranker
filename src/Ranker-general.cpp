@@ -23,7 +23,6 @@ AutomatonStruct<int, APSymbol>* parseRenameHOA(ifstream& os)
   AutomatonStruct<int, APSymbol> *orig = parser.parseHoaFormat(os);
   Simulations sim;
 
-  // downcast to BuchiAutomaton/GeneralizedBuchiAutomaton
   if (dynamic_cast<BuchiAutomaton<int, APSymbol>*>(orig)){
     BuchiAutomaton<int, APSymbol> *origBuchi = (BuchiAutomaton<int, APSymbol>*)orig;
 
@@ -34,9 +33,9 @@ AutomatonStruct<int, APSymbol>* parseRenameHOA(ifstream& os)
     origBuchi->computeRankSim(cl);
     return origBuchi;
   } 
-  else if (dynamic_cast<GeneralizedBuchiAutomaton<int, APSymbol>*>(orig)){
-    GeneralizedBuchiAutomaton<int, APSymbol> *origGBA = (GeneralizedBuchiAutomaton<int, APSymbol>*)orig;
-    return origGBA;
+  else if (dynamic_cast<GeneralizedCoBuchiAutomaton<int, APSymbol>*>(orig)){
+    GeneralizedCoBuchiAutomaton<int, APSymbol> *origGcoBA = (GeneralizedCoBuchiAutomaton<int, APSymbol>*)orig;
+    return origGcoBA;
   }
 }
 

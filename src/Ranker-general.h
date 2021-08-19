@@ -19,6 +19,7 @@
 #include "Automata/BuchiAutomataParser.h"
 #include "Algorithms/Simulations.h"
 #include "Debug/BuchiAutomatonDebug.h"
+#include "Automata/GenBuchiAutomaton.h"
 
 using namespace std;
 

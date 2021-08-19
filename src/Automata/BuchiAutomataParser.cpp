@@ -204,7 +204,7 @@ AutomatonStruct<int, APSymbol>* BuchiAutomataParser::parseHoaFormat(ifstream & o
   set<int> states;
   set<int> ini;
   set<int> finsBA;
-  map<int, set<int>> finsGBA;
+  map<int, set<int>> generalizedFins;
   AutomatonStruct<int, APSymbol>::Transitions trans;
   set<APSymbol> syms;
   int statesnum = 0;
@@ -217,6 +217,8 @@ AutomatonStruct<int, APSymbol>* BuchiAutomataParser::parseHoaFormat(ifstream & o
   while(getline (os, line))
   {
     this->line++;
+
+    // states
     if(line.rfind("States:", 0) == 0)
     {
       linecp = string(line.begin() + 7, line.end());
@@ -225,12 +227,16 @@ AutomatonStruct<int, APSymbol>* BuchiAutomataParser::parseHoaFormat(ifstream & o
       for(int i = 0; i < statesnum; i++)
         states.insert(i);
     }
+
+    // start
     else if(line.rfind("Start:", 0) == 0)
     {
       linecp = string(line.begin() + 6, line.end());
       boost::algorithm::trim_left(linecp);
       ini.insert(std::stoi(linecp));
     }
+
+    // AP
     else if(line.rfind("AP:", 0) == 0)
     {
       linecp = string(line.begin() + 3, line.end());
@@ -245,6 +251,8 @@ AutomatonStruct<int, APSymbol>* BuchiAutomataParser::parseHoaFormat(ifstream & o
         aps.insert({singleap, i});
       }
     }
+
+    // acceptance
     else if(line.rfind("Acceptance:", 0) == 0)
     {
       linecp = string(line.begin() + 11, line.end());
@@ -253,53 +261,55 @@ AutomatonStruct<int, APSymbol>* BuchiAutomataParser::parseHoaFormat(ifstream & o
       {
         throw ParserException("Unsupported acceptance condition. Expected: \"1 Inf(0)\"", this->line);
       } 
-      else if (this->getAutomatonType() == autGBA)
+      else if (this->getAutomatonType() == autGcoBA)
       {
-        std::regex gbaAcceptance("([0-9]+)(\\s)*(\\()*Inf\\([0-9]+\\)((\\s)*&(\\s)*Inf\\([0-9]+\\))*(\\))*");
-        if (not std::regex_match(linecp, gbaAcceptance))
+        std::regex gcobaAcceptance("([0-9]+)(\\s)*(\\()*Fin\\([0-9]+\\)((\\s)*\\|(\\s)*Fin\\([0-9]+\\))*(\\))*");
+        if (not std::regex_match(linecp, gcobaAcceptance))
           throw ParserException("Unsupported acceptance condition.");
         else {
           std::smatch match;
-          if (std::regex_search(linecp, match, gbaAcceptance)){
+          if (std::regex_search(linecp, match, gcobaAcceptance)){
             accSetsCount = std::stoi(match.str(1));
             for (unsigned i=0; i<accSetsCount; i++){
               std::set<int> tmpSet;
-              finsGBA.insert({i, tmpSet});
+              generalizedFins.insert({i, tmpSet});
             }
           }
         }
       }
     }
+
+    // acc-name
     else if(line.rfind("acc-name:", 0) == 0)
     {
       linecp = string(line.begin() + 9, line.end());
       boost::algorithm::trim_left(linecp);
 
       std::regex baRegex("Buchi(\\s)*");
-      std::regex gbaRegex("generalized-Buchi(\\s)*[0-9]+(\\s)*");
+      std::regex gcobaRegex("generalized-co-Buchi(\\s)*[0-9]+(\\s)*");
       if (std::regex_match(linecp, baRegex))
         this->setAutomatonType(autBA);
-      else if (std::regex_match(linecp, gbaRegex))
-        this->setAutomatonType(autGBA);
+      else if (std::regex_match(linecp, gcobaRegex))
+        this->setAutomatonType(autGcoBA);
       else
         throw ParserException("Unsupported automaton type.");
     }
     else if(line.rfind("--BODY--", 0) == 0)
     {
-      trans = parseHoaBody(aps.size(), os, finsBA, finsGBA);
+      trans = parseHoaBody(aps.size(), os, finsBA, generalizedFins);
     }
   }
 
   BuchiAutomaton<int, APSymbol> *buchi;
-  GeneralizedBuchiAutomaton<int, APSymbol> *gba;
+  GeneralizedCoBuchiAutomaton<int, APSymbol> *gcoba;
 
   switch (this->getAutomatonType()){
     case autBA:
       buchi = new BuchiAutomaton<int, APSymbol>(states, finsBA, ini, trans, syms, aps);
       return buchi;
-    case autGBA:
-      gba = new GeneralizedBuchiAutomaton<int, APSymbol>(states, finsGBA, ini, trans, syms, aps); 
-      return gba;
+    case autGcoBA:
+      gcoba = new GeneralizedCoBuchiAutomaton<int, APSymbol>(states, generalizedFins, ini, trans, syms, aps); 
+      return gcoba;
   }
 }
 
@@ -334,7 +344,7 @@ Transition<int, APSymbol> BuchiAutomataParser::parseHoaTransition(int srcstate, 
  * @param fin Final states (out parameter)
  * @return Transition function
  */
-Delta<int, APSymbol> BuchiAutomataParser::parseHoaBody(int apNum, ifstream & os, set<int>& finsBA, map<int, set<int>>& finsGBA)
+Delta<int, APSymbol> BuchiAutomataParser::parseHoaBody(int apNum, ifstream & os, set<int>& finsBA, map<int, set<int>>& generalizedFins)
 {
   Delta<int, APSymbol> trans;
   int src;
@@ -350,8 +360,10 @@ Delta<int, APSymbol> BuchiAutomataParser::parseHoaBody(int apNum, ifstream & os,
     {
       string linecp(line.begin()+7, line.end());
       boost::regex baRegex("([0-9]+)\\s*(\\{\\s*0\\s*\\})?");
-      boost::regex gbaRegex("([0-9]+)\\s*(\\{\\s*[0-9]+((\\s)+[0-9]+)*\\s*\\})?");
+      boost::regex gcobaRegex("([0-9]+)\\s*(\\{\\s*[0-9]+((\\s)+[0-9]+)*\\s*\\})?");
       boost::smatch what;
+      
+      // BA
       if(this->getAutomatonType() == autBA and boost::regex_match(linecp, what, baRegex))
       {
         src = std::stoi(what[1]);
@@ -364,7 +376,9 @@ Delta<int, APSymbol> BuchiAutomataParser::parseHoaBody(int apNum, ifstream & os,
           }
         }
       }
-      else if (this->getAutomatonType() == autGBA and boost::regex_match(linecp, what, gbaRegex))
+
+      // GcoBA
+      else if (this->getAutomatonType() == autGcoBA and boost::regex_match(linecp, what, gcobaRegex))
       {
         src = std::stoi(what[1]);
         if (what.size() >= 3 and what[2].length()>0){
@@ -378,17 +392,17 @@ Delta<int, APSymbol> BuchiAutomataParser::parseHoaBody(int apNum, ifstream & os,
           while ((pos = v.find(delimiter)) != std::string::npos){
             token = v.substr(0, pos);
             // insert state in finals
-            auto it = finsGBA.find(std::stoi(token));
-            if (it == finsGBA.end())
-              throw ParserException("Wrong number of accepting set.");
+            auto it = generalizedFins.find(std::stoi(token));
+            if (it == generalizedFins.end())
+              throw ParserException("Wrong number of accepting sets.");
             else
               it->second.insert(src);
             v.erase(0, pos + delimiter.length());
           }
           // last element outside of the loop
-          auto it = finsGBA.find(std::stoi(v));
-          if (it == finsGBA.end())
-            throw ParserException("Wrong number of accepting set.");
+          auto it = generalizedFins.find(std::stoi(v));
+          if (it == generalizedFins.end())
+            throw ParserException("Wrong number of accepting sets.");
           else
             it->second.insert(src);
         }

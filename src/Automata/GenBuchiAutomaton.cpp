@@ -19,7 +19,7 @@ std::string GeneralizedBuchiAutomaton<State,Symbol>::toStringWith(std::function<
         + "->" + stateStr(d) + "\n";
   }
   for (auto it = this->finals.begin(); it != this->finals.end(); it++){
-    for(State p : it->second)
+    for(auto p : it->second)
         str += stateStr(p) + "\n";
     str += "---\n"; // divider between accepting sets
   }
@@ -164,11 +164,11 @@ std::string GeneralizedBuchiAutomaton<State,Symbol>::toGffWith(std::function<std
     str += "</stateset>\n";
   
     str += "<acc type=\"Generalized Buchi\">\n";
-    for (auto states : this->finals){
-        str += "<AccSet>\n";
-        for(auto p : states)
-            str += "<stateID>" + stateStr(p) +  "</stateID>\n";
-        str += "</AccSet>\n";
+    for (auto it = this->finals.begin(); it != this->finals.end(); it++){
+      str += "<AccSet>\n";
+      for(auto p : it->second)
+          str += "<stateID>" + stateStr(p) +  "</stateID>\n";
+      str += "</AccSet>\n";
     }
     str += "</acc>\n";
   

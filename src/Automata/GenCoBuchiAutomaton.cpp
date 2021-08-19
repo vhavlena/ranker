@@ -35,7 +35,7 @@ std::string GeneralizedCoBuchiAutomaton<State,Symbol>::toStringWith(std::functio
  * @return Graphwiz representation of the automaton
  */
 template <typename State, typename Symbol>
-std::string BuchiAutomaton<State, Symbol>::toGraphwizWith(std::function<std::string(State)>& stateStr,
+std::string GeneralizedCoBuchiAutomaton<State, Symbol>::toGraphwizWith(std::function<std::string(State)>& stateStr,
   std::function<std::string(Symbol)>& symStr)
 {
   std::string str = "digraph \" Automaton \" { rankdir=LR;\n { rank = LR }\n";
@@ -84,11 +84,11 @@ std::string GeneralizedCoBuchiAutomaton<State,Symbol>::toGffWith(std::function<s
     str += "</stateset>\n";
   
     str += "<acc type=\"Generalized co-Buchi\">\n";
-    for (auto states : this->finals){
-        str += "<AccSet>\n";
-        for(auto p : states)
-            str += "<stateID>" + stateStr(p) +  "</stateID>\n";
-        str += "</AccSet>\n";
+    for (auto it = this->finals.begin(); it != this->finals.end(); it++){
+      str += "<AccSet>\n";
+      for(auto p : it->second)
+          str += "<stateID>" + stateStr(p) +  "</stateID>\n";
+      str += "</AccSet>\n";
     }
     str += "</acc>\n";
   
@@ -451,8 +451,8 @@ GeneralizedCoBuchiAutomaton<State, Symbol> GeneralizedCoBuchiAutomaton<State, Sy
   
   nfin = this->getFinals();
   // add acceptance sets
-  for (auto it = other->getFinals().begin(); it != other->getFinals().end(); it++){
-    nfin.insert{nfin.size(), it->second};
+  for (auto it = other.getFinals().begin(); it != other.getFinals().end(); it++){
+    nfin.insert({nfin.size(), it->second});
   }
 
   // merge transitions
