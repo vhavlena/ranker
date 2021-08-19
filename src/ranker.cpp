@@ -266,7 +266,7 @@ int main(int argc, char *argv[])
       if(params.stats)
         printStat(stats);
       cout << outOrig.toHOA() << endl;
-      cout << renCompl.toGraphwiz() <<std::endl;
+      //cout << renCompl.toGraphwiz() <<std::endl;
     }
   }
   else

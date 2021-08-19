@@ -372,8 +372,35 @@ bool GeneralizedCoBuchiAutomaton<int,int>::isEmpty(){
 
 template<typename State, typename Symbol>
 GeneralizedCoBuchiAutomaton<std::tuple<State, int>, Symbol> GeneralizedCoBuchiAutomaton<State, Symbol>::product(GeneralizedCoBuchiAutomaton<int, Symbol> &other){
-  //TODO
+  typedef tuple<State, int> ProdState;
+  
   // product automaton + distribution of fins
+  GeneralizedCoBuchiAutomaton<std::tuple<State, int>, Symbol> cartProduct = this->cartProduct(other);
+
+  std::map<int, std::set<ProdState>> nfin;
+  std::set<ProdState> emptySet;
+  emptySet.clear();
+  for (unsigned i=0; i<this->getFinals().size()*other.getFinals().size(); i++)
+    nfin.insert({i, emptySet});
+  for (auto state : cartProduct.getStates()){
+    for (unsigned i=0; i<this->finals.size(); i++){
+      if (this->finals[i].find(std::get<0>(state)) != this->finals[i].end()){
+        // final in first automaton
+        for (auto index = this->finals.size()*i; index < (i+1)*other.getFinals().size()-1; index++)
+          nfin[index].insert(state);
+      }
+    }
+
+    for (unsigned i=0; i<other.getFinals().size(); i++){
+      if (other.getFinals()[i].find(std::get<1>(state)) != other.getFinals()[i].end()){
+        // final in second automaton
+        for (auto index = i; i < this->getFinals().size()*other.getFinals().size(); i += other.getFinals().size())
+          nfin[index].insert(state);
+      }
+    }
+  }
+
+  return GeneralizedCoBuchiAutomaton<tuple<State, int>, Symbol>(cartProduct.getStates(), nfin, cartProduct.getInitials(), cartProduct.getTransitions());
 }
 
 template<typename State, typename Symbol>

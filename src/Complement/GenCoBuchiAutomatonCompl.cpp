@@ -58,7 +58,7 @@ BuchiAutomaton<StateGcoBA, int> GeneralizedCoBuchiAutomatonCompl::complementGcoB
     }
 
     auto ba = BuchiAutomaton<StateGcoBA, int>(states, finals, initials, mp, alph, getAPPattern());
-    std::cerr << ba.toString() << std::endl;
+    //std::cerr << ba.toString() << std::endl;
     return ba;
 }
 
