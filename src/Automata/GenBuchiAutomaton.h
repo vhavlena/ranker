@@ -1,5 +1,5 @@
-#ifndef _GENERALIZED_BA_H_
-#define _GENERALIZED_BA_H_
+#ifndef _GEN_BUCHI_AUTOMATON_H_
+#define _GEN_BUCHI_AUTOMATON_H_
 
 #include <set>
 #include <map>

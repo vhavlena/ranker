@@ -1,5 +1,5 @@
-#ifndef _GENERALIZED_COBA_H_
-#define _GENERALIZED_COBA_H_
+#ifndef _GEN_CO_BUCHI_AUTOMATON_H_
+#define _GEN_CO_BUCHI_AUTOMATON_H_
 
 #include <set>
 #include <map>
@@ -15,9 +15,8 @@
 
 #include "AutGraph.h"
 #include "AutomatonStruct.h"
-#include "BuchiAutomaton.h"
-#include "../Complement/StateKV.h"
-#include "../Complement/StateSch.h"
+//#include "BuchiAutomaton.h"
+#include "../Complement/StateGcoBA.h"
 #include "../Algorithms/AuxFunctions.h"
 #include "APSymbol.h"
 
@@ -141,7 +140,7 @@ public:
    * @return Renamed automaton
    */
   template<typename NewSymbol>
-  BuchiAutomaton<State, NewSymbol> renameAlphabet(map<Symbol, NewSymbol>& mpsymbol)
+  GeneralizedCoBuchiAutomaton<State, NewSymbol> renameAlphabet(map<Symbol, NewSymbol>& mpsymbol)
   {
     std::set<NewSymbol> ralph;
     Delta<State, NewSymbol> rtrans;

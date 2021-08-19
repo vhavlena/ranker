@@ -14,6 +14,18 @@ struct StateGcoBA {
   std::set<int> B;
   int i;
 
+  bool operator <(const StateGcoBA& rhs) const
+  {
+    if (i != rhs.i)
+      return i < rhs.i;
+    else {
+      if (S != rhs.S)
+        return S < rhs.S;
+      else
+        return B < rhs.B;
+    }
+  }
+  
   bool operator ==(const StateGcoBA& rhs) const
   {
     return S == rhs.S && B == rhs.B && i == rhs.i;

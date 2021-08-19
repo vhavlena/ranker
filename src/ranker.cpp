@@ -190,6 +190,7 @@ int main(int argc, char *argv[])
 
       BuchiAutomaton<int, int> renCompl;
       BuchiAutomaton<StateSch, int> compBA;
+      BuchiAutomaton<StateGcoBA, int> compGcoBA;
 
       BuchiAutomaton<int, int> *renBuchi = nullptr;
       GeneralizedCoBuchiAutomaton<int, int> *renGcoBA = nullptr;
@@ -225,7 +226,7 @@ int main(int argc, char *argv[])
         if (renBuchi != nullptr)
           complementAutWrap(renBuchi, &compBA, &renCompl, &stats, delay, w, version, elevatorRank, eta4);
         else if (renGcoBA != nullptr)
-          std::cout << "G-coBA!!!" << std::endl;
+          complementGcoBAWrap(renGcoBA, &compGcoBA, &renCompl, &stats);
       }
       catch (const std::bad_alloc&)
       {
@@ -265,7 +266,7 @@ int main(int argc, char *argv[])
       if(params.stats)
         printStat(stats);
       cout << outOrig.toHOA() << endl;
-      //cout << renCompl.toGraphwiz() <<std::endl;
+      cout << renCompl.toGraphwiz() <<std::endl;
     }
   }
   else

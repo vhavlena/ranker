@@ -92,6 +92,29 @@ void complementAutWrap(AutomatonStruct<int, int>* ren, BuchiAutomaton<StateSch, 
   }
 }
 
+void complementGcoBAWrap(GeneralizedCoBuchiAutomaton<int, int> *ren, BuchiAutomaton<StateGcoBA, int> *complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats){
+  GeneralizedCoBuchiAutomatonCompl sp(ren);
+
+  *complOrig = sp.complementGcoBA();
+  
+  stats->generatedStates = complOrig->getStates().size();
+  stats->generatedTrans = complOrig->getTransCount();
+  
+  map<int, int> id;
+  for(auto al : complOrig->getAlphabet())
+    id[al] = al;
+  BuchiAutomaton<int, int> renCompl = complOrig->renameAutDict(id);
+  renCompl.removeUseless();
+  renCompl = renCompl.renameAutDict(id);
+
+  stats->reachStates = renCompl.getStates().size();
+  stats->reachTrans = renCompl.getTransCount();
+  stats->engine = "Ranker";
+  stats->transitionsToTight = -1;
+  stats->originalStates = sp.getStates().size();
+  *complRes = renCompl;
+}
+
 void complementScheweAutWrap(AutomatonStruct<int, int>* ren, BuchiAutomaton<int, int>* complRes, Stat* stats, bool delay, double w, delayVersion version)
 {
   if (BuchiAutomaton<int, int>* renptr = dynamic_cast<BuchiAutomaton<int, int>*>(ren)){

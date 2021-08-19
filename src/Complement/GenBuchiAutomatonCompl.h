@@ -1,6 +1,6 @@
 
-#ifndef _GEN_BUCHI_COMPL_H_
-#define _GEN_BUCHI_COMPL_H_
+#ifndef _GEN_BUCHI_AUTOMATON_COMPL_H_
+#define _GEN_BUCHI_AUTOMATON_COMPL_H_
 
 #include <set>
 #include <map>

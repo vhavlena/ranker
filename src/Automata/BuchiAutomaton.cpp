@@ -495,6 +495,18 @@ std::string BuchiAutomaton<StateKV, int>::toString()
   return toStringWith(f1, f2);
 }
 
+/*
+ * Function converting the automaton <StateKV, int> to string.
+ * @return String representation of the automaton
+ */
+template <>
+std::string BuchiAutomaton<StateGcoBA, int>::toString()
+{
+  std::function<std::string(StateGcoBA)> f1 = [&] (StateGcoBA x) {return x.toString();};
+  std::function<std::string(int)> f2 = [=] (int x) {return std::to_string(x);};
+  return toStringWith(f1, f2);
+}
+
 
 /*
  * Function converting the automaton <tuple<int, int, bool>, int> to string.
@@ -1202,3 +1214,4 @@ template class BuchiAutomaton<std::string, std::string>;
 template class BuchiAutomaton<StateSch, int>;
 template class BuchiAutomaton<int, APSymbol>;
 template class BuchiAutomaton<StateSch, APSymbol>;
+template class BuchiAutomaton<StateGcoBA, int>;

@@ -20,6 +20,8 @@
 #include "Algorithms/Simulations.h"
 #include "Debug/BuchiAutomatonDebug.h"
 #include "Automata/GenBuchiAutomaton.h"
+#include "Automata/GenCoBuchiAutomaton.h"
+#include "Complement/GenCoBuchiAutomatonCompl.h"
 
 using namespace std;
 
@@ -46,6 +48,8 @@ void complementAutWrap(AutomatonStruct<int, int>* ren, BuchiAutomaton<StateSch, 
 void printStat(Stat& st);
 
 BuchiAutomaton<int, int> createBA(vector<int>& loop);
+
+void complementGcoBAWrap(GeneralizedCoBuchiAutomaton<int, int> *ren, BuchiAutomaton<StateGcoBA, int> *complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats);
 
 /**
  * @brief  Retrieves the help message
