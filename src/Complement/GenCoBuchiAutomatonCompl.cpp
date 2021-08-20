@@ -13,7 +13,7 @@ BuchiAutomaton<StateGcoBA, int> GeneralizedCoBuchiAutomatonCompl::complementGcoB
     std::set_difference(this->getInitials().begin(), this->getInitials().end(), this->getFinals()[0].begin(), this->getFinals()[0].end(), std::inserter(init.B, init.B.begin())); 
     initials.insert(init); 
     states.insert(init);  
-    if (init.B.size() == 0)
+    if (init.B.size() == 0 or init.S.size() == 0)
         finals.insert(init);
 
     // push initial state on stack
@@ -48,7 +48,7 @@ BuchiAutomaton<StateGcoBA, int> GeneralizedCoBuchiAutomatonCompl::complementGcoB
             if (states.find(newState) == states.end()){
                 states.insert(newState);
                 stack.push(newState);
-                if (newState.B.size() == 0 and newState.i == 0)
+                if ((newState.B.size() == 0 and newState.i == 0) or newState.S.size() == 0)
                     finals.insert(newState);
             }
 
@@ -58,7 +58,7 @@ BuchiAutomaton<StateGcoBA, int> GeneralizedCoBuchiAutomatonCompl::complementGcoB
     }
 
     auto ba = BuchiAutomaton<StateGcoBA, int>(states, finals, initials, mp, alph, getAPPattern());
-    //std::cerr << ba.toString() << std::endl;
+    //std::cerr << ba.toString() << std::endl << std::endl;
     return ba;
 }
 

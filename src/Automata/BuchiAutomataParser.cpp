@@ -292,7 +292,7 @@ AutomatonStruct<int, APSymbol>* BuchiAutomataParser::parseHoaFormat(ifstream & o
       else if (std::regex_match(linecp, gcobaRegex))
         this->setAutomatonType(autGcoBA);
       else
-        throw ParserException("Unsupported automaton type.");
+        throw ParserException("Unsupported automaton type. " + linecp);
     }
     else if(line.rfind("--BODY--", 0) == 0)
     {
