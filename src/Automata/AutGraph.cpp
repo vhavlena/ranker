@@ -60,7 +60,7 @@ void AutGraph::strongConnect(int v)
   }
 }
 
-void AutGraph::strongConnect(int v, std::map<int, std::set<int>> finals)
+void AutGraph::strongConnect(int v, std::map<int, std::set<int>> finals, bool coBuchi)
 {
   this->vertices[v].index = this->index;
   this->vertices[v].lowLink = this->index;
@@ -104,6 +104,30 @@ void AutGraph::strongConnect(int v, std::map<int, std::set<int>> finals)
       {
         auto it = std::find(this->adjList[*item].begin(), this->adjList[*item].end(), *item);
         if(it != this->adjList[*item].end()){
+          // GBA
+          if (not coBuchi){
+            bool skip = false;
+            for (auto it = finals.begin(); it != finals.end(); it++){
+              bool contains = false;
+              for (auto state : it->second){
+                if (scc.find(state) != scc.end())
+                  contains = true;
+              if (not contains)
+                skip = true;
+              }
+            }
+            if (not skip)
+              this->finalComponents.push_back(scc);
+          }
+
+          // GcoBA
+          //TODO
+        }
+      }
+      else
+      {
+        // GBA
+        if (not coBuchi){
           bool skip = false;
           for (auto it = finals.begin(); it != finals.end(); it++){
             bool contains = false;
@@ -117,21 +141,9 @@ void AutGraph::strongConnect(int v, std::map<int, std::set<int>> finals)
           if (not skip)
             this->finalComponents.push_back(scc);
         }
-      }
-      else
-      {
-        bool skip = false;
-        for (auto it = finals.begin(); it != finals.end(); it++){
-          bool contains = false;
-          for (auto state : it->second){
-            if (scc.find(state) != scc.end())
-              contains = true;
-          if (not contains)
-            skip = true;
-          }
-        }
-        if (not skip)
-          this->finalComponents.push_back(scc);
+
+        // GcoBA
+        //TODO
       }
     }
     this->allComponents.push_back(scc);
@@ -157,7 +169,7 @@ void AutGraph::computeSCCs()
   }
 }
 
-void AutGraph::computeSCCs(std::map<int, std::set<int>> finals)
+void AutGraph::computeSCCs(std::map<int, std::set<int>> finals, bool coBuchi)
 {
   this->index = 0;
   this->S = stack<int>();
@@ -167,7 +179,7 @@ void AutGraph::computeSCCs(std::map<int, std::set<int>> finals)
   {
     if(v.index == -1)
     {
-      this->strongConnect(v.label, finals);
+      this->strongConnect(v.label, finals, coBuchi);
     }
   }
 }
@@ -214,3 +226,4 @@ set<int> AutGraph::reachableVertices(AdjList &lst, set<int>& from)
   }
   return all;
 }
+

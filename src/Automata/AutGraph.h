@@ -47,7 +47,7 @@ private:
 
 protected:
   void strongConnect(int v);
-  void strongConnect(int v, map<int, set<int>> finals);
+  void strongConnect(int v, map<int, set<int>> finals, bool coBuchi);
 
 public:
   AutGraph(AdjList& adj, Vertices& vert, set<int>& finals)
@@ -65,7 +65,7 @@ public:
   }
 
   void computeSCCs();
-  void computeSCCs(map<int, set<int>> finals);
+  void computeSCCs(map<int, set<int>> finals, bool coBuchi);
   set<int> reachableVertices(set<int>& from);
   static set<int> reachableVertices(AdjList &lst, set<int>& from);
 
