@@ -60,7 +60,7 @@ void AutGraph::strongConnect(int v)
   }
 }
 
-void AutGraph::strongConnect(int v, std::map<int, std::set<int>> finals, bool coBuchi)
+void AutGraph::strongConnect(int v, std::map<int, std::set<int>> finals, bool coBuchi, std::vector<std::vector<int>> allCycles)
 {
   this->vertices[v].index = this->index;
   this->vertices[v].lowLink = this->index;
@@ -92,10 +92,10 @@ void AutGraph::strongConnect(int v, std::map<int, std::set<int>> finals, bool co
       this->S.pop();
       this->vertices[w].onStack = false;
       scc.insert(this->vertices[w].label);
-      if(!final && this->finals.find(this->vertices[w].label) != this->finals.end())
-      {
+      //if(!final && this->finals.find(this->vertices[w].label) != this->finals.end())
+      //{
         final = true;
-      }
+      //}
     } while(v != w);
     if(final && scc.size() >= 1)
     {
@@ -121,7 +121,27 @@ void AutGraph::strongConnect(int v, std::map<int, std::set<int>> finals, bool co
           }
 
           // GcoBA
-          //TODO
+          // add to final components if there is some cycle with no final state from some fin set
+          else {
+            for (auto v : allCycles){
+              std::vector<int> sccIntersection;
+              std::set_intersection(v.begin(), v.end(), scc.begin(), scc.end(), std::back_inserter(sccIntersection));
+              if (sccIntersection.empty())
+                continue;
+              bool missing = false;
+              std::vector<int> intersection;
+              for (auto it = finals.begin(); it != finals.end(); it++){
+                std::set_intersection(v.begin(), v.end(), it->second.begin(), it->second.end(), std::back_inserter(intersection));
+                if (intersection.empty()){
+                  missing = true;
+                  this->finalComponents.push_back(scc);
+                  break;
+                }
+              }
+              if (missing)
+                break;
+            }
+          }
         }
       }
       else
@@ -143,7 +163,26 @@ void AutGraph::strongConnect(int v, std::map<int, std::set<int>> finals, bool co
         }
 
         // GcoBA
-        //TODO
+        else {
+            for (auto v : allCycles){
+              std::vector<int> sccIntersection;
+              std::set_intersection(v.begin(), v.end(), scc.begin(), scc.end(), std::back_inserter(sccIntersection));
+              if (sccIntersection.empty())
+                continue;
+              bool missing = false;
+              std::vector<int> intersection;
+              for (auto it = finals.begin(); it != finals.end(); it++){
+                std::set_intersection(v.begin(), v.end(), it->second.begin(), it->second.end(), std::back_inserter(intersection));
+                if (intersection.empty()){
+                  missing = true;
+                  this->finalComponents.push_back(scc);
+                  break;
+                }
+              }
+              if (missing)
+                break;
+            }
+         }
       }
     }
     this->allComponents.push_back(scc);
@@ -169,7 +208,7 @@ void AutGraph::computeSCCs()
   }
 }
 
-void AutGraph::computeSCCs(std::map<int, std::set<int>> finals, bool coBuchi)
+void AutGraph::computeSCCs(std::map<int, std::set<int>> finals, bool coBuchi, std::vector<std::vector<int>> allCycles)
 {
   this->index = 0;
   this->S = stack<int>();
@@ -179,7 +218,7 @@ void AutGraph::computeSCCs(std::map<int, std::set<int>> finals, bool coBuchi)
   {
     if(v.index == -1)
     {
-      this->strongConnect(v.label, finals, coBuchi);
+      this->strongConnect(v.label, finals, coBuchi, allCycles);
     }
   }
 }

@@ -359,15 +359,197 @@ GeneralizedCoBuchiAutomaton<int, int> GeneralizedCoBuchiAutomaton<State,Symbol>:
 }
 
 template<>
+void GeneralizedCoBuchiAutomaton<int, int> :: unblock(int state, std::set<int> &blockedSet, std::map<int, std::set<int>> &blockedMap){
+  blockedSet.erase(state); //
+  for (auto w : blockedMap[state]){
+    blockedMap[state].erase(w); // delete w from blocked maps
+    if (blockedSet.find(w) != blockedSet.end()){ // w is in blockedSet
+      //blockedSet.erase(w); //!
+      this->unblock(w, blockedSet, blockedMap); //
+    }
+  }
+}
+
+template<>
+bool GeneralizedCoBuchiAutomaton<int, int> :: circuit(int state, std::vector<int> &stack, std::set<int> &blockedSet, std::map<int,
+  std::set<int>> &blockedMap, std::set<int> scc, AdjList adjlist, int startState, std::vector<std::vector<int>> &allCyclesRenamed) {
+  bool flag = false;
+  stack.push_back(state);
+  blockedSet.insert(state);
+
+  // for every successor
+  for (auto succ : adjlist[state]){
+    if (succ == startState){
+      // cycle was closed -> states on stack
+      flag = true;
+      std::vector<int> cycle;
+      for (auto state : stack){
+        cycle.push_back(state);
+      }
+      if (not cycle.empty()){
+        cycle.push_back(startState);
+        allCyclesRenamed.push_back(cycle); // add new cycle to the vector of cycles
+      }
+    }
+    else if (blockedSet.find(succ) == blockedSet.end()){ // succ is not in blockedSet
+      // successor is not in the blocked set
+      if (this->circuit(succ, stack, blockedSet, blockedMap, scc, adjlist, startState, allCyclesRenamed)){
+        flag = true;
+      }
+    }
+  }
+
+  if (flag){
+    // unblock ...
+    this->unblock(state, blockedSet, blockedMap);
+  } else {
+    // for every successor
+    for (auto succ : adjlist[state]){
+      if (blockedMap[state].find(succ) == blockedMap[state].end()){ // succ is not in blockedMap[state]
+        blockedMap[state].insert(succ);
+      }
+    }
+  }
+
+  stack.pop_back(); // remove last element from stack
+  return flag;
+}
+
+template<>
+std::vector<std::vector<int>> GeneralizedCoBuchiAutomaton<int,int> :: getAllCycles(){
+  AutomatonStruct<int, int> *renAut = this->renameAut();
+
+  if (dynamic_cast<GeneralizedCoBuchiAutomaton<int, int>*>(renAut)){
+    GeneralizedCoBuchiAutomaton<int, int> *renAutBA = (GeneralizedCoBuchiAutomaton<int, int>*)renAut;
+
+    vector<vector<int>> adjList(this->getStates().size());
+    vector<VertItem> vrt;
+    vector<set<StateSch>> sccs;
+
+    renAut->getAutGraphComponents(adjList, vrt);
+    AutGraph gr(adjList, vrt, renAutBA->getFinals());
+    gr.computeSCCs(); // all sccs
+
+    std::vector<std::vector<int>> allCyclesRenamed;
+    std::vector<std::vector<int>> allCycles;
+    const std::set<int> emptySet;
+    std::vector<std::set<int>> tmpVector;
+
+    for(auto& scc : gr.getAllComponents()){ // for every scc
+      auto tmpScc = scc;
+      for (auto &state : scc){ // for every state in scc
+        std::vector<int> stack;
+        std::set<int> blockedSet;
+        std::map<int, std::set<int>> blockedMap;
+
+        // insert all states in scc to blockedMap
+        for(auto &state : scc){
+          blockedMap.insert(std::pair<int, std::set<int>>(state, emptySet));
+        }
+
+        // circuit method: returns all cycles in allCyclesRenamed
+        this->circuit(state, stack, blockedSet, blockedMap, tmpScc, adjList, state, allCyclesRenamed);
+
+        tmpScc.erase(state);
+        adjList[state].erase(std::remove(adjList[state].begin(), adjList[state].end(), state), adjList[state].end());
+      }
+    }
+
+    for (auto &cycle : allCyclesRenamed){
+      std::vector<int> oneCycle;
+      for (auto &state : cycle){
+        oneCycle.push_back(this->getInvRenameSymbolMap()[state]);
+      }
+      allCycles.push_back(oneCycle);
+    }
+
+    return allCycles;
+  }
+}
+
+template <typename State, typename Symbol>
+void GeneralizedCoBuchiAutomaton<State, Symbol>::restriction(set<State>& st)
+{
+  Transitions newtrans;
+  //set<State> newfin;
+  std::map<int, set<State>> newfin = this->finals;
+  set<State> newini;
+  for(auto tr : this->trans)
+  {
+    if(st.find(tr.first.first) == st.end())
+      continue;
+
+    set<State> dst;
+    std::set_intersection(tr.second.begin(),tr.second.end(),st.begin(),
+      st.end(), std::inserter(dst, dst.begin()));
+    newtrans[tr.first] = dst;
+  }
+
+  //std::set_intersection(this->finals.begin(),this->finals.end(),st.begin(),
+    //st.end(), std::inserter(newfin, newfin.begin()));
+  
+  // remove states not in st
+  for (auto it = newfin.begin(); it != newfin.end(); it++){
+    std::set<State> intersection;
+    std::set_intersection(it->second.begin(), it->second.end(), st.begin(), st.end(), std::inserter(intersection, intersection.begin()));
+    it->second = intersection;
+  }
+
+  std::set_intersection(this->initials.begin(),this->initials.end(),st.begin(),
+    st.end(), std::inserter(newini, newini.begin()));
+  this->trans = newtrans;
+  this->states = st;
+  this->finals = newfin;
+  this->initials = newini;
+}
+
+template<>
 void GeneralizedCoBuchiAutomaton<int,int>::removeUseless(){
-    //TODO
     // remove inherently weak sccs (for all fins) which do not have any non-inherently weak scc successor
+    vector<vector<int> > adjList(this->states.size());
+    vector<vector<int> > revList(this->states.size());
+    vector<VertItem> vrt;
+  
+    getAutGraphComponents(adjList, vrt);
+    for(unsigned i = 0; i < adjList.size(); i++)
+    {
+      for(auto dst : adjList[i])
+        revList[dst].push_back(i);
+    }
+  
+    AutGraph gr(adjList, vrt, this->finals);
+    gr.computeSCCs(this->finals, true, this->getAllCycles());
+    set<int> fin;
+    for(auto s : gr.getFinalComponents())
+    {
+      fin.insert(s.begin(), s.end());
+    }
+  
+    set<int> reach = gr.reachableVertices(this->getInitials());
+    set<int> backreach = gr.reachableVertices(revList, fin);
+    set<int> ret;
+  
+    std::set_intersection(reach.begin(),reach.end(),backreach.begin(),
+      backreach.end(), std::inserter(ret, ret.begin()));
+    restriction(ret);
 }
     
 template<>
 bool GeneralizedCoBuchiAutomaton<int,int>::isEmpty(){
-    //TODO
     // empty <=> there are only inherently weak sccs (for all fins)
+    std::vector<std::vector<int>> allCycles = this->getAllCycles();
+    for (auto v : allCycles){
+      bool missing = false;
+      std::vector<int> intersection;
+      for (auto it = this->getFinals().begin(); it != this->getFinals().end(); it++){
+        std::set_intersection(v.begin(), v.end(), it->second.begin(), it->second.end(), std::back_inserter(intersection));
+        if (intersection.empty()){
+          missing = true;
+          return false;
+        }
+      }
+    }
+    return true;
 }
 
 template<typename State, typename Symbol>

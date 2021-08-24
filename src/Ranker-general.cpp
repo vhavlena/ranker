@@ -93,6 +93,8 @@ void complementAutWrap(AutomatonStruct<int, int>* ren, BuchiAutomaton<StateSch, 
 }
 
 void complementGcoBAWrap(GeneralizedCoBuchiAutomaton<int, int> *ren, BuchiAutomaton<StateGcoBA, int> *complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats){
+  ren->removeUseless();
+  //std::cerr << ren->toGraphwiz() << std::endl;
   GeneralizedCoBuchiAutomatonCompl sp(ren);
 
   *complOrig = sp.complementGcoBA();

@@ -225,8 +225,9 @@ int main(int argc, char *argv[])
       {
         if (renBuchi != nullptr)
           complementAutWrap(renBuchi, &compBA, &renCompl, &stats, delay, w, version, elevatorRank, eta4);
-        else if (renGcoBA != nullptr)
+        else if (renGcoBA != nullptr){
           complementGcoBAWrap(renGcoBA, &compGcoBA, &renCompl, &stats);
+        }
       }
       catch (const std::bad_alloc&)
       {

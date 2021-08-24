@@ -175,6 +175,13 @@ public:
   GeneralizedCoBuchiAutomaton<State, Symbol> unionGcoBA(GeneralizedCoBuchiAutomaton<State, Symbol>& other);
   GeneralizedCoBuchiAutomaton<State, Symbol> reverse();
 
+  std::vector<std::vector<int>> getAllCycles();
+  bool circuit(int state, std::vector<int> &stack, std::set<int> &blockedSet, std::map<int,
+    std::set<int>> &blockedMap, std::set<int> scc, AdjList adjlist, int startState, std::vector<std::vector<int>> &allCyclesRenamed);
+  void unblock(int state, std::set<int> &blockedSet, std::map<int, std::set<int>> &blockedMap);
+
+  void restriction(set<State>& st);
+
 };
 
 #endif
