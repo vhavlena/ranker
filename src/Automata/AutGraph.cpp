@@ -97,6 +97,7 @@ void AutGraph::strongConnect(int v, std::map<int, std::set<int>> finals, bool co
         final = true;
       //}
     } while(v != w);
+    std::cerr << "SCC" << std::endl;
     if(final && scc.size() >= 1)
     {
       auto item = scc.begin();
@@ -121,7 +122,7 @@ void AutGraph::strongConnect(int v, std::map<int, std::set<int>> finals, bool co
           }
 
           // GcoBA
-          // add to final components if there is some cycle with no final state from some fin set
+          // add to final components if there is some cycle with missing final state from some fin
           else {
             for (auto v : allCycles){
               std::vector<int> sccIntersection;

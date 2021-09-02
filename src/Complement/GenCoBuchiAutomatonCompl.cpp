@@ -34,7 +34,7 @@ BuchiAutomaton<StateGcoBA, int> GeneralizedCoBuchiAutomatonCompl::complementGcoB
             std::set<int> B_prime;
             if (state.B.empty()){
                 i_prime = (state.i + 1) % this->getFinals().size();
-                std::set_difference(state.S.begin(), state.S.end(), this->getFinals()[i_prime].begin(), this->getFinals()[i_prime].end(), std::inserter(B_prime, B_prime.begin()));
+                std::set_difference(S_prime.begin(), S_prime.end(), this->getFinals()[i_prime].begin(), this->getFinals()[i_prime].end(), std::inserter(B_prime, B_prime.begin()));
             } else {
                 i_prime = state.i;
                 auto tmp = succSet(state.B, sym);

@@ -226,6 +226,7 @@ int main(int argc, char *argv[])
         if (renBuchi != nullptr)
           complementAutWrap(renBuchi, &compBA, &renCompl, &stats, delay, w, version, elevatorRank, eta4);
         else if (renGcoBA != nullptr){
+          //cerr << renGcoBA->toGraphwiz() << std::endl;
           complementGcoBAWrap(renGcoBA, &compGcoBA, &renCompl, &stats);
         }
       }

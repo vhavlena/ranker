@@ -42,12 +42,14 @@ std::string GeneralizedCoBuchiAutomaton<State, Symbol>::toGraphwizWith(std::func
   str += "node [shape = doublecircle];\n";
   for (auto st : this->states){
       std::string acc = "";
+      unsigned i=0;
       for (auto it = this->finals.begin(); it != this->finals.end(); it++){
           if (it->second.find(st) != it->second.end()){
             if (acc != "")
                 acc += ",";
-            acc += stateStr(st);   
+            acc += std::to_string(i);   
           }
+          i++;
       }
       if (acc != "")
         str += "\"" + stateStr(st) + "\" [label = \"" + stateStr(st) + " {" + acc + "}\"] " + "\n";
@@ -526,7 +528,9 @@ void GeneralizedCoBuchiAutomaton<int,int>::removeUseless(){
     }
   
     set<int> reach = gr.reachableVertices(this->getInitials());
+    std::cerr << "Reachable vertices: " << reach.size() << std::endl;
     set<int> backreach = gr.reachableVertices(revList, fin);
+    std::cerr << "Back reach vertices: " << backreach.size() << std::endl;
     set<int> ret;
   
     std::set_intersection(reach.begin(),reach.end(),backreach.begin(),

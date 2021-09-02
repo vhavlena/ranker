@@ -474,6 +474,7 @@ APSymbol BuchiAutomataParser::parseHoaExpression(string& line, int apNum)
     if(symvar[i] == 1)
       symbol.ap.set(i);
   }
+
   return symbol;
 }
 

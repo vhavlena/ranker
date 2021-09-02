@@ -811,7 +811,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
   set<int> alph = getAlphabet();
   map<std::pair<StateSch, int>, set<StateSch> > mp;
   map<std::pair<StateSch, int>, vector<StateSch> > mpVect;
-  map<std::pair<StateSch, int>, set<StateSch> >::iterator it;
+  map<std::pair<StateSch, int>, set<StateSch> >::iterator it; 
 
   // NFA part of the Schewe construction
   auto start = std::chrono::high_resolution_clock::now();
