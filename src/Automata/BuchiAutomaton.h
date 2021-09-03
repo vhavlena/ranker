@@ -23,6 +23,7 @@
 using std::tuple;
 
 class AutGraph;
+struct RankBound;
 
 enum delayVersion : unsigned {oldVersion, newVersion, randomVersion, subsetVersion, stirlingVersion};
 
@@ -39,6 +40,7 @@ struct Stat
   size_t originalStates;
   long duration;
   string engine;
+  std::map<std::set<int>, RankBound> ranks;
 
   // time
   std::chrono::time_point<std::chrono::high_resolution_clock> beginning;

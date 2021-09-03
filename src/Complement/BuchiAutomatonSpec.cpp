@@ -869,6 +869,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
     end = std::chrono::high_resolution_clock::now();;
     stats->elevatorRank = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
   }
+  stats->ranks = this->rankBound;
 
   start = std::chrono::high_resolution_clock::now();
   map<StateSch, DelayLabel> delayMp;
@@ -1317,7 +1318,13 @@ bool BuchiAutomatonSpec::isInherentlyWeak(std::set<int> scc){
     }
   }
 
-  BuchiAutomaton<int, int> tmp(st, empty, newIni, this->getTransitions(), this->getAlphabet(), this->getAPPattern());
+  Transitions newTrans;
+  for (auto it = this->getTransitions().begin(); it != this->getTransitions().end(); it++){
+    if (st.find(it->first.first) != st.end())
+      newTrans.insert({it->first, it->second});
+  }
+
+  BuchiAutomaton<int, int> tmp(st, empty, newIni, newTrans, this->getAlphabet(), this->getAPPattern());
   BuchiAutomatonSpec tmpSpec(&tmp);
 
   auto newSccs = tmpSpec.getAutGraphSCCs();
@@ -1345,8 +1352,8 @@ bool BuchiAutomatonSpec::isInherentlyWeak(std::set<int> scc){
  */
 void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe){
   
-  // get all sccs
-  std::vector<std::set<int>> sccs = this->getAutGraphSCCs();
+  // get all sorted sccs 
+  std::vector<std::set<int>> sccs = this->topologicalSort();
   std::vector<SccClassification> sccClass;
   for (auto scc : sccs){
     SccClassification tmp = {.states = scc, .det = false, .inhWeak = false, .nonDet = false};
@@ -1358,19 +1365,42 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe){
     // deterministic
     if (isDeterministic(scc.states)){
       scc.det = true;
-      std::cerr << "deterministic" << std::endl;
+      //std::cerr << "deterministic" << std::endl;
     }
     // nondeterministic
     if (isNonDeterministic(scc.states)){
       scc.nonDet = true;
-      std::cerr << "nondeterministic" << std::endl;
+      //std::cerr << "nondeterministic" << std::endl;
     }
     // inherently weak
     if (isInherentlyWeak(scc.states)){
       scc.inhWeak = true;
-      std::cerr << "inherently weak" << std::endl;
+      //std::cerr << "inherently weak" << std::endl;
     }
   }
+
+  // apply rules from the last component
+  unsigned rank = 0;
+  for (auto it = sccClass.rbegin(); it != sccClass.rend(); it++){
+    // FIXME test
+    if (it->det or it->inhWeak){
+      if (rank%2 == 1)
+        rank++;
+      it->rank = rank;
+    }
+    else if (it->nonDet){
+      if (rank%2 == 0)
+        rank++;
+      it->rank = rank;
+    }
+    rank++;
+  }
+
+  // TODO output original automaton with ranks
+  //auto symDict = Aux::reverseMap(this->getRenameSymbolMap());
+  //BuchiAutomaton<int, APSymbol> outOrig = this->renameAlphabet<APSymbol>(symDict);
+  //std::cerr << outOrig.toHOA() << std::endl;
+
 
   /**********************************************************************/
 

@@ -74,6 +74,7 @@ void complementAutWrap(AutomatonStruct<int, int>* ren, BuchiAutomaton<StateSch, 
     stats->generatedTrans = comp.getTransCount();
     stats->generatedTransitionsToTight = compDelay.getTransitionsToTight();
 
+    // rename automaton
     map<int, int> id;
     for(auto al : comp.getAlphabet())
       id[al] = al;

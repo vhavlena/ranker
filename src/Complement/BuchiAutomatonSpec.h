@@ -34,6 +34,7 @@ struct SccClassification {
   bool det = false;
   bool inhWeak = false;
   bool nonDet = false;
+  int rank = -1;
 };
 
 /*

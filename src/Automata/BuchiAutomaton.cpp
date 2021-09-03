@@ -277,7 +277,6 @@ std::string BuchiAutomaton<int, string>::toHOA()
   return res;
 }
 
-
 /*
  * Function converting the automaton <int, APSymbol> to hoa format.
  * @return Hoa representation of the automaton
