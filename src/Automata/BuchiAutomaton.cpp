@@ -878,47 +878,46 @@ bool BuchiAutomaton<State, Symbol>::isRankLeq(std::set<State>& set1, std::set<St
 template <typename State, typename Symbol>
 set<State> BuchiAutomaton<State, Symbol>::getEventReachable(set<State>& sls)
 {
-  AutomatonStruct<int, int> *renAut = this->renameAut();
+  BuchiAutomaton<int, int> renAutBA = this->renameAut();
 
-  if (dynamic_cast<BuchiAutomaton<int, int>*>(renAut)){
-    BuchiAutomaton<int, int> *renAutBA = (BuchiAutomaton<int, int>*)renAut;
+  // if (dynamic_cast<BuchiAutomaton<int, int>*>(renAut)){
+  //   BuchiAutomaton<int, int> *renAutBA = (BuchiAutomaton<int, int>*)renAut;
 
-    vector<vector<int>> adjList(this->states.size());
-    std::set<int> ini = renAut->getInitials();
-    vector<VertItem> vrt;
-    std::stack<int> stack;
-    std::set<int> done;
-    std::set<State> ret;
-    std::vector<int> sccSizeMp(this->states.size());
+  vector<vector<int>> adjList(this->states.size());
+  std::set<int> ini = renAutBA.getInitials();
+  vector<VertItem> vrt;
+  std::stack<int> stack;
+  std::set<int> done;
+  std::set<State> ret;
+  std::vector<int> sccSizeMp(this->states.size());
 
-    for(int i : ini)
-      stack.push(i);
+  for(int i : ini)
+    stack.push(i);
 
-    renAut->getAutGraphComponents(adjList, vrt);
-    AutGraph gr(adjList, vrt, renAutBA->getFinals());
-    gr.computeSCCs();
+  renAutBA.getAutGraphComponents(adjList, vrt);
+  AutGraph gr(adjList, vrt, renAutBA.getFinals());
+  gr.computeSCCs();
 
-    for(auto& scc : gr.getAllComponents())
+  for(auto& scc : gr.getAllComponents())
+  {
+    for(auto &st : scc)
     {
-      for(auto &st : scc)
+      if(scc.size() == 1 && sls.find(this->invRenameMap[st]) == sls.end())
+        sccSizeMp[st] = 0;
+      else
       {
-        if(scc.size() == 1 && sls.find(this->invRenameMap[st]) == sls.end())
-          sccSizeMp[st] = 0;
-        else
-        {
-          sccSizeMp[st] = scc.size();
-          done.insert(st);
-        }
+        sccSizeMp[st] = scc.size();
+        done.insert(st);
       }
     }
-
-    done = gr.reachableVertices(done);
-    for(int st : done)
-    {
-      ret.insert(this->invRenameMap[st]);
-    }
-    return ret;
   }
+
+  done = gr.reachableVertices(done);
+  for(int st : done)
+  {
+    ret.insert(this->invRenameMap[st]);
+  }
+  return ret;
 }
 
 
@@ -1157,7 +1156,7 @@ BuchiAutomaton<State, Symbol> BuchiAutomaton<State, Symbol>::unionBA(BuchiAutoma
     other.getInitials().end(), std::inserter(nini, nini.begin()));
   set_union(this->getFinals().begin(), this->getFinals().end(), other.getFinals().begin(),
     other.getFinals().end(), std::inserter(nfin, nfin.begin()));
-  
+
   // merge transitions
   for (auto it = other.getTransitions().begin(); it != other.getTransitions().end(); it++){
       if (ntr.find(it->first) != ntr.end())

@@ -26,7 +26,7 @@ template <typename State, typename Symbol>
 class GeneralizedBuchiAutomaton : public AutomatonStruct<State, Symbol> {
 
 public:
-  typedef std::set<State> SetStates; 
+  typedef std::set<State> SetStates;
   typedef std::set<Symbol> SetSymbols;
   typedef Delta<State, Symbol> Transitions;
   typedef std::map<int, SetStates> GBAFinals;
@@ -77,8 +77,8 @@ public:
   std::string toHOA();
 
   void restriction(set<State>& st);
-  
-  AutomatonStruct<int, int>* renameAut(int start = 0) override {
+
+  GeneralizedBuchiAutomaton<int, int> renameAut(int start = 0) {
     int stcnt = start;
     int symcnt = 0;
     std::map<State, int> mpstate;
@@ -125,19 +125,19 @@ public:
       rtrans.insert({std::make_pair(mpstate[p.first.first], val), to});
     }
 
-    GeneralizedBuchiAutomaton<int, int> *ret = new GeneralizedBuchiAutomaton<int, int>(rstate, rfin, rini, rtrans, rsym);
+    GeneralizedBuchiAutomaton<int, int> ret = GeneralizedBuchiAutomaton<int, int>(rstate, rfin, rini, rtrans, rsym);
     this->renameStateMap = mpstate;
     this->renameSymbolMap = mpsymbol;
-    
-    ret->setAPPattern(this->apsPattern);
+
+    ret.setAPPattern(this->apsPattern);
     return ret;
-  } 
+  }
 
   GeneralizedBuchiAutomaton<int, int> renameAutDict(map<Symbol, int>& mpsymbol, int start = 0);
 
   //bool isElevator();
 
-  /*  
+  /*
    * Rename symbols of the automaton.
    * @param mpsymbol Map assigning to each original state a new state
    * @return Renamed automaton

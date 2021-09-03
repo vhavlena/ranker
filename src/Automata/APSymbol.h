@@ -51,7 +51,7 @@ public:
   string toString() const
   {
     string ret;
-    for(const auto it : *this)
+    for(const auto& it : *this)
       ret += it.toString() + "; ";
     return ret;
   }

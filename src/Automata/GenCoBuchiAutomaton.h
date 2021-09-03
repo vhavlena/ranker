@@ -70,12 +70,28 @@ public:
     this->apsPattern = other.apsPattern;
   }
 
+
+  GeneralizedCoBuchiAutomaton<State, Symbol> operator=(GeneralizedCoBuchiAutomaton<State, Symbol> other)
+  {
+    this->states = other.states;
+    this->finals = other.finals;
+    this->trans = other.trans;
+    this->initials = other.initials;
+    this->alph = other.alph;
+    this->renameStateMap = other.renameStateMap;
+    this->renameSymbolMap = other.renameSymbolMap;
+    this->invRenameMap = other.invRenameMap;
+    this->apsPattern = other.apsPattern;
+    return *this;
+  }
+  
+
   std::string toString();
   std::string toGraphwiz();
   std::string toGff();
   std::string toHOA();
 
-  AutomatonStruct<int, int>* renameAut(int start = 0) override {
+  GeneralizedCoBuchiAutomaton<int, int> renameAut(int start = 0) {
     int stcnt = start;
     int symcnt = 0;
     std::map<State, int> mpstate;
@@ -122,13 +138,13 @@ public:
       rtrans.insert({std::make_pair(mpstate[p.first.first], val), to});
     }
 
-    GeneralizedCoBuchiAutomaton<int, int> *ret = new GeneralizedCoBuchiAutomaton<int, int>(rstate, rfin, rini, rtrans, rsym);
+    GeneralizedCoBuchiAutomaton<int, int> ret = GeneralizedCoBuchiAutomaton<int, int>(rstate, rfin, rini, rtrans, rsym);
     this->renameStateMap = mpstate;
     this->renameSymbolMap = mpsymbol;
-    
-    ret->setAPPattern(this->apsPattern);
+
+    ret.setAPPattern(this->apsPattern);
     return ret;
-  } 
+  }
 
   GeneralizedCoBuchiAutomaton<int, int> renameAutDict(map<Symbol, int>& mpsymbol, int start = 0);
 

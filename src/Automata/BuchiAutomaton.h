@@ -86,7 +86,7 @@ private:
 protected:
   std::string toStringWith(std::function<std::string(State)>& stateStr,  std::function<std::string(Symbol)>& symStr);
   std::string toGraphwizWith(std::function<std::string(State)>& stateStr,  std::function<std::string(Symbol)>& symStr);
-  std::string toGffWith(std::function<std::string(State)>& stateStr,  std::function<std::string(Symbol)>& symStr);  
+  std::string toGffWith(std::function<std::string(State)>& stateStr,  std::function<std::string(Symbol)>& symStr);
 
   bool isRankLeq(std::set<State>& set1, std::set<State>& set2, StateRelation& rel);
   bool deriveRankConstr(State& st1, State& st2, StateRelation& rel);
@@ -127,17 +127,50 @@ public:
     this->apsPattern = other.apsPattern;
   }
 
+  // BuchiAutomaton<State, Symbol>& operator=(BuchiAutomaton<State, Symbol> other)
+  // {
+  //   this->states = other.states;
+  //   this->finals = other.finals;
+  //   this->trans = other.trans;
+  //   this->initials = other.initials;
+  //   this->alph = other.alph;
+  //   this->directSim = other.directSim;
+  //   this->oddRankSim = other.oddRankSim;
+  //   this->renameStateMap = other.renameStateMap;
+  //   this->renameSymbolMap = other.renameSymbolMap;
+  //   this->invRenameMap = other.invRenameMap;
+  //   this->apsPattern = other.apsPattern;
+  //   return *this;
+  // }
+
+  BuchiAutomaton<State, Symbol>& operator=(BuchiAutomaton<State, Symbol> other)
+  {
+    this->states = other.states;
+    this->finals = other.finals;
+    this->trans = other.trans;
+    this->initials = other.initials;
+    this->alph = other.alph;
+    this->directSim = other.directSim;
+    this->oddRankSim = other.oddRankSim;
+    this->renameStateMap = other.renameStateMap;
+    this->renameSymbolMap = other.renameSymbolMap;
+    this->invRenameMap = other.invRenameMap;
+    this->apsPattern = other.apsPattern;
+    return *this;
+  }
+
+
   std::string toString();
   std::string toGraphwiz();
   std::string toHOA();
   std::string toGff();
-  
+
   /*
   * Rename states and symbols of the automaton (to consecutive numbers).
   * @param start Starting number for states
   * @return Renamed automaton
   */
-  AutomatonStruct<int, int>* renameAut(int start = 0) override {
+  BuchiAutomaton<int, int> renameAut(int start = 0) {
     int stcnt = start;
     int symcnt = 0;
     std::map<State, int> mpstate;
@@ -184,7 +217,7 @@ public:
       rtrans.insert({std::make_pair(mpstate[p.first.first], val), to});
     }
 
-    BuchiAutomaton<int, int> *ret = new BuchiAutomaton<int, int>(rstate, rfin, rini, rtrans, rsym);
+    BuchiAutomaton<int, int> ret = BuchiAutomaton<int, int>(rstate, rfin, rini, rtrans, rsym);
     this->renameStateMap = mpstate;
     this->renameSymbolMap = mpsymbol;
 
@@ -197,9 +230,9 @@ public:
     {
       roddSim.insert({mpstate[item.first], mpstate[item.second]});
     }
-    ret->setDirectSim(rdirSim);
-    ret->setOddRankSim(roddSim);
-    ret->setAPPattern(this->apsPattern);
+    ret.setDirectSim(rdirSim);
+    ret.setOddRankSim(roddSim);
+    ret.setAPPattern(this->apsPattern);
     return ret;
   }
 
@@ -295,7 +328,7 @@ public:
   }
 
   void complete(State trap, bool fin = false);
-  void completeAPComplement();    
+  void completeAPComplement();
   void removeUseless();
   void restriction(set<State>& st);
 
@@ -310,30 +343,29 @@ public:
   * @return Vector of SCCs (represented as a set of states)
   */
   vector<set<State>> getAutGraphSCCs(){
-    AutomatonStruct<int, int> *renAut = this->renameAut();
+    BuchiAutomaton<int, int> renAutBA = this->renameAut();
 
-    if (dynamic_cast<BuchiAutomaton<int, int>*>(renAut)){
-      BuchiAutomaton<int, int> *renAutBA = (BuchiAutomaton<int, int>*)renAut;
+    // if (dynamic_cast<BuchiAutomaton<int, int>*>(renAut)){
+    //   BuchiAutomaton<int, int> *renAutBA = (BuchiAutomaton<int, int>*)renAut;
 
-      vector<vector<int>> adjList(this->states.size());
-      vector<VertItem> vrt;
-      vector<set<State>> sccs;
+    vector<vector<int>> adjList(this->states.size());
+    vector<VertItem> vrt;
+    vector<set<State>> sccs;
 
-      renAut->getAutGraphComponents(adjList, vrt);  
-      AutGraph gr(adjList, vrt, renAutBA->getFinals());
-      gr.computeSCCs();
+    renAutBA.getAutGraphComponents(adjList, vrt);
+    AutGraph gr(adjList, vrt, renAutBA.getFinals());
+    gr.computeSCCs();
 
-      for(auto& scc : gr.getAllComponents())
+    for(auto& scc : gr.getAllComponents())
+    {
+      set<State> singleScc;
+      for(auto &st : scc)
       {
-        set<State> singleScc;
-        for(auto &st : scc)
-        {
-          singleScc.insert(this->invRenameMap[st]);
-        }
-        sccs.push_back(singleScc);
+        singleScc.insert(this->invRenameMap[st]);
       }
-      return sccs;
+      sccs.push_back(singleScc);
     }
+    return sccs;
   }
 
   bool isEmpty();

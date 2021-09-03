@@ -811,7 +811,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
   set<int> alph = getAlphabet();
   map<std::pair<StateSch, int>, set<StateSch> > mp;
   map<std::pair<StateSch, int>, vector<StateSch> > mpVect;
-  map<std::pair<StateSch, int>, set<StateSch> >::iterator it; 
+  map<std::pair<StateSch, int>, set<StateSch> >::iterator it;
 
   // NFA part of the Schewe construction
   auto start = std::chrono::high_resolution_clock::now();
@@ -823,7 +823,8 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
   start = std::chrono::high_resolution_clock::now();
 
   map<std::pair<StateSch, int>, set<StateSch>> prev = comp.getReverseTransitions();
-  //std::cout << comp.toGraphwiz() << std::endl;
+  // cout << StateSch::printSet(originalFinals) << endl;
+  // std::cout << comp.toGraphwiz() << std::endl;
 
   set<StateSch> slIgnore = this->nfaSlAccept(comp);
   set<pair<DFAState,int>> slNonEmpty = this->nfaSingleSlNoAccept(comp);
@@ -831,7 +832,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
   for(const auto& t : slNonEmpty)
     ignoreAll.insert({t.first, set<int>(), RankFunc(), 0, false});
   ignoreAll.insert(slIgnore.begin(), slIgnore.end());
-  
+
   set<StateSch> nfaStates = comp.getStates();
   comst.insert(nfaStates.begin(), nfaStates.end());
 
@@ -859,6 +860,12 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
   // Compute rank upper bound on the macrostates
   auto invComp = comp.reverseBA(); //inverse automaton
   this->rankBound = this->getRankBound(invComp, ignoreAll, maxReach, reachCons);
+
+  // for(auto & s: this->rankBound)
+  // {
+  //   cout << StateSch::printSet(s.first) << " : " << s.second.bound << endl;
+  // }
+
   end = std::chrono::high_resolution_clock::now();
   stats->rankBound = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
 
@@ -1635,7 +1642,7 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
   map<DFAState, RankBound> ret;
   for(const auto& t : tmp){
     ret[t.first.S] = t.second;
-  }  
+  }
 
   //return { .bound = ret, .stateBound = map<int, int>() };
   return ret;
@@ -1682,7 +1689,7 @@ map<DFAState, int> BuchiAutomatonSpec::getMaxReachSize(BuchiAutomaton<StateSch, 
 map<int, int> BuchiAutomatonSpec::getMinReachSize()
 {
   set<StateSch> slIgnore;
-  BuchiAutomaton<StateSch, int> comp;
+  //BuchiAutomaton<StateSch, int> comp;
   map<StateSch, int> mp;
   map<int, int> ret;
 
@@ -1706,7 +1713,7 @@ map<int, int> BuchiAutomatonSpec::getMinReachSize()
   for(int st : this->getStates())
   {
     set<int> ini = {st};
-    comp = this->complementSchNFA(ini);
+    BuchiAutomaton<StateSch, int> comp = this->complementSchNFA(ini);
     slIgnore = this->nfaSlAccept(comp);
     auto sls = comp.getSelfLoops();
     mp = comp.propagateGraphValues<int>(updMaxFnc, initMaxFnc);
@@ -1730,7 +1737,7 @@ map<int, int> BuchiAutomatonSpec::getMinReachSize()
 map<int, int> BuchiAutomatonSpec::getMaxReachSizeInd()
 {
   set<StateSch> slIgnore;
-  BuchiAutomaton<StateSch, int> comp;
+  // BuchiAutomaton<StateSch, int> comp;
   map<StateSch, int> mp;
   map<int, int> ret;
 
@@ -1754,7 +1761,7 @@ map<int, int> BuchiAutomatonSpec::getMaxReachSizeInd()
   for(int st : this->getStates())
   {
     set<int> ini = {st};
-    comp = this->complementSchNFA(ini);
+    BuchiAutomaton<StateSch, int> comp = this->complementSchNFA(ini);
     slIgnore = this->nfaSlAccept(comp);
     auto sls = comp.getSelfLoops();
     mp = comp.propagateGraphValues<int>(updMaxFnc, initMaxFnc);
