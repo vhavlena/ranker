@@ -1209,6 +1209,7 @@ std::vector<std::set<int>> BuchiAutomatonSpec::topologicalSort(){
 }
 
 unsigned BuchiAutomatonSpec::elevatorStates(){
+
   // topological sort
   std::vector<std::set<int>> sortedComponents = this->topologicalSort();
 
@@ -1275,10 +1276,105 @@ unsigned BuchiAutomatonSpec::elevatorStates(){
   return elevatorStates;
 }
 
+
+bool BuchiAutomatonSpec::isDeterministic(std::set<int> scc){
+  for (auto state : scc){
+    for (auto a : this->getAlphabet()){
+      unsigned trans = 0;
+      for (auto succ : this->getTransitions()[{state, a}]){
+        if (scc.find(succ) != scc.end()){
+          if (trans > 0){
+            return false;
+          }
+          trans++;
+        }
+      }
+    }
+  }
+  return true;
+}
+
+bool BuchiAutomatonSpec::isNonDeterministic(std::set<int> scc){
+  if (std::any_of(scc.begin(), scc.end(), [this](int state){return this->getFinals().find(state) != this->getFinals().end();}))
+      return false;
+  else
+    return true;
+}
+
+bool BuchiAutomatonSpec::isInherentlyWeak(std::set<int> scc){
+  SetStates st;
+  SetStates fin = this->getFinals();
+  SetStates empty;
+  SetStates ini = this->getInitials();
+  SetStates newIni;
+  
+  // states without accepting states
+  for (auto state : scc){
+    if (fin.find(state) == fin.end()){
+      st.insert(state);
+      if (ini.find(state) != ini.end())
+        newIni.insert(state);
+    }
+  }
+
+  BuchiAutomaton<int, int> tmp(st, empty, newIni, this->getTransitions(), this->getAlphabet(), this->getAPPattern());
+  BuchiAutomatonSpec tmpSpec(&tmp);
+
+  auto newSccs = tmpSpec.getAutGraphSCCs();
+  for (auto scc : newSccs){
+    if (scc.size() > 1)
+      return false;
+    else if (scc.size() == 1){
+      int state;
+      for (auto st : scc)
+        state = st;
+      for (auto symbol : this->getAlphabet()){
+        auto reach = this->getTransitions()[{state, symbol}];
+        if (reach.find(state) != reach.end())
+          return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+
 /**
  * Updates rankBound of every state based on elevator automaton structure (minimum of these two options)
  */
 void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe){
+  
+  // get all sccs
+  std::vector<std::set<int>> sccs = this->getAutGraphSCCs();
+  std::vector<SccClassification> sccClass;
+  for (auto scc : sccs){
+    SccClassification tmp = {.states = scc, .det = false, .inhWeak = false, .nonDet = false};
+    sccClass.push_back(tmp);
+  }
+  
+  // scc classification
+  for (auto scc : sccClass) {
+    // deterministic
+    if (isDeterministic(scc.states)){
+      scc.det = true;
+      std::cerr << "deterministic" << std::endl;
+    }
+    // nondeterministic
+    if (isNonDeterministic(scc.states)){
+      scc.nonDet = true;
+      std::cerr << "nondeterministic" << std::endl;
+    }
+    // inherently weak
+    if (isInherentlyWeak(scc.states)){
+      scc.inhWeak = true;
+      std::cerr << "inherently weak" << std::endl;
+    }
+  }
+
+  /**********************************************************************/
+
+  /*
   // topological sort
   std::vector<std::set<int>> sortedComponents = this->topologicalSort();
 
@@ -1507,6 +1603,7 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe){
     } else if (this->rankBound[macrostate.S].bound > maxRank)
       maxRank = this->rankBound[macrostate.S].bound;
   }
+  */
 }
 
 /*

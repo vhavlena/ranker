@@ -27,6 +27,16 @@ enum delayVersion : unsigned;
 enum sccType {D, ND, BAD, BOTH}; // deterministic with accepting states / nondeterministic without accepting states / bad = nondeterministic with accepting states / both = deterministic without accepting states
 
 /*
+ * Data structure for information about possible types of scc
+ */
+struct SccClassification {
+  set<int> states;
+  bool det = false;
+  bool inhWeak = false;
+  bool nonDet = false;
+};
+
+/*
  * Data structure for rank bounding data flow analysis
  */
 struct RankBound
@@ -126,6 +136,10 @@ public:
   unsigned elevatorStates();
   vector<set<int>> topologicalSort();
   void topologicalSortUtil(set<int> currentScc, vector<set<int>> allSccs, map<set<int>, bool> &visited, stack<set<int>> &Stack);
+
+  bool isDeterministic(set<int> scc);
+  bool isNonDeterministic(set<int> scc);
+  bool isInherentlyWeak(set<int> scc);
 
   void getSchRanksTightReduced(vector<RankFunc>& out, vector<int>& max,
       set<int>& states, int symbol, StateSch& macrostate,
