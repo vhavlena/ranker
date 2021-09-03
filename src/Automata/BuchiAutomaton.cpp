@@ -1,15 +1,13 @@
 #include "BuchiAutomaton.h"
 #include <boost/math/special_functions/factorials.hpp>
 
-
-/**
- * Is it an elevator automaton?
- */
-template<typename State, typename Symbol>
-bool BuchiAutomaton<State, Symbol>::isElevator(){
+/*
+* Is it an elevator automaton?
+*/
+template <typename State, typename Symbol>
+bool BuchiAutomaton<State, Symbol>::isElevator() {
   // get all sccs
   std::vector<std::set<State>> sccs = this->getAutGraphSCCs();
-
   for (auto scc : sccs){
     // is scc deterministic?
     bool det = true;
@@ -31,94 +29,16 @@ bool BuchiAutomaton<State, Symbol>::isElevator(){
         }
       }
     }
-
     // does scc contain accepting states?
     bool finalStates = false;
-    if (std::any_of(scc.begin(), scc.end(), [this](State state){return this->getFinals().find(state) != this->getFinals().end();}))
+    if (std::any_of(scc.begin(), scc.end(), [this](State state){return this->getFinals().find(state) !=  this->getFinals().end();}))
       finalStates = true;
-
     // problem: nondeterministic scc with accepting states
     if ((not det) and finalStates)
       return false;
   }
-
   return true;
 }
-
-
-/*
- * Rename states and symbols of the automaton (to consecutive numbers).
- * @param start Starting number for states
- * @return Renamed automaton
- */
-template <typename State, typename Symbol>
-BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAut(int start)
-{
-  int stcnt = start;
-  int symcnt = 0;
-  std::map<State, int> mpstate;
-  std::map<Symbol, int> mpsymbol;
-  std::set<int> rstate;
-  Delta<int, int> rtrans;
-  std::set<int> rfin;
-  std::set<int> rini;
-  set<int> rsym;
-  this->invRenameMap = std::vector<State>(this->states.size() + start);
-
-  for(auto st : this->states)
-  {
-    auto it = mpstate.find(st);
-    this->invRenameMap[stcnt] = st;
-    if(it == mpstate.end())
-    {
-      mpstate[st] = stcnt++;
-    }
-  }
-  for(const auto& a : this->alph)
-  {
-    rsym.insert(symcnt);
-    mpsymbol[a] = symcnt++;
-  }
-
-  rstate = Aux::mapSet(mpstate, this->states);
-  rini = Aux::mapSet(mpstate, this->initials);
-  rfin = Aux::mapSet(mpstate, this->finals);
-  for(auto p : this->trans)
-  {
-    auto it = mpsymbol.find(p.first.second);
-    int val;
-    if(it == mpsymbol.end())
-    {
-      val = symcnt;
-      mpsymbol[p.first.second] = symcnt++;
-    }
-    else
-    {
-      val = it->second;
-    }
-    std::set<int> to = Aux::mapSet(mpstate, p.second);
-    rtrans.insert({std::make_pair(mpstate[p.first.first], val), to});
-  }
-
-  auto ret = BuchiAutomaton<int, int>(rstate, rfin, rini, rtrans, rsym);
-  this->renameStateMap = mpstate;
-  this->renameSymbolMap = mpsymbol;
-
-  std::set<std::pair<int, int> > rdirSim, roddSim;
-  for(auto item : this->directSim)
-  {
-    rdirSim.insert({mpstate[item.first], mpstate[item.second]});
-  }
-  for(auto item : this->oddRankSim)
-  {
-    roddSim.insert({mpstate[item.first], mpstate[item.second]});
-  }
-  ret.setDirectSim(rdirSim);
-  ret.setOddRankSim(roddSim);
-  ret.setAPPattern(this->apsPattern);
-  return ret;
-}
-
 
 /*
  * Rename states and symbols of the automaton to numbers (symbols are renamed
@@ -160,17 +80,7 @@ BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAutDict(map<Symbol
   rfin = Aux::mapSet(mpstate, this->finals);
   for(auto p : this->trans)
   {
-    //auto it = mpsymbol.find(p.first.second);
     int val = mpsymbol[p.first.second];
-    // if(it == mpsymbol.end())
-    // {
-    //   val = symcnt;
-    //   mpsymbol[p.first.second] = symcnt++;
-    // }
-    // else
-    // {
-    //   val = it->second;
-    // }
     std::set<int> to = Aux::mapSet(mpstate, p.second);
     rtrans.insert({std::make_pair(mpstate[p.first.first], val), to});
   }
@@ -272,29 +182,21 @@ std::string BuchiAutomaton<State, Symbol>::toGffWith(std::function<std::string(S
   return str;
 }
 
-
 /*
  * Function converting the automaton <string, string> to gff format.
  * @return Gff representation of the automaton
  */
 template <>
-std::string BuchiAutomaton<std::string, std::string>::toGff()
-{
+std::string BuchiAutomaton<std::string, std::string>::toGff(){
   std::function<std::string(std::string)> f1 = [&] (std::string x) {return x;};
   std::function<std::string(std::string)> f2 = [&] (std::string x) {return x;};
   return toGffWith(f1, f2);
 }
 
-
-/*
- * Function converting the automaton <int, int> to gff format.
- * @return Gff representation of the automaton
- */
-template <>
-std::string BuchiAutomaton<int, int>::toGff()
-{
-  std::function<std::string(int)> f1 = [=] (int x) {return std::to_string(x);};
-  std::function<std::string(int)> f2 = [=] (int x) {return std::to_string(x);};
+template<>
+std::string BuchiAutomaton<int, int>::toGff(){
+  std::function<std::string(int)> f1 = [&] (int x) {return std::to_string(x);};
+  std::function<std::string(int)> f2 = [&] (int x) {return std::to_string(x);};
   return toGffWith(f1, f2);
 }
 
@@ -589,6 +491,18 @@ template <>
 std::string BuchiAutomaton<StateKV, int>::toString()
 {
   std::function<std::string(StateKV)> f1 = [&] (StateKV x) {return x.toString();};
+  std::function<std::string(int)> f2 = [=] (int x) {return std::to_string(x);};
+  return toStringWith(f1, f2);
+}
+
+/*
+ * Function converting the automaton <StateKV, int> to string.
+ * @return String representation of the automaton
+ */
+template <>
+std::string BuchiAutomaton<StateGcoBA, int>::toString()
+{
+  std::function<std::string(StateGcoBA)> f1 = [&] (StateGcoBA x) {return x.toString();};
   std::function<std::string(int)> f2 = [=] (int x) {return std::to_string(x);};
   return toStringWith(f1, f2);
 }
@@ -957,35 +871,6 @@ bool BuchiAutomaton<State, Symbol>::isRankLeq(std::set<State>& set1, std::set<St
 
 
 /*
- * Get SCCs of the automaton
- * @return Vector of SCCs (represented as a set of states)
- */
-template <typename State, typename Symbol>
-vector<set<State>> BuchiAutomaton<State, Symbol>::getAutGraphSCCs()
-{
-  BuchiAutomaton<int, int> renAut = this->renameAut();
-  vector<vector<int>> adjList(this->states.size());
-  vector<VertItem> vrt;
-  vector<set<State>> sccs;
-
-  renAut.getAutGraphComponents(adjList, vrt);
-  AutGraph gr(adjList, vrt, renAut.getFinals());
-  gr.computeSCCs();
-
-  for(auto& scc : gr.getAllComponents())
-  {
-    set<State> singleScc;
-    for(auto &st : scc)
-    {
-      singleScc.insert(this->invRenameMap[st]);
-    }
-    sccs.push_back(singleScc);
-  }
-  return sccs;
-}
-
-
-/*
  * Get eventually reachable states
  * @params sls States containing self-loops over the whole alphabet
  * @return Set of eventually reachable states
@@ -993,42 +878,47 @@ vector<set<State>> BuchiAutomaton<State, Symbol>::getAutGraphSCCs()
 template <typename State, typename Symbol>
 set<State> BuchiAutomaton<State, Symbol>::getEventReachable(set<State>& sls)
 {
-  BuchiAutomaton<int, int> renAut = this->renameAut();
-  vector<vector<int>> adjList(this->states.size());
-  std::set<int> ini = renAut.getInitials();
-  vector<VertItem> vrt;
-  std::stack<int> stack;
-  std::set<int> done;
-  std::set<State> ret;
-  std::vector<int> sccSizeMp(this->states.size());
+  AutomatonStruct<int, int> *renAut = this->renameAut();
 
-  for(int i : ini)
-    stack.push(i);
+  if (dynamic_cast<BuchiAutomaton<int, int>*>(renAut)){
+    BuchiAutomaton<int, int> *renAutBA = (BuchiAutomaton<int, int>*)renAut;
 
-  renAut.getAutGraphComponents(adjList, vrt);
-  AutGraph gr(adjList, vrt, renAut.getFinals());
-  gr.computeSCCs();
+    vector<vector<int>> adjList(this->states.size());
+    std::set<int> ini = renAut->getInitials();
+    vector<VertItem> vrt;
+    std::stack<int> stack;
+    std::set<int> done;
+    std::set<State> ret;
+    std::vector<int> sccSizeMp(this->states.size());
 
-  for(auto& scc : gr.getAllComponents())
-  {
-    for(auto &st : scc)
+    for(int i : ini)
+      stack.push(i);
+
+    renAut->getAutGraphComponents(adjList, vrt);
+    AutGraph gr(adjList, vrt, renAutBA->getFinals());
+    gr.computeSCCs();
+
+    for(auto& scc : gr.getAllComponents())
     {
-      if(scc.size() == 1 && sls.find(this->invRenameMap[st]) == sls.end())
-        sccSizeMp[st] = 0;
-      else
+      for(auto &st : scc)
       {
-        sccSizeMp[st] = scc.size();
-        done.insert(st);
+        if(scc.size() == 1 && sls.find(this->invRenameMap[st]) == sls.end())
+          sccSizeMp[st] = 0;
+        else
+        {
+          sccSizeMp[st] = scc.size();
+          done.insert(st);
+        }
       }
     }
-  }
 
-  done = gr.reachableVertices(done);
-  for(int st : done)
-  {
-    ret.insert(this->invRenameMap[st]);
+    done = gr.reachableVertices(done);
+    for(int st : done)
+    {
+      ret.insert(this->invRenameMap[st]);
+    }
+    return ret;
   }
-  return ret;
 }
 
 
@@ -1267,7 +1157,15 @@ BuchiAutomaton<State, Symbol> BuchiAutomaton<State, Symbol>::unionBA(BuchiAutoma
     other.getInitials().end(), std::inserter(nini, nini.begin()));
   set_union(this->getFinals().begin(), this->getFinals().end(), other.getFinals().begin(),
     other.getFinals().end(), std::inserter(nfin, nfin.begin()));
-  ntr.insert(other.getTransitions().begin(), other.getTransitions().end());
+  
+  // merge transitions
+  for (auto it = other.getTransitions().begin(); it != other.getTransitions().end(); it++){
+      if (ntr.find(it->first) != ntr.end())
+        ntr[it->first].insert(it->second.begin(), it->second.end());
+      else
+        ntr.insert({it->first, it->second});
+  }
+
   return BuchiAutomaton<State, Symbol>(nstates, nfin, nini, ntr, this->getAlphabet());
 }
 
@@ -1316,3 +1214,4 @@ template class BuchiAutomaton<std::string, std::string>;
 template class BuchiAutomaton<StateSch, int>;
 template class BuchiAutomaton<int, APSymbol>;
 template class BuchiAutomaton<StateSch, APSymbol>;
+template class BuchiAutomaton<StateGcoBA, int>;

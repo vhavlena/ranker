@@ -16,6 +16,8 @@
 #include "Automata/BuchiAutomaton.h"
 #include "Automata/BuchiAutomataParser.h"
 #include "Algorithms/Simulations.h"
+#include "Automata/GenCoBuchiAutomaton.h"
+#include "Complement/GenCoBuchiAutomatonCompl.h"
 
 using namespace std;
 
@@ -141,17 +143,21 @@ int main(int argc, char *argv[])
     Stat stats;
     stats.beginning = std::chrono::high_resolution_clock::now();
 
-    BuchiAutomaton<int, int> renCompl;
-    BuchiAutomaton<StateSch, int> comp;
-
     if(fmt == BA)
     {
       BuchiAutomaton<string, string> ba;
-      BuchiAutomaton<int, int> ren = parseRenameBA(os, &ba);
+      AutomatonStruct<int, int> *ren = parseRenameBA(os, &ba);
+
+      BuchiAutomaton<int, int> *renBA = nullptr;
+      if (dynamic_cast<BuchiAutomaton<int, int>*>(ren))
+        renBA = (BuchiAutomaton<int, int>*)ren;
+
+      BuchiAutomaton<int, int> renCompl;
+      BuchiAutomaton<StateSch, int> comp;
 
       // elevator test
       if (elevatorTest){
-        std::cout << "Elevator automaton: " << (ren.isElevator() ? "Yes" : "No") << std::endl;
+        std::cout << "Elevator automaton: " << (renBA->isElevator() ? "Yes" : "No") << std::endl;
         os.close();
         return 0;
       }
@@ -176,19 +182,36 @@ int main(int argc, char *argv[])
         printStat(stats);
       cout << outOrig.toHOA() << endl;
     }
+
     else if(fmt == HOA)
     {
-      BuchiAutomaton<int, APSymbol> ba;
-      BuchiAutomaton<int, int> ren;
+      AutomatonStruct<int, APSymbol> *ba;
+      AutomatonStruct<int, int> *ren;
+
+      BuchiAutomaton<int, int> renCompl;
+      BuchiAutomaton<StateSch, int> compBA;
+      BuchiAutomaton<StateGcoBA, int> compGcoBA;
+
+      BuchiAutomaton<int, int> *renBuchi = nullptr;
+      GeneralizedCoBuchiAutomaton<int, int> *renGcoBA = nullptr;
+
       try
       {
-        ren = parseRenameHOA(os, &ba);
+        ba = parseRenameHOA(os);
+        ren = ba->renameAut();
+
+        if (dynamic_cast<BuchiAutomaton<int, int>*>(ren))
+          renBuchi = (BuchiAutomaton<int, int>*)ren;
+        else if (dynamic_cast<GeneralizedCoBuchiAutomaton<int, int>*>(ren)){
+          renGcoBA = (GeneralizedCoBuchiAutomaton<int, int>*)ren;
+        }
+
         // elevator test
-        if (elevatorTest){
-          std::cout << "Elevator automaton: " << (ren.isElevator() ? "Yes" : "No") << std::endl;
+        if (elevatorTest and renBuchi != nullptr){
+          std::cout << "Elevator automaton: " << (renBuchi->isElevator() ? "Yes" : "No") << std::endl;
           os.close();
           return 0;
-        }
+        } 
       }
       catch(const ParserException& e)
       {
@@ -200,7 +223,12 @@ int main(int argc, char *argv[])
 
       try
       {
-        complementAutWrap(ren, &comp, &renCompl, &stats, delay, w, version, elevatorRank, eta4);
+        if (renBuchi != nullptr)
+          complementAutWrap(renBuchi, &compBA, &renCompl, &stats, delay, w, version, elevatorRank, eta4);
+        else if (renGcoBA != nullptr){
+          //cerr << renGcoBA->toGraphwiz() << std::endl;
+          complementGcoBAWrap(renGcoBA, &compGcoBA, &renCompl, &stats);
+        }
       }
       catch (const std::bad_alloc&)
       {
@@ -209,17 +237,17 @@ int main(int argc, char *argv[])
         return 2;
       }
 
-      map<int, APSymbol> symDict = Aux::reverseMap(ba.getRenameSymbolMap());
+      map<int, APSymbol> symDict = Aux::reverseMap(ba->getRenameSymbolMap());
 
       //Product with a word
-      if(params.checkWord.size() > 0)
+      if(params.checkWord.size() > 0 and renBuchi != nullptr)
       {
         cout << "Product in Graphwiz:" << endl;
-        auto appattern = comp.getAPPattern();
+        auto appattern = compBA.getAPPattern();
         pair<APWord, APWord> inf = BuchiAutomataParser::parseHoaInfWord(params.checkWord, appattern);
         auto prefv = inf.first.getVector();
         auto loopv = inf.second.getVector();
-        auto debugRename = comp.renameAlphabet<APSymbol>(symDict);
+        auto debugRename = compBA.renameAlphabet<APSymbol>(symDict);
         BuchiAutomatonDebug<StateSch, APSymbol> compDebug(debugRename);
         auto ret = compDebug.getSubAutomatonWord(prefv, loopv);
         cout << ret.toGraphwiz() << endl;
@@ -240,6 +268,7 @@ int main(int argc, char *argv[])
       if(params.stats)
         printStat(stats);
       cout << outOrig.toHOA() << endl;
+      //cerr << endl << renCompl.toGraphwiz() << endl;
     }
   }
   else

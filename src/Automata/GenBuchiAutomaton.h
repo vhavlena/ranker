@@ -1,5 +1,5 @@
-#ifndef _GENERALIZED_BA_H_
-#define _GENERALIZED_BA_H_
+#ifndef _GEN_BUCHI_AUTOMATON_H_
+#define _GEN_BUCHI_AUTOMATON_H_
 
 #include <set>
 #include <map>
@@ -26,12 +26,13 @@ template <typename State, typename Symbol>
 class GeneralizedBuchiAutomaton : public AutomatonStruct<State, Symbol> {
 
 public:
-  typedef std::set<State> SetStates;
+  typedef std::set<State> SetStates; 
   typedef std::set<Symbol> SetSymbols;
   typedef Delta<State, Symbol> Transitions;
+  typedef std::map<int, SetStates> GBAFinals;
 
 private:
-  SetStates finals; //Modify according to GBAs
+  GBAFinals finals;
 
 
 protected:
@@ -40,17 +41,17 @@ protected:
   std::string toGffWith(std::function<std::string(State)>& stateStr,  std::function<std::string(Symbol)>& symStr);
 
 public:
-  GeneralizedBuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans) : AutomatonStruct<State, Symbol>(st, ini, trans)
+  GeneralizedBuchiAutomaton(SetStates st, GBAFinals fin, SetStates ini, Transitions trans) : AutomatonStruct<State, Symbol>(st, ini, trans)
   {
     this->finals = fin;
   }
 
-  GeneralizedBuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans, SetSymbols alp) : AutomatonStruct<State, Symbol>(st, ini, trans, alp)
+  GeneralizedBuchiAutomaton(SetStates st, GBAFinals fin, SetStates ini, Transitions trans, SetSymbols alp) : AutomatonStruct<State, Symbol>(st, ini, trans, alp)
   {
     this->finals = fin;
   }
 
-  GeneralizedBuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans, SetSymbols alp, map<string, int> aps) : AutomatonStruct<State, Symbol>(st, ini, trans, alp, aps)
+  GeneralizedBuchiAutomaton(SetStates st, GBAFinals fin, SetStates ini, Transitions trans, SetSymbols alp, map<string, int> aps) : AutomatonStruct<State, Symbol>(st, ini, trans, alp, aps)
   {
     this->finals = fin;
   }
@@ -74,12 +75,69 @@ public:
   std::string toGraphwiz();
   std::string toGff();
   std::string toHOA();
-  BuchiAutomaton<int, int> renameAut(int start = 0);
-  BuchiAutomaton<int, int> renameAutDict(map<Symbol, int>& mpsymbol, int start = 0);
+
+  void restriction(set<State>& st);
+  
+  AutomatonStruct<int, int>* renameAut(int start = 0) override {
+    int stcnt = start;
+    int symcnt = 0;
+    std::map<State, int> mpstate;
+    std::map<Symbol, int> mpsymbol;
+    std::set<int> rstate;
+    Delta<int, int> rtrans;
+    std::map<int, std::set<int>> rfin;
+    std::set<int> rini;
+    set<int> rsym;
+    this->invRenameMap = std::vector<State>(this->states.size() + start);
+
+    for(auto st : this->states)
+    {
+      auto it = mpstate.find(st);
+      this->invRenameMap[stcnt] = st;
+      if(it == mpstate.end())
+      {
+        mpstate[st] = stcnt++;
+      }
+    }
+    for(const auto& a : this->alph)
+    {
+      rsym.insert(symcnt);
+      mpsymbol[a] = symcnt++;
+    }
+
+    rstate = Aux::mapSet(mpstate, this->states);
+    rini = Aux::mapSet(mpstate, this->initials);
+    rfin = Aux::mapMap(mpstate, this->finals);
+    for(auto p : this->trans)
+    {
+      auto it = mpsymbol.find(p.first.second);
+      int val;
+      if(it == mpsymbol.end())
+      {
+        val = symcnt;
+        mpsymbol[p.first.second] = symcnt++;
+      }
+      else
+      {
+        val = it->second;
+      }
+      std::set<int> to = Aux::mapSet(mpstate, p.second);
+      rtrans.insert({std::make_pair(mpstate[p.first.first], val), to});
+    }
+
+    GeneralizedBuchiAutomaton<int, int> *ret = new GeneralizedBuchiAutomaton<int, int>(rstate, rfin, rini, rtrans, rsym);
+    this->renameStateMap = mpstate;
+    this->renameSymbolMap = mpsymbol;
+    
+    ret->setAPPattern(this->apsPattern);
+    return ret;
+  } 
+
+  GeneralizedBuchiAutomaton<int, int> renameAutDict(map<Symbol, int>& mpsymbol, int start = 0);
 
   //bool isElevator();
 
-  /*
+  /*  
    * Rename symbols of the automaton.
    * @param mpsymbol Map assigning to each original state a new state
    * @return Renamed automaton
@@ -104,10 +162,10 @@ public:
   }
 
   /*
-   * Get automaton final states.
-   * @return Set of final states
+   * Get sets of accepting states of the automaton.
+   * @return Set of sets of final states
    */
-  SetStates& getFinals()
+  GBAFinals& getFinals()
   {
     return this->finals;
   }
@@ -116,11 +174,10 @@ public:
   void removeUseless();
   bool isEmpty();
 
-  BuchiAutomaton<tuple<State, int, bool>, Symbol> product(BuchiAutomaton<int, Symbol>& other);
-  BuchiAutomaton<pair<State, int>, Symbol> cartProduct(BuchiAutomaton<int, Symbol>& other);
-  BuchiAutomaton<State, Symbol> union(BuchiAutomaton<State, Symbol>& other);
-  BuchiAutomaton<State, Symbol> reverse();
-
+  GeneralizedBuchiAutomaton<tuple<State, int>, Symbol> productGBA(GeneralizedBuchiAutomaton<int, Symbol>& other);
+  GeneralizedBuchiAutomaton<tuple<State, int>, Symbol> cartProductGBA(GeneralizedBuchiAutomaton<int, Symbol>& other);
+  GeneralizedBuchiAutomaton<State, Symbol> unionGBA(GeneralizedBuchiAutomaton<State, Symbol>& other);
+  GeneralizedBuchiAutomaton<State, Symbol> reverseGBA();
 };
 
 #endif

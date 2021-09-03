@@ -13,11 +13,15 @@
 //#include "Compl-config.h"
 #include "Complement/Options.h"
 #include "Complement/BuchiAutomatonSpec.h"
+#include "Complement/GenBuchiAutomatonCompl.h"
 #include "Algorithms/AuxFunctions.h"
 #include "Automata/BuchiAutomaton.h"
 #include "Automata/BuchiAutomataParser.h"
 #include "Algorithms/Simulations.h"
 #include "Debug/BuchiAutomatonDebug.h"
+#include "Automata/GenBuchiAutomaton.h"
+#include "Automata/GenCoBuchiAutomaton.h"
+#include "Complement/GenCoBuchiAutomatonCompl.h"
 
 using namespace std;
 
@@ -36,14 +40,16 @@ struct Params
 };
 
 InFormat parseRenamedAutomaton(ifstream& os);
-BuchiAutomaton<int, int> parseRenameHOA(ifstream& os, BuchiAutomaton<int, APSymbol>* orig);
-BuchiAutomaton<int, int> parseRenameBA(ifstream& os, BuchiAutomaton<string, string>* orig);
+AutomatonStruct<int, APSymbol>* parseRenameHOA(ifstream& os); 
+AutomatonStruct<int, int>* parseRenameBA(ifstream& os, BuchiAutomaton<string, string>* orig);
 
-void complementScheweAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<int, int>* complRes, Stat* stats, bool delay, double w, delayVersion version);
-void complementAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<StateSch, int>* complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats, bool delay, double w, delayVersion version, bool elevatorRank, bool eta4);
+void complementScheweAutWrap(AutomatonStruct<int, int>* ren, BuchiAutomaton<int, int>* complRes, Stat* stats, bool delay, double w, delayVersion version); 
+void complementAutWrap(AutomatonStruct<int, int>* ren, BuchiAutomaton<StateSch, int>* complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats, bool delay, double w, delayVersion version, bool elevatorRank, bool eta4);
 void printStat(Stat& st);
 
 BuchiAutomaton<int, int> createBA(vector<int>& loop);
+
+void complementGcoBAWrap(GeneralizedCoBuchiAutomaton<int, int> *ren, BuchiAutomaton<StateGcoBA, int> *complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats);
 
 /**
  * @brief  Retrieves the help message

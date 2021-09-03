@@ -1,5 +1,6 @@
-#ifndef _GEN_BUCHI_COMPL_H_
-#define _GEN_BUCHI_COMPL_H_
+
+#ifndef _GEN_BUCHI_AUTOMATON_COMPL_H_
+#define _GEN_BUCHI_AUTOMATON_COMPL_H_
 
 #include <set>
 #include <map>
@@ -14,7 +15,7 @@
 #include "../Algorithms/AuxFunctions.h"
 #include "BuchiAutomatonSpec.h"
 #include "../Automata/BuchiAutomaton.h"
-#include "../Automata/GeneralizedBuchiAutomaton.h"
+#include "../Automata/GenBuchiAutomaton.h"
 #include "BuchiDelay.h"
 #include "StateKV.h"
 #include "RankFunc.h"
@@ -32,7 +33,7 @@ class GeneralizedBuchiAutomatonCompl : public GeneralizedBuchiAutomaton<int, int
 {
 
 public:
-  BuchiAutomatonSpec(BuchiAutomaton<int, int> &t) : GeneralizedBuchiAutomaton<int, int>(t)
+  GeneralizedBuchiAutomatonCompl(GeneralizedBuchiAutomaton<int, int> &t) : GeneralizedBuchiAutomaton<int, int>(t)
   {
   }
 

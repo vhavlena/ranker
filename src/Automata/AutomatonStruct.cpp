@@ -309,4 +309,15 @@ template class AutomatonStruct<pair<StateSch, int>, APSymbol>;
 template class AutomatonStruct<pair<StateSch, int>, int>;
 template class AutomatonStruct<pair<StateKV, int>, int>;
 template class AutomatonStruct<StateSch, APSymbol>;
+
+template class AutomatonStruct<tuple<StateSch, int>, int>;
+template class AutomatonStruct<tuple<StateSch, int>, APSymbol>;
+template class AutomatonStruct<tuple<StateKV, int>, int>;
+template class AutomatonStruct<tuple<int, int>, int>;
+template class AutomatonStruct<tuple<int, int>, APSymbol>;
+template class AutomatonStruct<tuple<string, int>, string>;
+
+template class AutomatonStruct<StateGcoBA, int>;
+template class AutomatonStruct<tuple<StateGcoBA, int, bool>, int>;
+template class AutomatonStruct<pair<StateGcoBA, int>, int>;
 //

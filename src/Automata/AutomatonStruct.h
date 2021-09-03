@@ -16,6 +16,7 @@
 #include "AutGraph.h"
 #include "../Complement/StateKV.h"
 #include "../Complement/StateSch.h"
+#include "../Complement/StateGcoBA.h"
 #include "../Algorithms/AuxFunctions.h"
 #include "APSymbol.h"
 
@@ -118,6 +119,11 @@ public:
     this->apsPattern = other.apsPattern;
   }
 
+  // virtual methods
+  virtual AutomatonStruct<int, int>* renameAut(int start=0){};
+  //virtual SetStates& getFinals(){};
+  //virtual bool isElevator(){};
+  
   bool isReachDeterministic(set<State>& start);
 
   /*

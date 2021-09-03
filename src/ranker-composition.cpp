@@ -23,22 +23,23 @@ bool suitCase(BuchiAutomatonSpec& sp);
 
 int main(int argc, char *argv[])
 {
-  Params params = { .output = "", .input = "", .stats = false};
+  Params params = { .output = "", .input = "", .stats = false, .checkWord = ""};
   ifstream os;
   bool delay = false;
   double w = 0.5;
-  delayVersion version;
+  delayVersion version = oldVersion;
   //bool error = false;
   bool elevatorTest = false;
   bool elevatorRank = false;
   bool eta4 = false;
 
- args::ArgumentParser parser("Program complementing a (state-based acceptance condition) Buchi automaton.\n", "");
+  args::ArgumentParser parser("Program complementing a (state-based acceptance condition) Buchi automaton.\n", "");
   args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
 
   args::Positional<std::string> inputFile(parser, "INPUT", "The name of a file in the HOA (Hanoi Omega Automata) format with the following restrictions:\n* only state-based acceptance is supported\n* transitions need to have the form of a single conjunction with exactly one positive atomic proposition\n* no aliases or any other fancy features of HOA are supported\n");
   args::Flag statsFlag(parser, "", "Print summary statistics", {"stats"});
   args::ValueFlag<std::string> delayFlag(parser, "version", "Use delay optimization, versions: old, new, random, subset, stirling", {"delay"});
+  args::ValueFlag<std::string> checkFlag(parser, "word", "Product of the result with a given word", {"check"});
   args::ValueFlag<double> weightFlag(parser, "value", "Weight parameter for delay - value in <0,1>", {'w', "weight"});
   args::Flag elevatorFlag(parser, "elevator rank", "Update rank upper bound of each macrostate based on elevator automaton structure", {"elevator-rank"});
   args::Flag eta4Flag(parser, "eta4", "Max rank optimization - eta 4 only when going from some accepting state", {"eta4"});
@@ -76,8 +77,14 @@ int main(int argc, char *argv[])
     params.stats = true;
   }
 
+  if(checkFlag)
+  {
+    params.checkWord = args::get(checkFlag);
+  }
+
   // delay version
   if (delayFlag){
+    delay = true;
     std::string v = args::get(delayFlag);
     if (v == "old")
       version = oldVersion;
@@ -126,6 +133,7 @@ int main(int argc, char *argv[])
     }
   }
 
+
   //string filename = params.input;
   os.open(params.input);
   if(!os)
@@ -140,14 +148,15 @@ int main(int argc, char *argv[])
     const char* goalpath_cstr = std::getenv("GOALEXE");
     std::string goalpath = (nullptr == goalpath_cstr)? GOALEXE : goalpath_cstr;
 
-    BuchiAutomaton<int, APSymbol> ba;
-    BuchiAutomaton<int, int> ren;
+    AutomatonStruct<int, APSymbol> *ba;
+    AutomatonStruct<int, int> *ren;
     BuchiAutomaton<int, int> renCompl;
     BuchiAutomaton<StateSch, int> comp;
     Stat stats;
     try
     {
-      ren = parseRenameHOA(os, &ba);
+      ba = parseRenameHOA(os);
+      ren = ba->renameAut();
     }
     catch(const ParserException& e)
     {
@@ -157,74 +166,77 @@ int main(int argc, char *argv[])
       return 2;
     }
 
-    BuchiAutomatonSpec sp(ren);
-    if(!suitCase(sp))
-    {
-      const char* tmpf_name = nullptr;
-      std::FILE* tmpf = nullptr;
-
-      // open for writing and fail if already exists (the "wx",
-      // see https://en.cppreference.com/w/cpp/io/c/fopen).
-      // This is used to atomically create a file and get its name.
-      while (nullptr == (tmpf = std::fopen(tmpf_name, "wx"))) {
-        #pragma GCC diagnostic push   // tmpnam is deprecated
-        #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-        tmpf_name = std::tmpnam(nullptr);
-        #pragma GCC diagnostic pop
-      }
-
-      std::fputs(ren.toGff().c_str(), tmpf);
-      std::fflush(tmpf);
-
-      BuchiAutomataParser parser;
-      string cmd = goalpath + " complement -m piterman -r " + tmpf_name;
-      string ret = Simulations::execCmd(cmd);
-
-      map<int, APSymbol> symDict = Aux::reverseMap(ba.getRenameSymbolMap());
-      BuchiAutomaton<string, string> bagff = parser.parseGffFormat(ret);
-      bagff.setAPPattern(ba.getAPPattern());
-
-      map<string, int> symDictStrInt;
-      for(const auto &t : symDict)
+    if (BuchiAutomaton<int, int>* renptr = dynamic_cast<BuchiAutomaton<int, int>*>(ren)){
+      BuchiAutomatonSpec sp(renptr);
+    
+      if(!suitCase(sp))
       {
-        symDictStrInt.insert({to_string(t.first), t.first});
+        const char* tmpf_name = nullptr;
+        std::FILE* tmpf = nullptr;
+  
+        // open for writing and fail if already exists (the "wx",
+        // see https://en.cppreference.com/w/cpp/io/c/fopen).
+        // This is used to atomically create a file and get its name.
+        while (nullptr == (tmpf = std::fopen(tmpf_name, "wx"))) {
+          #pragma GCC diagnostic push   // tmpnam is deprecated
+          #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+          tmpf_name = std::tmpnam(nullptr);
+          #pragma GCC diagnostic pop
+        }
+  
+        std::fputs(renptr->toGff().c_str(), tmpf);
+        std::fflush(tmpf);
+  
+        BuchiAutomataParser parser;
+        string cmd = goalpath + " complement -m piterman -r " + tmpf_name;
+        string ret = Simulations::execCmd(cmd);
+  
+        map<int, APSymbol> symDict = Aux::reverseMap(ba->getRenameSymbolMap());
+        BuchiAutomaton<string, string> bagff = parser.parseGffFormat(ret);
+        bagff.setAPPattern(ba->getAPPattern());
+  
+        map<string, int> symDictStrInt;
+        for(const auto &t : symDict)
+        {
+          symDictStrInt.insert({to_string(t.first), t.first});
+        }
+        BuchiAutomaton<int, APSymbol> outOrig = bagff.renameAutDict(symDictStrInt).renameAlphabet(symDict);
+        outOrig.completeAPComplement();
+  
+        stats.engine = "GOAL";
+        stats.duration = NAN;
+        stats.generatedStates = NAN;
+        stats.generatedTrans = NAN;
+        stats.reachStates = outOrig.getStates().size();
+        stats.reachTrans = outOrig.getTransCount();
+        if(params.stats)
+          printStat(stats);
+  
+        cout << outOrig.toHOA() << endl;
       }
-      BuchiAutomaton<int, APSymbol> outOrig = bagff.renameAutDict(symDictStrInt).renameAlphabet(symDict);
-      outOrig.completeAPComplement();
-
-      stats.engine = "GOAL";
-      stats.duration = NAN;
-      stats.generatedStates = NAN;
-      stats.generatedTrans = NAN;
-      stats.reachStates = outOrig.getStates().size();
-      stats.reachTrans = outOrig.getTransCount();
-      if(params.stats)
-        printStat(stats);
-
-      cout << outOrig.toHOA() << endl;
-    }
-    else
-    {
-      try
+      else
       {
-        complementAutWrap(ren, &comp, &renCompl, &stats, delay, w, version, elevatorRank, eta4);
+        try
+        {
+          complementAutWrap(ren, &comp, &renCompl, &stats, delay, w, version, elevatorRank, eta4);
+        }
+        catch (const std::bad_alloc&)
+        {
+          os.close();
+          cerr << "Memory error" << endl;
+          return 2;
+        }
+        map<int, APSymbol> symDict = Aux::reverseMap(ba->getRenameSymbolMap());
+        BuchiAutomaton<int, APSymbol> outOrig = renCompl.renameAlphabet<APSymbol>(symDict);
+        outOrig.completeAPComplement();
+        stats.reachStates = outOrig.getStates().size();
+        stats.reachTrans = outOrig.getTransCount();
+  
+        stats.duration = NAN;
+        if(params.stats)
+          printStat(stats);
+        cout << outOrig.toHOA() << endl;
       }
-      catch (const std::bad_alloc&)
-      {
-        os.close();
-        cerr << "Memory error" << endl;
-        return 2;
-      }
-      map<int, APSymbol> symDict = Aux::reverseMap(ba.getRenameSymbolMap());
-      BuchiAutomaton<int, APSymbol> outOrig = renCompl.renameAlphabet<APSymbol>(symDict);
-      outOrig.completeAPComplement();
-      stats.reachStates = outOrig.getStates().size();
-      stats.reachTrans = outOrig.getTransCount();
-
-      stats.duration = NAN;
-      if(params.stats)
-        printStat(stats);
-      cout << outOrig.toHOA() << endl;
     }
   }
   os.close();

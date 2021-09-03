@@ -17,22 +17,30 @@ InFormat parseRenamedAutomaton(ifstream& os)
 }
 
 
-BuchiAutomaton<int, int> parseRenameHOA(ifstream& os, BuchiAutomaton<int, APSymbol>* orig)
+AutomatonStruct<int, APSymbol>* parseRenameHOA(ifstream& os)
 {
   BuchiAutomataParser parser;
-  *orig = parser.parseHoaFormat(os);
+  AutomatonStruct<int, APSymbol> *orig = parser.parseHoaFormat(os);
   Simulations sim;
 
-  auto ranksim = sim.directSimulation<int, APSymbol>(*orig, -1);
-  orig->setDirectSim(ranksim);
-  auto cl = set<int>();
+  if (dynamic_cast<BuchiAutomaton<int, APSymbol>*>(orig)){
+    BuchiAutomaton<int, APSymbol> *origBuchi = (BuchiAutomaton<int, APSymbol>*)orig;
 
-  orig->computeRankSim(cl);
-  return orig->renameAut();
+    auto ranksim = sim.directSimulation<int, APSymbol>(*origBuchi, -1);
+    origBuchi->setDirectSim(ranksim);
+    auto cl = set<int>();
+
+    origBuchi->computeRankSim(cl);
+    return origBuchi;
+  } 
+  else if (dynamic_cast<GeneralizedCoBuchiAutomaton<int, APSymbol>*>(orig)){
+    GeneralizedCoBuchiAutomaton<int, APSymbol> *origGcoBA = (GeneralizedCoBuchiAutomaton<int, APSymbol>*)orig;
+    return origGcoBA;
+  }
 }
 
 
-BuchiAutomaton<int, int> parseRenameBA(ifstream& os, BuchiAutomaton<string, string>* orig)
+AutomatonStruct<int, int>* parseRenameBA(ifstream& os, BuchiAutomaton<string, string>* orig)
 {
   BuchiAutomataParser parser;
   *orig = parser.parseBaFormat(os);
@@ -46,72 +54,100 @@ BuchiAutomaton<int, int> parseRenameBA(ifstream& os, BuchiAutomaton<string, stri
   return orig->renameAut();
 }
 
-void complementAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<StateSch, int>* complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats, bool delay, double w, delayVersion version, bool elevatorRank, bool eta4)
+void complementAutWrap(AutomatonStruct<int, int>* ren, BuchiAutomaton<StateSch, int>* complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats, bool delay, double w, delayVersion version, bool elevatorRank, bool eta4)
 {
-  BuchiAutomatonSpec sp(ren);
-  ComplOptions opt = { .cutPoint = true, .succEmptyCheck = true, .ROMinState = 8,
-      .ROMinRank = 6, .CacheMaxState = 6, .CacheMaxRank = 8, .semidetOpt = false };
-  sp.setComplOptions(opt);
-  BuchiAutomaton<StateSch, int> comp;
+  if (dynamic_cast<BuchiAutomaton<int, int>*>(ren)){
+    BuchiAutomaton<int, int> *renptr = (BuchiAutomaton<int, int>*) ren;
 
-  comp = sp.complementSchReduced(delay, ren.getFinals(), w, version, elevatorRank, eta4, stats);
-  BuchiAutomatonDelay<int> compDelay(comp);
-  *complOrig = comp;
+    BuchiAutomatonSpec sp(renptr);
+  
+    ComplOptions opt = { .cutPoint = true, .succEmptyCheck = true, .ROMinState = 8,
+        .ROMinRank = 6, .CacheMaxState = 6, .CacheMaxRank = 8, .semidetOpt = false };
+    sp.setComplOptions(opt);
+    BuchiAutomaton<StateSch, int> comp;
 
-  stats->generatedStates = comp.getStates().size();
-  stats->generatedTrans = comp.getTransCount();
-  stats->generatedTransitionsToTight = compDelay.getTransitionsToTight();
+    comp = sp.complementSchReduced(delay, renptr->getFinals(), w, version, elevatorRank, eta4, stats);
+    BuchiAutomatonDelay<int> compDelay(comp);
+    *complOrig = comp;
 
+    stats->generatedStates = comp.getStates().size();
+    stats->generatedTrans = comp.getTransCount();
+    stats->generatedTransitionsToTight = compDelay.getTransitionsToTight();
+
+    map<int, int> id;
+    for(auto al : comp.getAlphabet())
+      id[al] = al;
+    BuchiAutomaton<int, int> renCompl = comp.renameAutDict(id);
+    renCompl.removeUseless();
+    renCompl = renCompl.renameAutDict(id);
+
+    stats->reachStates = renCompl.getStates().size();
+    stats->reachTrans = renCompl.getTransCount();
+    stats->engine = "Ranker";
+    stats->transitionsToTight = -1;
+    stats->elevator = renptr->isElevator(); // original automaton before complementation
+    stats->elevatorStates = sp.elevatorStates();
+    stats->originalStates = sp.getStates().size();
+    *complRes = renCompl;
+  }
+}
+
+void complementGcoBAWrap(GeneralizedCoBuchiAutomaton<int, int> *ren, BuchiAutomaton<StateGcoBA, int> *complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats){
+  //ren->removeUseless();
+  //std::cerr << ren->toGraphwiz() << std::endl;
+  GeneralizedCoBuchiAutomatonCompl sp(ren);
+
+  *complOrig = sp.complementGcoBA();
+  
+  stats->generatedStates = complOrig->getStates().size();
+  stats->generatedTrans = complOrig->getTransCount();
+  
   map<int, int> id;
-  for(auto al : comp.getAlphabet())
+  for(auto al : complOrig->getAlphabet())
     id[al] = al;
-  BuchiAutomaton<int, int> renCompl = comp.renameAutDict(id);
+  //std::cerr << complOrig->toString() << std::endl;
+  BuchiAutomaton<int, int> renCompl = complOrig->renameAutDict(id);
   renCompl.removeUseless();
   renCompl = renCompl.renameAutDict(id);
-
 
   stats->reachStates = renCompl.getStates().size();
   stats->reachTrans = renCompl.getTransCount();
   stats->engine = "Ranker";
-  //stats->transitionsToTight = comp.getTransitionsToTight();
-  //stats->transitionsToTight = renCompl.getTransitionsToTight();
   stats->transitionsToTight = -1;
-  stats->elevator = ren.isElevator(); // original automaton before complementation
-  stats->elevatorStates = sp.elevatorStates();
   stats->originalStates = sp.getStates().size();
   *complRes = renCompl;
 }
 
-
-void complementScheweAutWrap(BuchiAutomaton<int, int>& ren, BuchiAutomaton<int, int>* complRes, Stat* stats, bool delay, double w, delayVersion version)
+void complementScheweAutWrap(AutomatonStruct<int, int>* ren, BuchiAutomaton<int, int>* complRes, Stat* stats, bool delay, double w, delayVersion version)
 {
-  BuchiAutomatonSpec sp(ren);
-  ComplOptions opt = { .cutPoint = true, .CacheMaxState = 6, .CacheMaxRank = 8,
-      .semidetOpt = false };
-  sp.setComplOptions(opt);
-  BuchiAutomaton<StateSch, int> comp;
-  comp = sp.complementSchOpt(delay, ren.getFinals(), w, version, stats);
-  BuchiAutomatonDelay<int> compDelay(comp);
+  if (BuchiAutomaton<int, int>* renptr = dynamic_cast<BuchiAutomaton<int, int>*>(ren)){
+    BuchiAutomatonSpec sp(renptr);
 
-  stats->generatedStates = comp.getStates().size();
-  stats->generatedTrans = comp.getTransCount();
-  stats->generatedTransitionsToTight = compDelay.getTransitionsToTight();
+    ComplOptions opt = { .cutPoint = true, .CacheMaxState = 6, .CacheMaxRank = 8,
+        .semidetOpt = false };
+    sp.setComplOptions(opt);
+    BuchiAutomaton<StateSch, int> comp;
+    comp = sp.complementSchOpt(delay, renptr->getFinals(), w, version, stats);
+    BuchiAutomatonDelay<int> compDelay(comp);
 
-  map<int, int> id;
-  for(auto al : comp.getAlphabet())
-    id[al] = al;
-  BuchiAutomaton<int, int> renCompl = comp.renameAutDict(id);
-  renCompl.removeUseless();
+    stats->generatedStates = comp.getStates().size();
+    stats->generatedTrans = comp.getTransCount();
+    stats->generatedTransitionsToTight = compDelay.getTransitionsToTight();
 
-  stats->reachStates = renCompl.getStates().size();
-  stats->reachTrans = renCompl.getTransCount();
-  stats->engine = "Ranker";
-  // stats->transitionsToTight = comp.getTransitionsToTight();
-  // stats->transitionsToTight = renCompl.getTransitionsToTight();
-  stats->elevator = ren.isElevator(); // original automaton before complementation
-  stats->elevatorStates = sp.elevatorStates();
-  stats->originalStates = sp.getStates().size();
-  *complRes = renCompl;
+    map<int, int> id;
+    for(auto al : comp.getAlphabet())
+      id[al] = al;
+    BuchiAutomaton<int, int> renCompl = comp.renameAutDict(id);
+    renCompl.removeUseless();
+
+    stats->reachStates = renCompl.getStates().size();
+    stats->reachTrans = renCompl.getTransCount();
+    stats->engine = "Ranker";
+    stats->elevator = renptr->isElevator(); // original automaton before complementation
+    stats->elevatorStates = sp.elevatorStates();
+    stats->originalStates = sp.getStates().size();
+    *complRes = renCompl;
+  }
 }
 
 BuchiAutomaton<int, int> createBA(vector<int>& loop)

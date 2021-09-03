@@ -14,8 +14,8 @@
 #include <chrono>
 
 #include "AutGraph.h"
-#include "AutomatonStruct.h"
 #include "../Complement/StateKV.h"
+#include "AutomatonStruct.h"
 #include "../Complement/StateSch.h"
 #include "../Algorithms/AuxFunctions.h"
 #include "APSymbol.h"
@@ -86,7 +86,7 @@ private:
 protected:
   std::string toStringWith(std::function<std::string(State)>& stateStr,  std::function<std::string(Symbol)>& symStr);
   std::string toGraphwizWith(std::function<std::string(State)>& stateStr,  std::function<std::string(Symbol)>& symStr);
-  std::string toGffWith(std::function<std::string(State)>& stateStr,  std::function<std::string(Symbol)>& symStr);
+  std::string toGffWith(std::function<std::string(State)>& stateStr,  std::function<std::string(Symbol)>& symStr);  
 
   bool isRankLeq(std::set<State>& set1, std::set<State>& set2, StateRelation& rel);
   bool deriveRankConstr(State& st1, State& st2, StateRelation& rel);
@@ -112,7 +112,7 @@ public:
 
   BuchiAutomaton() : BuchiAutomaton({}, {}, {}, {}) {};
 
-  BuchiAutomaton(BuchiAutomaton<State, Symbol>& other)
+  BuchiAutomaton(BuchiAutomaton<State, Symbol>& other) : AutomatonStruct<State, Symbol>(other)
   {
     this->states = other.states;
     this->finals = other.finals;
@@ -129,9 +129,80 @@ public:
 
   std::string toString();
   std::string toGraphwiz();
-  std::string toGff();
   std::string toHOA();
-  BuchiAutomaton<int, int> renameAut(int start = 0);
+  std::string toGff();
+  
+  /*
+  * Rename states and symbols of the automaton (to consecutive numbers).
+  * @param start Starting number for states
+  * @return Renamed automaton
+  */
+  AutomatonStruct<int, int>* renameAut(int start = 0) override {
+    int stcnt = start;
+    int symcnt = 0;
+    std::map<State, int> mpstate;
+    std::map<Symbol, int> mpsymbol;
+    std::set<int> rstate;
+    Delta<int, int> rtrans;
+    std::set<int> rfin;
+    std::set<int> rini;
+    set<int> rsym;
+    this->invRenameMap = std::vector<State>(this->states.size() + start);
+
+    for(auto st : this->states)
+    {
+      auto it = mpstate.find(st);
+      this->invRenameMap[stcnt] = st;
+      if(it == mpstate.end())
+      {
+        mpstate[st] = stcnt++;
+      }
+    }
+    for(const auto& a : this->alph)
+    {
+      rsym.insert(symcnt);
+      mpsymbol[a] = symcnt++;
+    }
+
+    rstate = Aux::mapSet(mpstate, this->states);
+    rini = Aux::mapSet(mpstate, this->initials);
+    rfin = Aux::mapSet(mpstate, this->finals);
+    for(auto p : this->trans)
+    {
+      auto it = mpsymbol.find(p.first.second);
+      int val;
+      if(it == mpsymbol.end())
+      {
+        val = symcnt;
+        mpsymbol[p.first.second] = symcnt++;
+      }
+      else
+      {
+        val = it->second;
+      }
+      std::set<int> to = Aux::mapSet(mpstate, p.second);
+      rtrans.insert({std::make_pair(mpstate[p.first.first], val), to});
+    }
+
+    BuchiAutomaton<int, int> *ret = new BuchiAutomaton<int, int>(rstate, rfin, rini, rtrans, rsym);
+    this->renameStateMap = mpstate;
+    this->renameSymbolMap = mpsymbol;
+
+    std::set<std::pair<int, int> > rdirSim, roddSim;
+    for(auto item : this->directSim)
+    {
+      rdirSim.insert({mpstate[item.first], mpstate[item.second]});
+    }
+    for(auto item : this->oddRankSim)
+    {
+      roddSim.insert({mpstate[item.first], mpstate[item.second]});
+    }
+    ret->setDirectSim(rdirSim);
+    ret->setOddRankSim(roddSim);
+    ret->setAPPattern(this->apsPattern);
+    return ret;
+  }
+
   BuchiAutomaton<int, int> renameAutDict(map<Symbol, int>& mpsymbol, int start = 0);
 
   bool isElevator();
@@ -152,17 +223,7 @@ public:
     }
     for(auto p : this->trans)
     {
-      //auto it = mpsymbol.find(p.first.second);
       NewSymbol val = mpsymbol[p.first.second];
-      // if(it == mpsymbol.end())
-      // {
-      //   val = symcnt;
-      //   mpsymbol[p.first.second] = symcnt++;
-      // }
-      // else
-      // {
-      //   val = it->second;
-      // }
       rtrans.insert({std::make_pair(p.first.first, val), p.second});
     }
     auto ret = BuchiAutomaton<State, NewSymbol>(this->states, this->finals, this->initials, rtrans, ralph, this->apsPattern);
@@ -179,6 +240,22 @@ public:
   SetStates& getFinals()
   {
     return this->finals;
+  }
+
+  void addStates(State state){
+    this->states.insert(state);
+  }
+
+  void addFinals(State state){
+    this->finals.insert(state);
+  }
+
+  void addNewTransition(std::pair<State, Symbol> src, std::set<State> dst){
+    this->trans.insert({src, dst});
+  }
+
+  void addNewStatesToTransition(std::pair<State, Symbol> src, std::set<State> dst){
+    this->trans[src].insert(dst.begin(), dst.end());
   }
 
   /*
@@ -218,16 +295,46 @@ public:
   }
 
   void complete(State trap, bool fin = false);
-  void completeAPComplement();
+  void completeAPComplement();    
   void removeUseless();
   void restriction(set<State>& st);
 
   void computeRankSim(SetStates& cl);
   bool containsRankSimEq(SetStates& cl);
 
-  vector<set<State>> getAutGraphSCCs();
   set<State> getEventReachable(set<State>& sls);
   SetStates getCycleClosingStates(SetStates& slignore);
+
+  /*
+  * Get SCCs of the automaton
+  * @return Vector of SCCs (represented as a set of states)
+  */
+  vector<set<State>> getAutGraphSCCs(){
+    AutomatonStruct<int, int> *renAut = this->renameAut();
+
+    if (dynamic_cast<BuchiAutomaton<int, int>*>(renAut)){
+      BuchiAutomaton<int, int> *renAutBA = (BuchiAutomaton<int, int>*)renAut;
+
+      vector<vector<int>> adjList(this->states.size());
+      vector<VertItem> vrt;
+      vector<set<State>> sccs;
+
+      renAut->getAutGraphComponents(adjList, vrt);  
+      AutGraph gr(adjList, vrt, renAutBA->getFinals());
+      gr.computeSCCs();
+
+      for(auto& scc : gr.getAllComponents())
+      {
+        set<State> singleScc;
+        for(auto &st : scc)
+        {
+          singleScc.insert(this->invRenameMap[st]);
+        }
+        sccs.push_back(singleScc);
+      }
+      return sccs;
+    }
+  }
 
   bool isEmpty();
 
@@ -238,6 +345,10 @@ public:
   bool isSemiDeterministic()
   {
     return this->isReachDeterministic(this->finals);
+  }
+
+  void setFinals(SetStates finals){
+    this->finals = finals;
   }
 
   BuchiAutomaton<tuple<State, int, bool>, Symbol> productBA(BuchiAutomaton<int, Symbol>& other);

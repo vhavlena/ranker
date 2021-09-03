@@ -1,5 +1,5 @@
-#ifndef _GENERALIZED_COBA_H_
-#define _GENERALIZED_COBA_H_
+#ifndef _GEN_CO_BUCHI_AUTOMATON_H_
+#define _GEN_CO_BUCHI_AUTOMATON_H_
 
 #include <set>
 #include <map>
@@ -15,9 +15,8 @@
 
 #include "AutGraph.h"
 #include "AutomatonStruct.h"
-#include "BuchiAutomaton.h"
-#include "../Complement/StateKV.h"
-#include "../Complement/StateSch.h"
+//#include "BuchiAutomaton.h"
+#include "../Complement/StateGcoBA.h"
 #include "../Algorithms/AuxFunctions.h"
 #include "APSymbol.h"
 
@@ -29,9 +28,10 @@ public:
   typedef std::set<State> SetStates;
   typedef std::set<Symbol> SetSymbols;
   typedef Delta<State, Symbol> Transitions;
+  typedef std::map<int, std::set<State>> SetFins;
 
 private:
-  SetStates finals; //Modify according to GBAs
+  SetFins finals;
 
 
 protected:
@@ -40,17 +40,17 @@ protected:
   std::string toGffWith(std::function<std::string(State)>& stateStr,  std::function<std::string(Symbol)>& symStr);
 
 public:
-  GeneralizedCoBuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans) : AutomatonStruct<State, Symbol>(st, ini, trans)
+  GeneralizedCoBuchiAutomaton(SetStates st, SetFins fin, SetStates ini, Transitions trans) : AutomatonStruct<State, Symbol>(st, ini, trans)
   {
     this->finals = fin;
   }
 
-  GeneralizedCoBuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans, SetSymbols alp) : AutomatonStruct<State, Symbol>(st, ini, trans, alp)
+  GeneralizedCoBuchiAutomaton(SetStates st, SetFins fin, SetStates ini, Transitions trans, SetSymbols alp) : AutomatonStruct<State, Symbol>(st, ini, trans, alp)
   {
     this->finals = fin;
   }
 
-  GeneralizedCoBuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans, SetSymbols alp, map<string, int> aps) : AutomatonStruct<State, Symbol>(st, ini, trans, alp, aps)
+  GeneralizedCoBuchiAutomaton(SetStates st, SetFins fin, SetStates ini, Transitions trans, SetSymbols alp, map<string, int> aps) : AutomatonStruct<State, Symbol>(st, ini, trans, alp, aps)
   {
     this->finals = fin;
   }
@@ -74,8 +74,63 @@ public:
   std::string toGraphwiz();
   std::string toGff();
   std::string toHOA();
-  BuchiAutomaton<int, int> renameAut(int start = 0);
-  BuchiAutomaton<int, int> renameAutDict(map<Symbol, int>& mpsymbol, int start = 0);
+
+  AutomatonStruct<int, int>* renameAut(int start = 0) override {
+    int stcnt = start;
+    int symcnt = 0;
+    std::map<State, int> mpstate;
+    std::map<Symbol, int> mpsymbol;
+    std::set<int> rstate;
+    Delta<int, int> rtrans;
+    std::map<int, std::set<int>> rfin;
+    std::set<int> rini;
+    set<int> rsym;
+    this->invRenameMap = std::vector<State>(this->states.size() + start);
+
+    for(auto st : this->states)
+    {
+      auto it = mpstate.find(st);
+      this->invRenameMap[stcnt] = st;
+      if(it == mpstate.end())
+      {
+        mpstate[st] = stcnt++;
+      }
+    }
+    for(const auto& a : this->alph)
+    {
+      rsym.insert(symcnt);
+      mpsymbol[a] = symcnt++;
+    }
+
+    rstate = Aux::mapSet(mpstate, this->states);
+    rini = Aux::mapSet(mpstate, this->initials);
+    rfin = Aux::mapMap(mpstate, this->finals);
+    for(auto p : this->trans)
+    {
+      auto it = mpsymbol.find(p.first.second);
+      int val;
+      if(it == mpsymbol.end())
+      {
+        val = symcnt;
+        mpsymbol[p.first.second] = symcnt++;
+      }
+      else
+      {
+        val = it->second;
+      }
+      std::set<int> to = Aux::mapSet(mpstate, p.second);
+      rtrans.insert({std::make_pair(mpstate[p.first.first], val), to});
+    }
+
+    GeneralizedCoBuchiAutomaton<int, int> *ret = new GeneralizedCoBuchiAutomaton<int, int>(rstate, rfin, rini, rtrans, rsym);
+    this->renameStateMap = mpstate;
+    this->renameSymbolMap = mpsymbol;
+    
+    ret->setAPPattern(this->apsPattern);
+    return ret;
+  } 
+
+  GeneralizedCoBuchiAutomaton<int, int> renameAutDict(map<Symbol, int>& mpsymbol, int start = 0);
 
   //bool isElevator();
 
@@ -85,7 +140,7 @@ public:
    * @return Renamed automaton
    */
   template<typename NewSymbol>
-  BuchiAutomaton<State, NewSymbol> renameAlphabet(map<Symbol, NewSymbol>& mpsymbol)
+  GeneralizedCoBuchiAutomaton<State, NewSymbol> renameAlphabet(map<Symbol, NewSymbol>& mpsymbol)
   {
     std::set<NewSymbol> ralph;
     Delta<State, NewSymbol> rtrans;
@@ -98,7 +153,7 @@ public:
       NewSymbol val = mpsymbol[p.first.second];
       rtrans.insert({std::make_pair(p.first.first, val), p.second});
     }
-    auto ret = BuchiAutomaton<State, NewSymbol>(this->states, this->finals, this->initials, rtrans, ralph, this->apsPattern);
+    auto ret = GeneralizedCoBuchiAutomaton<State, NewSymbol>(this->states, this->finals, this->initials, rtrans, ralph, this->apsPattern);
     ret.setAPPattern(this->apsPattern);
     return ret;
   }
@@ -107,19 +162,25 @@ public:
    * Get automaton final states.
    * @return Set of final states
    */
-  SetStates& getFinals()
+  SetFins& getFinals()
   {
     return this->finals;
   }
 
-
   void removeUseless();
   bool isEmpty();
 
-  BuchiAutomaton<tuple<State, int, bool>, Symbol> product(BuchiAutomaton<int, Symbol>& other);
-  BuchiAutomaton<pair<State, int>, Symbol> cartProduct(BuchiAutomaton<int, Symbol>& other);
-  BuchiAutomaton<State, Symbol> union(BuchiAutomaton<State, Symbol>& other);
-  BuchiAutomaton<State, Symbol> reverse();
+  GeneralizedCoBuchiAutomaton<tuple<State, int>, Symbol> product(GeneralizedCoBuchiAutomaton<int, Symbol>& other);
+  GeneralizedCoBuchiAutomaton<tuple<State, int>, Symbol> cartProduct(GeneralizedCoBuchiAutomaton<int, Symbol>& other);
+  GeneralizedCoBuchiAutomaton<State, Symbol> unionGcoBA(GeneralizedCoBuchiAutomaton<State, Symbol>& other);
+  GeneralizedCoBuchiAutomaton<State, Symbol> reverse();
+
+  std::vector<std::vector<int>> getAllCycles();
+  bool circuit(int state, std::vector<int> &stack, std::set<int> &blockedSet, std::map<int,
+    std::set<int>> &blockedMap, std::set<int> scc, AdjList adjlist, int startState, std::vector<std::vector<int>> &allCyclesRenamed);
+  void unblock(int state, std::set<int> &blockedSet, std::map<int, std::set<int>> &blockedMap);
+
+  void restriction(set<State>& st);
 
 };
 
