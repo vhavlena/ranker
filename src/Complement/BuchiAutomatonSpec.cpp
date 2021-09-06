@@ -818,6 +818,11 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
   BuchiAutomaton<StateSch, int> comp = this->complementSchNFA(this->getInitials());
   auto end = std::chrono::high_resolution_clock::now();
   stats->waitingPart = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
+  
+  if (comp.getStates().size() == 1){
+    comp.setAPPattern(this->getAPPattern());
+    return comp;
+  }
 
   // rank bound
   start = std::chrono::high_resolution_clock::now();
@@ -1257,16 +1262,18 @@ unsigned BuchiAutomatonSpec::elevatorStates(){
   }
 
   // propagate BAD back
-  for (unsigned i = sortedComponents.size()-1; i >= 0; i--){
-    if (typeMap[sortedComponents[i]] == BAD){
-      // type of all components before this one will also be BAD
-      for (unsigned j = 0; j < i; j++){
-        typeMap[sortedComponents[j]] = BAD;
+  if (sortedComponents.size() > 0){
+    for (unsigned i = sortedComponents.size()-1; i >= 0; i--){
+      if (typeMap[sortedComponents[i]] == BAD){
+        // type of all components before this one will also be BAD
+        for (unsigned j = 0; j < i; j++){
+          typeMap[sortedComponents[j]] = BAD;
+        }
+        break;
       }
-      break;
+      if (i == 0) // i is unsigned
+        break;
     }
-    if (i == 0) // i is unsigned
-      break;
   }
 
   unsigned elevatorStates = 0;
@@ -1351,55 +1358,73 @@ bool BuchiAutomatonSpec::isInherentlyWeak(std::set<int> scc){
  * Updates rankBound of every state based on elevator automaton structure (minimum of these two options)
  */
 void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe){
-  
+
+  this->removeUseless();
+
   // get all sorted sccs 
   std::vector<std::set<int>> sccs = this->topologicalSort();
-  std::vector<SccClassification> sccClass;
+  std::vector<SccClassif> sccClass;
   for (auto scc : sccs){
-    SccClassification tmp = {.states = scc, .det = false, .inhWeak = false, .nonDet = false};
+    SccClassif tmp = {.states = scc, .det = false, .inhWeak = false, .nonDet = false};
     sccClass.push_back(tmp);
   }
   
   // scc classification
-  for (auto scc : sccClass) {
+  for (auto it = sccClass.begin(); it != sccClass.end(); it++){
     // deterministic
-    if (isDeterministic(scc.states)){
-      scc.det = true;
+    if (isDeterministic(it->states)){
+      it->det = true;
       //std::cerr << "deterministic" << std::endl;
     }
     // nondeterministic
-    if (isNonDeterministic(scc.states)){
-      scc.nonDet = true;
+    if (isNonDeterministic(it->states)){
+      it->nonDet = true;
       //std::cerr << "nondeterministic" << std::endl;
     }
     // inherently weak
-    if (isInherentlyWeak(scc.states)){
-      scc.inhWeak = true;
+    if (isInherentlyWeak(it->states)){
+      it->inhWeak = true;
       //std::cerr << "inherently weak" << std::endl;
     }
   }
 
   // apply rules from the last component
-  unsigned rank = 0;
   for (auto it = sccClass.rbegin(); it != sccClass.rend(); it++){
-    // FIXME test
-    if (it->det or it->inhWeak){
-      if (rank%2 == 1)
-        rank++;
-      it->rank = rank;
+    
+    // get all direct scc successors
+    std::vector<SccClassif> succ;
+    bool skip = false;
+    for (auto it2 = it; it2 != sccClass.rend(); it2++){
+      skip = false;
+      if (it2 != it){
+        for (auto state : it2->states){
+          if (skip)
+            break;
+          for (auto state2 : this->getAllSuccessors(state)){
+            if (it2->states.find(state2) != it2->states.end()){
+              succ.push_back(*it2);
+              skip = true;
+              break;
+            }
+          }
+        }
+      }
     }
-    else if (it->nonDet){
-      if (rank%2 == 0)
-        rank++;
-      it->rank = rank;
+
+    // rule #1: IW -|
+    if (succ.size() == 0 and it->inhWeak){
+      it->rank = 0;
     }
-    rank++;
+
+    // rule #2: D -|
+    else if (succ.size() == 0 and it->det){
+      it->rank = 2;
+    }
+
   }
 
-  // TODO output original automaton with ranks
-  //auto symDict = Aux::reverseMap(this->getRenameSymbolMap());
-  //BuchiAutomaton<int, APSymbol> outOrig = this->renameAlphabet<APSymbol>(symDict);
-  //std::cerr << outOrig.toHOA() << std::endl;
+  // output original automaton with ranks
+  std::cerr << this->toHOA(sccClass) << std::endl;
 
 
   /**********************************************************************/

@@ -58,6 +58,7 @@ void complementAutWrap(AutomatonStruct<int, int>* ren, BuchiAutomaton<StateSch, 
 {
   if (dynamic_cast<BuchiAutomaton<int, int>*>(ren)){
     BuchiAutomaton<int, int> *renptr = (BuchiAutomaton<int, int>*) ren;
+    renptr->removeUseless();
 
     BuchiAutomatonSpec sp(renptr);
   

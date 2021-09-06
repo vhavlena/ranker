@@ -65,6 +65,17 @@ struct DelayLabel {
 };
 
 /*
+ * Data structure for information about possible types of scc
+ */
+struct SccClassif {
+  set<int> states;
+  bool det = false;
+  bool inhWeak = false;
+  bool nonDet = false;
+  int rank = -1;
+};
+
+/*
  * State labels for the case of the DELAY optimization
  */
 template<typename State> using DelayMap = std::map<State, DelayLabel>;
@@ -132,6 +143,7 @@ public:
   std::string toString();
   std::string toGraphwiz();
   std::string toHOA();
+  std::string toHOA(std::vector<SccClassif> sccs);
   std::string toGff();
   
   /*

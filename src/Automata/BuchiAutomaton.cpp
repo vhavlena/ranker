@@ -336,6 +336,87 @@ std::string BuchiAutomaton<int, APSymbol>::toHOA()
   return res;
 }
 
+template <>
+std::string BuchiAutomaton<int, int>::toHOA(std::vector<SccClassif> sccs)
+{
+  // TODO: enter correct symbols (now not retained while doing renameAut)
+  std::string res;
+  size_t alph_size = this->alph.size();
+  res += "HOA: v1\n";
+  res += "States: " + std::to_string(this->states.size()) + "\n";
+
+  // renumber states to be a continuous sequence
+  std::map<int, size_t> state_to_seq;
+  size_t state_cnt = 0;
+  for (auto st : this->states) {
+    state_to_seq.insert({st, state_cnt++});
+  }
+
+  // initial states
+  for (auto st : this->initials) {
+    res += "Start: " + std::to_string(state_to_seq[st]) + "\n";
+  }
+
+  res += "acc-name: Buchi\n";
+  res += "Acceptance: 1 Inf(0)\n";
+  res += "properties: trans-labels explicit-labels state-acc\n";
+  res += "AP: " + std::to_string(alph_size);
+
+  // renumber symbols
+  std::map<string, size_t> symb_to_pos;
+  size_t symb_cnt = 0;
+  for (auto symb : this->alph) {
+    res += " \"" + std::to_string(symb) + "\"";
+    symb_to_pos.insert({std::to_string(symb), symb_cnt++});
+  }
+
+  // transitions
+  res += "\n--BODY--\n";
+  for (auto st : this->states) {
+    size_t seq_st = state_to_seq[st];
+    res += "State: " + std::to_string(seq_st);
+
+    // state label
+    for (auto scc : sccs){
+      if (scc.states.find(st) != scc.states.end()){
+        res += " \"" + std::to_string(scc.rank) + "\"";
+        break;
+      }
+    }
+
+    if (this->finals.find(st) != this->finals.end()) {
+      res += " {0}";
+    }
+    res += "\n";
+
+    for (auto symb : this->alph) {
+      auto it = this->trans.find({st, symb});
+      if (it == this->trans.end() || it->second.empty()) continue;
+
+      // construct the string for the symbol first (composed of atomic propositions)
+      std::string symb_str;
+      symb_str += "[";
+      bool first = true;
+      for (size_t i = 0; i < alph_size; ++i) {
+        if (first) first = false;
+        else symb_str += " & ";
+
+        if (symb_to_pos[std::to_string(symb)] != i) symb_str += "!";
+        symb_str += std::to_string(i);
+      }
+      symb_str += "]";
+
+      for (auto dst : it->second) {
+        res += symb_str + " " + std::to_string(state_to_seq[dst]) + "\n";
+      }
+    }
+  }
+
+  res += "--END--\n";
+
+  return res;
+}
+
 
 /*
  * Abstract function converting the automaton to graphwiz format.
