@@ -1359,8 +1359,6 @@ bool BuchiAutomatonSpec::isInherentlyWeak(std::set<int> scc){
  */
 void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe){
 
-  this->removeUseless();
-
   // get all sorted sccs 
   std::vector<std::set<int>> sccs = this->topologicalSort();
   std::vector<SccClassif> sccClass;
@@ -1390,14 +1388,14 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe){
 
   // apply rules from the last component
   for (auto it = sccClass.rbegin(); it != sccClass.rend(); it++){
-    
+
     // get all direct scc successors
     std::vector<SccClassif> succ;
     bool skip = false;
-    for (auto it2 = it; it2 != sccClass.rend(); it2++){
+    for (auto it2 = it; it2 >= sccClass.rbegin(); it2--){
       skip = false;
       if (it2 != it){
-        for (auto state : it2->states){
+        for (auto state : it->states){
           if (skip)
             break;
           for (auto state2 : this->getAllSuccessors(state)){
@@ -1419,6 +1417,30 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe){
     // rule #2: D -|
     else if (succ.size() == 0 and it->det){
       it->rank = 2;
+    }
+
+    else {
+      int rank = -1;
+
+      // rule #3: N
+      if (it->nonDet){
+        for (auto scc : succ){
+          if (scc.nonDet and scc.rank > rank)
+            rank = scc.rank;
+          else if ((scc.det or scc.inhWeak) and scc.rank+1 > rank){
+            rank = scc.rank+1;
+          }
+        }  
+      }
+      it->rank = rank;
+
+      // rule #4 : IW
+
+      // rule #5: D
+
+      // TODO: pick minimum
+
+      // TODO: not elevator
     }
 
   }

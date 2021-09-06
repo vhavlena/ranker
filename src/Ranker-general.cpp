@@ -57,17 +57,26 @@ AutomatonStruct<int, int>* parseRenameBA(ifstream& os, BuchiAutomaton<string, st
 void complementAutWrap(AutomatonStruct<int, int>* ren, BuchiAutomaton<StateSch, int>* complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats, bool delay, double w, delayVersion version, bool elevatorRank, bool eta4)
 {
   if (dynamic_cast<BuchiAutomaton<int, int>*>(ren)){
-    BuchiAutomaton<int, int> *renptr = (BuchiAutomaton<int, int>*) ren;
-    renptr->removeUseless();
+    BuchiAutomaton<int, int> *rentmp = (BuchiAutomaton<int, int>*) ren;
+    //renptr->removeUseless();
 
-    BuchiAutomatonSpec sp(renptr);
+    // rename automaton
+    map<int, int> id;
+    for(auto al : ren->getAlphabet())
+      id[al] = al;
+    //std::cerr << complOrig->toString() << std::endl;
+    BuchiAutomaton<int, int> renptr = rentmp->renameAutDict(id);
+    renptr.removeUseless();
+    renptr = renptr.renameAutDict(id);  
+
+    BuchiAutomatonSpec sp(&renptr);
   
     ComplOptions opt = { .cutPoint = true, .succEmptyCheck = true, .ROMinState = 8,
         .ROMinRank = 6, .CacheMaxState = 6, .CacheMaxRank = 8, .semidetOpt = false };
     sp.setComplOptions(opt);
     BuchiAutomaton<StateSch, int> comp;
 
-    comp = sp.complementSchReduced(delay, renptr->getFinals(), w, version, elevatorRank, eta4, stats);
+    comp = sp.complementSchReduced(delay, renptr.getFinals(), w, version, elevatorRank, eta4, stats);
     BuchiAutomatonDelay<int> compDelay(comp);
     *complOrig = comp;
 
@@ -76,7 +85,7 @@ void complementAutWrap(AutomatonStruct<int, int>* ren, BuchiAutomaton<StateSch, 
     stats->generatedTransitionsToTight = compDelay.getTransitionsToTight();
 
     // rename automaton
-    map<int, int> id;
+    //map<int, int> id;
     for(auto al : comp.getAlphabet())
       id[al] = al;
     BuchiAutomaton<int, int> renCompl = comp.renameAutDict(id);
@@ -87,7 +96,7 @@ void complementAutWrap(AutomatonStruct<int, int>* ren, BuchiAutomaton<StateSch, 
     stats->reachTrans = renCompl.getTransCount();
     stats->engine = "Ranker";
     stats->transitionsToTight = -1;
-    stats->elevator = renptr->isElevator(); // original automaton before complementation
+    stats->elevator = renptr.isElevator(); // original automaton before complementation
     stats->elevatorStates = sp.elevatorStates();
     stats->originalStates = sp.getStates().size();
     *complRes = renCompl;
