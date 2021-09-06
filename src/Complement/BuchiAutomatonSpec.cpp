@@ -1412,11 +1412,19 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe){
     // rule #1: IW -|
     if (succ.size() == 0 and it->inhWeak){
       it->rank = 0;
+      it->det = false;
+      it->nonDet = false;
     }
 
     // rule #2: D -|
     else if (succ.size() == 0 and it->det){
       it->rank = 2;
+      it->inhWeak = false;
+      it->nonDet = false;
+    }
+
+    else if (succ.size() == 0 and not(it->det or it->inhWeak or it->nonDet)){
+      it->rank = 2*it->states.size() - 1;
     }
 
     else {
@@ -1427,27 +1435,101 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe){
         for (auto scc : succ){
           if (scc.nonDet and scc.rank > rank)
             rank = scc.rank;
-          else if ((scc.det or scc.inhWeak) and scc.rank+1 > rank){
-            rank = scc.rank+1;
-          }
-        }  
+          else if ((scc.det or scc.inhWeak) and scc.rank+1 > rank)
+            rank = scc.rank + 1;
+        }
+        it->rank = rank; 
+        it->det = false;
+        it->inhWeak = false; 
       }
-      it->rank = rank;
 
       // rule #4 : IW
+      rank = -1;
+      if (it->inhWeak){
+        for (auto scc : succ){
+          if ((scc.det or scc.inhWeak) and scc.rank > rank)
+            rank = scc.rank;
+          else if (scc.nonDet and scc.rank+1 > rank)
+            rank = scc.rank + 1;
+        }
+        if (it->rank == -1 or rank < it->rank){
+          it->rank = rank;
+          it->det = false;
+          it->nonDet = false;
+        }
+      }
 
       // rule #5: D
+      rank = -1;
+      if (it->det){
+        for (auto scc : succ){
+          if (scc.nonDet and scc.rank > rank)
+            rank = scc.rank + 1;
+          else if ((scc.det or scc.inhWeak) and scc.rank+2 > rank){
+            // deterministic transitions -> scc.rank, otherwise scc.rank+2
+            bool det = true;
+            for (auto state : it->states){
+              for (auto a : this->getAlphabet()){
+                unsigned trans = 0;
+                for (auto succ : this->getTransitions()[{state, a}]){
+                  if (scc.states.find(succ) != scc.states.end()){
+                    if (trans > 0){
+                      det = false;
+                      break;
+                    }
+                    trans++;
+                  }
+                }
+              }
+            }
+            if (det and scc.rank > rank)
+              rank = scc.rank;
+            else if ((not det) and scc.rank+2 > rank)
+              rank = scc.rank + 2;
+          }
+        }
+        if (it->rank == -1 or rank < it->rank){
+          it->rank = rank;
+          it->nonDet = false;
+          it->inhWeak = false;
+        }
+      }
 
-      // TODO: pick minimum
-
-      // TODO: not elevator
+      // TODO: not elevator!!!
     }
-
   }
 
   // output original automaton with ranks
-  std::cerr << this->toHOA(sccClass) << std::endl;
+  //std::cerr << this->toHOA(sccClass) << std::endl;
 
+  // update rank upper bound if lower
+  for (auto macrostate : nfaSchewe.getStates()){
+    if (macrostate.S.size() > 0){
+      // pick max
+      bool first = true;
+      unsigned max;
+      bool bad = false;
+      for (auto state : macrostate.S){
+        if (first){
+          for (auto scc : sccClass){
+            if (scc.states.find(state) != scc.states.end())
+              max = scc.rank;
+          }
+          first = false;
+        } else {
+          for (auto scc : sccClass){
+            if (scc.states.find(state) != scc.states.end())
+              if (scc.rank > max)
+                max = scc.rank;
+          }
+        }
+      }
+      // update rank upper bound if lower
+      if (!bad && this->rankBound[macrostate.S].bound > (int)max){
+        this->rankBound[macrostate.S].bound = max;
+      }
+    }
+  }
 
   /**********************************************************************/
 

@@ -64,10 +64,9 @@ void complementAutWrap(AutomatonStruct<int, int>* ren, BuchiAutomaton<StateSch, 
     map<int, int> id;
     for(auto al : ren->getAlphabet())
       id[al] = al;
-    //std::cerr << complOrig->toString() << std::endl;
     BuchiAutomaton<int, int> renptr = rentmp->renameAutDict(id);
     renptr.removeUseless();
-    renptr = renptr.renameAutDict(id);  
+    renptr = renptr.renameAutDict(id);
 
     BuchiAutomatonSpec sp(&renptr);
   
@@ -77,6 +76,7 @@ void complementAutWrap(AutomatonStruct<int, int>* ren, BuchiAutomaton<StateSch, 
     BuchiAutomaton<StateSch, int> comp;
 
     comp = sp.complementSchReduced(delay, renptr.getFinals(), w, version, elevatorRank, eta4, stats);
+    //std::cerr << comp.toGraphwiz() << std::endl;
     BuchiAutomatonDelay<int> compDelay(comp);
     *complOrig = comp;
 
@@ -86,8 +86,8 @@ void complementAutWrap(AutomatonStruct<int, int>* ren, BuchiAutomaton<StateSch, 
 
     // rename automaton
     //map<int, int> id;
-    for(auto al : comp.getAlphabet())
-      id[al] = al;
+    //for(auto al : comp.getAlphabet())
+    //  id[al] = al;
     BuchiAutomaton<int, int> renCompl = comp.renameAutDict(id);
     renCompl.removeUseless();
     renCompl = renCompl.renameAutDict(id);
