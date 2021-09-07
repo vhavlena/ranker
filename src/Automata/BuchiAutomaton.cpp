@@ -235,7 +235,7 @@ std::string BuchiAutomaton<int, string>::toHOA()
   std::map<string, size_t> symb_to_pos;
   size_t symb_cnt = 0;
   for (auto symb : this->alph) {
-    res += " \"" + symb + "\"";
+    res += " \"" + symb + "\"";   
     symb_to_pos.insert({symb, symb_cnt++});
   }
 
@@ -284,6 +284,8 @@ std::string BuchiAutomaton<int, string>::toHOA()
 template <>
 std::string BuchiAutomaton<int, APSymbol>::toHOA()
 {
+  typedef std::pair<std::string, int> pair;
+  
   // TODO: enter correct symbols (now not retained while doing renameAut)
   std::string res;
   //size_t alph_size = this->alph.size();
@@ -307,9 +309,18 @@ std::string BuchiAutomaton<int, APSymbol>::toHOA()
   res += "properties: trans-labels explicit-labels state-acc\n";
   res += "AP: " + std::to_string(this->apsPattern.size());
 
-  for (auto symb : this->apsPattern) {
-    res += " \"" +  symb.first + "\"";
-  }
+  //for (auto symb : this->apsPattern) {
+  //  res += " \"" +  symb.first + "\"";
+  //}
+
+  // !!! sort map by value !!!
+  std::vector<pair> vec;
+  std::copy(this->apsPattern.begin(), this->apsPattern.end(), std::back_inserter<std::vector<pair>>(vec));
+  std::sort(vec.begin(), vec.end(), [](const pair &l, const pair &r){if (l.second != r.second) return l.second < r.second; return l.first < r.first;});
+
+  for (auto item : vec){
+    res += " \"" + item.first + "\"";
+  } 
 
   // transitions
   res += "\n--BODY--\n";
@@ -752,7 +763,7 @@ template <>
 void BuchiAutomaton<int, APSymbol>::completeAPComplement()
 {
   this->complete(this->getStates().size(), false);
-  set<APSymbol> allsyms;
+  set<APSymbol> allsyms; 
   if(this->getAPPattern().size() > 0)
   {
     vector<int> cnum(this->getAPPattern().size());
