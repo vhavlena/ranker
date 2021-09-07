@@ -61,11 +61,11 @@ private:
   map<DFAState, RankBound> rankBound;
   SuccRankCache rankCache;
 
-  ComplOptions opt; 
+  ComplOptions opt;
 
 protected:
   RankConstr rankConstr(vector<int>& max, set<int>& states);
-  set<int> succSet(set<int>& state, int symbol);
+  set<int> succSet(const set<int>& state, int symbol);
 
   vector<RankFunc> getKVRanks(vector<int>& max, set<int>& states);
   set<StateKV> succSetKV(StateKV& state, int symbol);
@@ -100,7 +100,7 @@ public:
   }
 
   BackRel createBackRel(BuchiAutomaton<int, int>::StateRelation& rel);
-  
+
   BuchiAutomaton<StateKV, int> complementKV();
   BuchiAutomaton<StateSch, int> complementSch();
   BuchiAutomaton<StateSch, int> complementSchReduced(bool delay, std::set<int> originalFinals, double w, delayVersion version, bool elevatorRank, bool eta4, Stat *stats);

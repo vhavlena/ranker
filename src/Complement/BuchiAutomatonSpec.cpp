@@ -8,7 +8,7 @@
  * @param symbol Symbol
  * @return Set of successors over symbol
  */
-set<int> BuchiAutomatonSpec::succSet(set<int>& states, int symbol)
+set<int> BuchiAutomatonSpec::succSet(const set<int>& states, int symbol)
 {
   set<int> ret;
   for(int st : states)
@@ -613,7 +613,7 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
 
   }
 
-  if(this->rankBound[state.S].bound*2-1 < state.f.getMaxRank() || this->rankBound[sprime].bound*2-1 < state.f.getMaxRank())
+  if(this->rankBound[state.S].bound < state.f.getMaxRank() || this->rankBound[sprime].bound < state.f.getMaxRank())
   {
     return ret;
   }
@@ -748,7 +748,7 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchStartReduced(set<int>& state, int
   set<int> fin = getFinals();
   std::set_difference(sprime.begin(),sprime.end(),fin.begin(),
     fin.end(), std::inserter(schfinal, schfinal.begin()));
-  int m = std::min((int)(2*schfinal.size() - 1), 2*rankBound - 1);
+  int m = std::min((int)(2*schfinal.size() - 1), rankBound);
   vector<int> maxRank(getStates().size(), m);
 
   for(int st : sprime)
@@ -864,6 +864,8 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
   // for(auto & s: this->rankBound)
   // {
   //   cout << StateSch::printSet(s.first) << " : " << s.second.bound << endl;
+  //   RankFunc fnc(s.second.stateBound, false);
+  //   cout << fnc.toString() << endl << endl;
   // }
 
   end = std::chrono::high_resolution_clock::now();
@@ -1568,17 +1570,62 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
     }
   }
 
-  auto updPred = [this] (LabelState<StateSch, RankBound>* dest, LabelState<StateSch, RankBound>* pred, map<int, int>* restr)
+  auto updPred = [this, &slignore] (LabelState<StateSch, RankBound>* dest, const std::vector<LabelState<StateSch, RankBound>*> sts) -> RankBound
   {
-    set<int> syms;
-    for(int sym : this->getAlphabet())
+    int n = this->getStates().size();
+    vector<int> mrank(n, 0);
+    set<int> fin = this->getFinals();
+    int m = 0;
+    RankBound ret = dest->label;
+
+    for(const LabelState<StateSch, RankBound>* tmp : sts)
     {
-      if(succSet(pred->state.S, sym) == dest->state.S)
-        syms.insert(sym);
+      if(tmp->state.S == dest->state.S && slignore.find(dest->state) != slignore.end())
+        continue;
+
+      m = std::max(m, tmp->label.bound);
+
+      set<int> syms;
+      for(int sym : this->getAlphabet())
+      {
+        if(this->succSet(tmp->state.S, sym) == dest->state.S)
+          syms.insert(sym);
+      }
+      for (const int& sym : syms)
+      {
+        vector<int> tmpMrank(n, 2*n);
+        for(const int& s : tmp->state.S)
+        {
+          set<int> dst = this->getTransitions()[std::make_pair(s, sym)];
+          for(int d : dst)
+          {
+            auto it = tmp->label.stateBound.find(s);
+            tmpMrank[d] = std::min(tmpMrank[d], it->second);
+          }
+        }
+        for(const int& i : dest->state.S)
+        {
+          mrank[i] = max(tmpMrank[i], mrank[i]);
+        }
+      }
     }
-    //TODO finish
-    map<int, int> ret;
-    *restr = ret;
+
+    int tmpm = 0;
+    int tmpmax = 0;
+    for(const int& i : dest->state.S)
+    {
+      tmpm = min(ret.stateBound[i], mrank[i]);
+      if(fin.find(i) != fin.end() && tmpm % 2 != 0)
+        tmpm--;
+      ret.stateBound[i] = tmpm;
+      tmpmax = std::max(tmpm, tmpmax);
+    }
+    ret.bound = std::min(dest->label.bound, m);
+
+    if(tmpmax < ret.bound)
+      ret.bound = tmpmax;
+
+    return ret;
   };
 
 
@@ -1623,10 +1670,16 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
     }
     int rank = std::min((int)ret.size(), tmp);
 
+    map<int, int> sbound;
+    for(const int& s : act.S)
+    {
+      sbound[s] = 0;
+    }
+
     for(int st : act.S)
     {
       if(fin.find(st) != fin.end() && minReachSize[st] == maxReach)
-        return { .bound = 0, .stateBound = map<int, int>() };
+        return { .bound = 0, .stateBound = sbound };
     }
     if(maxCnt > 2)
       rank = std::min(rank, (int)ret.size() - maxCnt + 1);
@@ -1635,10 +1688,19 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
     // if(this->containsRankSimEq(ret) && ret.size() > 1)
     //   rank = std::min(rank, std::max((int)ret.size() - 1, 0));
     rank = std::min(rank, rnkmap[act]);
-    return { .bound = rank, .stateBound = map<int, int>() };
+
+    rank = std::max(2*rank-1, 0);
+    for(const int& s : act.S)
+    {
+      if(fin.find(s) != fin.end() && rank % 2 != 0)
+        sbound[s] = std::max(rank - 1, 0);
+      else
+        sbound[s] = rank;
+    }
+    return { .bound = rank, .stateBound = sbound };
   };
 
-  auto tmp = nfaSchewe.propagateGraphValues<RankBound>(updMaxFnc, initMaxFnc);
+  auto tmp = nfaSchewe.propagateGraphValues<RankBound>(updPred, initMaxFnc);
   map<DFAState, RankBound> ret;
   for(const auto& t : tmp){
     ret[t.first.S] = t.second;
@@ -1863,7 +1925,7 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightOpt(StateSch& state, int sym
     }
   }
 
-  if(this->rankBound[state.S].bound*2-1 < state.f.getMaxRank() || this->rankBound[sprime].bound*2-1 < state.f.getMaxRank())
+  if(this->rankBound[state.S].bound < state.f.getMaxRank() || this->rankBound[sprime].bound < state.f.getMaxRank())
   {
     return ret;
   }
