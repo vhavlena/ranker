@@ -120,6 +120,11 @@ set<State> AutomatonStruct<State, Symbol>::getSelfLoops()
 }
 
 
+/*
+ * Get all successors of a given state (over all symbols)
+ * @params state Given state
+ * @return Set of all successors
+ */
 template<typename State, typename Symbol>
 std::set<State> AutomatonStruct<State, Symbol> :: getAllSuccessors(State state)
 {

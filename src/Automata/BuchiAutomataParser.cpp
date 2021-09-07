@@ -193,6 +193,10 @@ Transition<string, string> BuchiAutomataParser::parseGffTransition(pt::ptree& tr
   return ret;
 }
 
+
+/*
+ * Parse a Buchi automaton stored in HOA format
+ */
 BuchiAutomaton<int, APSymbol> BuchiAutomataParser::parseHoaBA()
 {
   set<int> states;
@@ -202,7 +206,6 @@ BuchiAutomaton<int, APSymbol> BuchiAutomataParser::parseHoaBA()
   set<APSymbol> syms;
   int statesnum = 0;
   map<string, int> aps;
-  //int accSetsCount = 0;
 
   string line;
   string linecp;
@@ -256,21 +259,6 @@ BuchiAutomaton<int, APSymbol> BuchiAutomataParser::parseHoaBA()
       }
     }
 
-    // acc-name
-    // else if(line.rfind("acc-name:", 0) == 0)
-    // {
-    //   linecp = string(line.begin() + 9, line.end());
-    //   boost::algorithm::trim_left(linecp);
-    //
-    //   std::regex baRegex("Buchi(\\s)*");
-    //   std::regex gcobaRegex("generalized-co-Buchi(\\s)*[0-9]+(\\s)*");
-    //   if (std::regex_match(linecp, baRegex))
-    //     this->setAutomatonType(autBA);
-    //   else if (std::regex_match(linecp, gcobaRegex))
-    //     this->setAutomatonType(autGcoBA);
-    //   else
-    //     throw ParserException("Unsupported automaton type. " + linecp);
-    // }
     else if(line.rfind("--BODY--", 0) == 0)
     {
       trans = parseHoaBodyBA(aps.size(), this->os, finsBA);
@@ -280,7 +268,9 @@ BuchiAutomaton<int, APSymbol> BuchiAutomataParser::parseHoaBA()
   return BuchiAutomaton<int, APSymbol>(states, finsBA, ini, trans, syms, aps);
 }
 
-
+/*
+ * Parse a generalized co-Buchi automaton stored in HOA format
+ */
 GeneralizedCoBuchiAutomaton<int, APSymbol> BuchiAutomataParser::parseHoaGCOBA()
 {
   set<int> states;
@@ -357,21 +347,6 @@ GeneralizedCoBuchiAutomaton<int, APSymbol> BuchiAutomataParser::parseHoaGCOBA()
       }
     }
 
-    // acc-name
-    // else if(line.rfind("acc-name:", 0) == 0)
-    // {
-    //   linecp = string(line.begin() + 9, line.end());
-    //   boost::algorithm::trim_left(linecp);
-    //
-    //   std::regex baRegex("Buchi(\\s)*");
-    //   std::regex gcobaRegex("generalized-co-Buchi(\\s)*[0-9]+(\\s)*");
-    //   if (std::regex_match(linecp, baRegex))
-    //     this->setAutomatonType(autBA);
-    //   else if (std::regex_match(linecp, gcobaRegex))
-    //     this->setAutomatonType(autGcoBA);
-    //   else
-    //     throw ParserException("Unsupported automaton type. " + linecp);
-    // }
     else if(line.rfind("--BODY--", 0) == 0)
     {
       trans = parseHoaBodyGCOBA(aps.size(), this->os, generalizedFins);
@@ -380,125 +355,6 @@ GeneralizedCoBuchiAutomaton<int, APSymbol> BuchiAutomataParser::parseHoaGCOBA()
 
   return GeneralizedCoBuchiAutomaton<int, APSymbol>(states, generalizedFins, ini, trans, syms, aps);
 }
-
-/*
- * Parse automaton in HOA format
- * @param os Input stream
- * @return BA <int, APSymbol>
- */
-// AutomatonStruct<int, APSymbol>* BuchiAutomataParser::parseHoaFormat(ifstream & os)
-// {
-//   set<int> states;
-//   set<int> ini;
-//   set<int> finsBA;
-//   map<int, set<int>> generalizedFins;
-//   AutomatonStruct<int, APSymbol>::Transitions trans;
-//   set<APSymbol> syms;
-//   int statesnum = 0;
-//   map<string, int> aps;
-//   int accSetsCount = 0;
-//
-//   string line;
-//   string linecp;
-//   this->line = 0;
-//   while(getline (os, line))
-//   {
-//     this->line++;
-//
-//     // states
-//     if(line.rfind("States:", 0) == 0)
-//     {
-//       linecp = string(line.begin() + 7, line.end());
-//       boost::algorithm::trim_left(linecp);
-//       statesnum = std::stoi(linecp);
-//       for(int i = 0; i < statesnum; i++)
-//         states.insert(i);
-//     }
-//
-//     // start
-//     else if(line.rfind("Start:", 0) == 0)
-//     {
-//       linecp = string(line.begin() + 6, line.end());
-//       boost::algorithm::trim_left(linecp);
-//       ini.insert(std::stoi(linecp));
-//     }
-//
-//     // AP
-//     else if(line.rfind("AP:", 0) == 0)
-//     {
-//       linecp = string(line.begin() + 3, line.end());
-//       boost::algorithm::trim_left(linecp);
-//       std::stringstream ss(linecp);
-//       int count;
-//       ss >> count;
-//       string singleap;
-//       for(int i = 0; i < count; i++)
-//       {
-//         ss >> std::quoted(singleap);
-//         aps.insert({singleap, i});
-//       }
-//     }
-//
-//     // acceptance
-//     else if(line.rfind("Acceptance:", 0) == 0)
-//     {
-//       linecp = string(line.begin() + 11, line.end());
-//       linecp.erase(remove_if(linecp.begin(), linecp.end(), ::isspace), linecp.end());
-//       if(linecp.rfind("1Inf(0)", 0) != 0 and this->getAutomatonType() == autBA)
-//       {
-//         throw ParserException("Unsupported acceptance condition. Expected: \"1 Inf(0)\"", this->line);
-//       }
-//       else if (this->getAutomatonType() == autGcoBA)
-//       {
-//         std::regex gcobaAcceptance("([0-9]+)(\\s)*(\\()*Fin\\([0-9]+\\)((\\s)*\\|(\\s)*Fin\\([0-9]+\\))*(\\))*");
-//         if (not std::regex_match(linecp, gcobaAcceptance))
-//           throw ParserException("Unsupported acceptance condition.");
-//         else {
-//           std::smatch match;
-//           if (std::regex_search(linecp, match, gcobaAcceptance)){
-//             accSetsCount = std::stoi(match.str(1));
-//             for (unsigned i=0; i<accSetsCount; i++){
-//               std::set<int> tmpSet;
-//               generalizedFins.insert({i, tmpSet});
-//             }
-//           }
-//         }
-//       }
-//     }
-//
-//     // acc-name
-//     else if(line.rfind("acc-name:", 0) == 0)
-//     {
-//       linecp = string(line.begin() + 9, line.end());
-//       boost::algorithm::trim_left(linecp);
-//
-//       std::regex baRegex("Buchi(\\s)*");
-//       std::regex gcobaRegex("generalized-co-Buchi(\\s)*[0-9]+(\\s)*");
-//       if (std::regex_match(linecp, baRegex))
-//         this->setAutomatonType(autBA);
-//       else if (std::regex_match(linecp, gcobaRegex))
-//         this->setAutomatonType(autGcoBA);
-//       else
-//         throw ParserException("Unsupported automaton type. " + linecp);
-//     }
-//     else if(line.rfind("--BODY--", 0) == 0)
-//     {
-//       trans = parseHoaBody(aps.size(), os, finsBA, generalizedFins);
-//     }
-//   }
-//
-//   BuchiAutomaton<int, APSymbol> *buchi;
-//   GeneralizedCoBuchiAutomaton<int, APSymbol> *gcoba;
-//
-//   switch (this->getAutomatonType()){
-//     case autBA:
-//       buchi = new BuchiAutomaton<int, APSymbol>(states, finsBA, ini, trans, syms, aps);
-//       return buchi;
-//     case autGcoBA:
-//       gcoba = new GeneralizedCoBuchiAutomaton<int, APSymbol>(states, generalizedFins, ini, trans, syms, aps);
-//       return gcoba;
-//   }
-// }
 
 /*
  * Parse single transition in HOA format
@@ -523,100 +379,13 @@ Transition<int, APSymbol> BuchiAutomataParser::parseHoaTransition(int srcstate, 
   }
 }
 
-
 /*
- * Parse HOA body (transition function with accepting states)
- * @param apNum Number of APs
- * @param os Input stream
- * @param fin Final states (out parameter)
+ * Parse body in HOA format with the expectation of Buchi automata
+ * @param apNum Number of atomic propositions
+ * @param os Reading stream
+ * @param finsBA Accepting states of the BA
  * @return Transition function
  */
-// Delta<int, APSymbol> BuchiAutomataParser::parseHoaBody(int apNum, ifstream & os, set<int>& finsBA, map<int, set<int>>& generalizedFins)
-// {
-//   Delta<int, APSymbol> trans;
-//   int src;
-//   string line;
-//   while(getline (os, line))
-//   {
-//     this->line++;
-//     if(line.rfind("--END--", 0) == 0)
-//     {
-//       return trans;
-//     }
-//     else if(line.rfind("State:", 0) == 0)
-//     {
-//       string linecp(line.begin()+7, line.end());
-//       boost::regex baRegex("([0-9]+)\\s*(\\{\\s*0\\s*\\})?");
-//       boost::regex gcobaRegex("([0-9]+)\\s*(\\{\\s*[0-9]+((\\s)+[0-9]+)*\\s*\\})?");
-//       boost::smatch what;
-//
-//       // BA
-//       if(this->getAutomatonType() == autBA and boost::regex_match(linecp, what, baRegex))
-//       {
-//         src = std::stoi(what[1]);
-//         if(what.size() == 3)
-//         {
-//           string v = what[2];
-//           if(v.size() > 0)
-//           {
-//             finsBA.insert(src);
-//           }
-//         }
-//       }
-//
-//       // GcoBA
-//       else if (this->getAutomatonType() == autGcoBA and boost::regex_match(linecp, what, gcobaRegex))
-//       {
-//         src = std::stoi(what[1]);
-//         if (what.size() >= 3 and what[2].length()>0){
-//           string v = what[2];
-//           v.erase(v.begin(), v.begin()+1);
-//           v.erase(v.end()-1, v.end());
-//           // get each acceptance condition
-//           std::string delimiter = " ";
-//           size_t pos = 0;
-//           std::string token = v;
-//           while ((pos = v.find(delimiter)) != std::string::npos){
-//             token = v.substr(0, pos);
-//             // insert state in finals
-//             auto it = generalizedFins.find(std::stoi(token));
-//             if (it == generalizedFins.end())
-//               throw ParserException("Wrong number of accepting sets.");
-//             else
-//               it->second.insert(src);
-//             v.erase(0, pos + delimiter.length());
-//           }
-//           // last element outside of the loop
-//           auto it = generalizedFins.find(std::stoi(v));
-//           if (it == generalizedFins.end())
-//             throw ParserException("Wrong number of accepting sets.");
-//           else
-//             it->second.insert(src);
-//         }
-//       }
-//       else
-//       {
-//         throw ParserException("Unsupported state format. Expected \"State: INT {INT}?\"", this->line);
-//       }
-//     }
-//     else
-//     {
-//       Transition<int, APSymbol> tr = parseHoaTransition(src, apNum, line);
-//       auto pr = std::make_pair(src, tr.symbol);
-//       if(trans.find(pr) == trans.end())
-//       {
-//         trans[pr] = {tr.to};
-//       }
-//       else
-//       {
-//         trans[pr].insert(tr.to);
-//       }
-//     }
-//   }
-//   return trans;
-// }
-
-
 Delta<int, APSymbol> BuchiAutomataParser::parseHoaBodyBA(int apNum, ifstream & os, set<int>& finsBA)
 {
   Delta<int, APSymbol> trans;
@@ -670,7 +439,13 @@ Delta<int, APSymbol> BuchiAutomataParser::parseHoaBodyBA(int apNum, ifstream & o
   return trans;
 }
 
-
+/*
+ * Parse body in HOA format with the expectation of generalized co-Buchi automata
+ * @param apNum Number of atomic propositions
+ * @param os Reading stream
+ * @param generalizedFins Accepting states of the Gco-BA
+ * @return Transition function
+ */
 Delta<int, APSymbol> BuchiAutomataParser::parseHoaBodyGCOBA(int apNum, ifstream & os, map<int, set<int>>& generalizedFins)
 {
   Delta<int, APSymbol> trans;
@@ -742,8 +517,10 @@ Delta<int, APSymbol> BuchiAutomataParser::parseHoaBodyGCOBA(int apNum, ifstream 
   return trans;
 }
 
-
-
+/*
+ * Parse automaton type
+ * @return Type of an omega-automaton
+ */
 AutomatonType BuchiAutomataParser::parseAutomatonType()
 {
   string line;

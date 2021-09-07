@@ -345,9 +345,6 @@ public:
   vector<set<State>> getAutGraphSCCs(){
     BuchiAutomaton<int, int> renAutBA = this->renameAut();
 
-    // if (dynamic_cast<BuchiAutomaton<int, int>*>(renAut)){
-    //   BuchiAutomaton<int, int> *renAutBA = (BuchiAutomaton<int, int>*)renAut;
-
     vector<vector<int>> adjList(this->states.size());
     vector<VertItem> vrt;
     vector<set<State>> sccs;

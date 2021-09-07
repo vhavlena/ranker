@@ -22,6 +22,9 @@
 using namespace std;
 namespace pt = boost::property_tree;
 
+/*
+ * Types of omega-automata
+ */
 enum AutomatonType { AUTBA , AUTGCOBA, AUTGBA, AUTNONE};
 
 /*
@@ -53,19 +56,11 @@ public:
   BuchiAutomaton<string, string> parseBaFormat(ifstream & os);
   BuchiAutomaton<string, string> parseGffFormat(string& str);
   BuchiAutomaton<string, string> parseGffFormat(ifstream& is);
-  //AutomatonStruct<int, APSymbol>* parseHoaFormat(ifstream & os);
 
   BuchiAutomaton<int, APSymbol> parseHoaBA();
   GeneralizedCoBuchiAutomaton<int, APSymbol> parseHoaGCOBA();
-
   AutomatonType parseAutomatonType();
 
-  // automatonType getAutomatonType(){
-  //   return this->type;
-  // }
-  // void setAutomatonType(automatonType type){
-  //   this->type = type;
-  // }
 
   static APSymbol parseHoaSymbol(string& line, map<string, int>& apInd);
   static pair<APWord, APWord> parseHoaInfWord(string& line, map<string, int>& apInd);

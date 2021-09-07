@@ -148,15 +148,17 @@ int main(int argc, char *argv[])
     const char* goalpath_cstr = std::getenv("GOALEXE");
     std::string goalpath = (nullptr == goalpath_cstr)? GOALEXE : goalpath_cstr;
 
-    AutomatonStruct<int, APSymbol> *ba;
-    AutomatonStruct<int, int> *ren;
+    BuchiAutomaton<int, int> ren;
     BuchiAutomaton<int, int> renCompl;
     BuchiAutomaton<StateSch, int> comp;
+    BuchiAutomaton<int, APSymbol> ba;
+    BuchiAutomataParser parser(os);
     Stat stats;
+
     try
     {
-      ba = parseRenameHOA(os);
-      ren = ba->renameAut();
+      ba = parseRenameHOABA(parser);
+      ren = ba.renameAut();
     }
     catch(const ParserException& e)
     {
@@ -166,77 +168,74 @@ int main(int argc, char *argv[])
       return 2;
     }
 
-    if (BuchiAutomaton<int, int>* renptr = dynamic_cast<BuchiAutomaton<int, int>*>(ren)){
-      BuchiAutomatonSpec sp(renptr);
-    
-      if(!suitCase(sp))
-      {
-        const char* tmpf_name = nullptr;
-        std::FILE* tmpf = nullptr;
-  
-        // open for writing and fail if already exists (the "wx",
-        // see https://en.cppreference.com/w/cpp/io/c/fopen).
-        // This is used to atomically create a file and get its name.
-        while (nullptr == (tmpf = std::fopen(tmpf_name, "wx"))) {
-          #pragma GCC diagnostic push   // tmpnam is deprecated
-          #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-          tmpf_name = std::tmpnam(nullptr);
-          #pragma GCC diagnostic pop
-        }
-  
-        std::fputs(renptr->toGff().c_str(), tmpf);
-        std::fflush(tmpf);
-  
-        BuchiAutomataParser parser;
-        string cmd = goalpath + " complement -m piterman -r " + tmpf_name;
-        string ret = Simulations::execCmd(cmd);
-  
-        map<int, APSymbol> symDict = Aux::reverseMap(ba->getRenameSymbolMap());
-        BuchiAutomaton<string, string> bagff = parser.parseGffFormat(ret);
-        bagff.setAPPattern(ba->getAPPattern());
-  
-        map<string, int> symDictStrInt;
-        for(const auto &t : symDict)
-        {
-          symDictStrInt.insert({to_string(t.first), t.first});
-        }
-        BuchiAutomaton<int, APSymbol> outOrig = bagff.renameAutDict(symDictStrInt).renameAlphabet(symDict);
-        outOrig.completeAPComplement();
-  
-        stats.engine = "GOAL";
-        stats.duration = NAN;
-        stats.generatedStates = NAN;
-        stats.generatedTrans = NAN;
-        stats.reachStates = outOrig.getStates().size();
-        stats.reachTrans = outOrig.getTransCount();
-        if(params.stats)
-          printStat(stats);
-  
-        cout << outOrig.toHOA() << endl;
+    BuchiAutomatonSpec sp(&ren);
+
+    if(!suitCase(sp))
+    {
+      const char* tmpf_name = nullptr;
+      std::FILE* tmpf = nullptr;
+
+      // open for writing and fail if already exists (the "wx",
+      // see https://en.cppreference.com/w/cpp/io/c/fopen).
+      // This is used to atomically create a file and get its name.
+      while (nullptr == (tmpf = std::fopen(tmpf_name, "wx"))) {
+        #pragma GCC diagnostic push   // tmpnam is deprecated
+        #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+        tmpf_name = std::tmpnam(nullptr);
+        #pragma GCC diagnostic pop
       }
-      else
+
+      std::fputs(ren.toGff().c_str(), tmpf);
+      std::fflush(tmpf);
+
+      string cmd = goalpath + " complement -m piterman -r " + tmpf_name;
+      string ret = Simulations::execCmd(cmd);
+
+      map<int, APSymbol> symDict = Aux::reverseMap(ba.getRenameSymbolMap());
+      BuchiAutomaton<string, string> bagff = parser.parseGffFormat(ret);
+      bagff.setAPPattern(ba.getAPPattern());
+
+      map<string, int> symDictStrInt;
+      for(const auto &t : symDict)
       {
-        try
-        {
-          complementAutWrap(ren, &comp, &renCompl, &stats, delay, w, version, elevatorRank, eta4);
-        }
-        catch (const std::bad_alloc&)
-        {
-          os.close();
-          cerr << "Memory error" << endl;
-          return 2;
-        }
-        map<int, APSymbol> symDict = Aux::reverseMap(ba->getRenameSymbolMap());
-        BuchiAutomaton<int, APSymbol> outOrig = renCompl.renameAlphabet<APSymbol>(symDict);
-        outOrig.completeAPComplement();
-        stats.reachStates = outOrig.getStates().size();
-        stats.reachTrans = outOrig.getTransCount();
-  
-        stats.duration = NAN;
-        if(params.stats)
-          printStat(stats);
-        cout << outOrig.toHOA() << endl;
+        symDictStrInt.insert({to_string(t.first), t.first});
       }
+      BuchiAutomaton<int, APSymbol> outOrig = bagff.renameAutDict(symDictStrInt).renameAlphabet(symDict);
+      outOrig.completeAPComplement();
+
+      stats.engine = "GOAL";
+      stats.duration = NAN;
+      stats.generatedStates = NAN;
+      stats.generatedTrans = NAN;
+      stats.reachStates = outOrig.getStates().size();
+      stats.reachTrans = outOrig.getTransCount();
+      if(params.stats)
+        printStat(stats);
+
+      cout << outOrig.toHOA() << endl;
+    }
+    else
+    {
+      try
+      {
+        complementAutWrap(&ren, &comp, &renCompl, &stats, delay, w, version, elevatorRank, eta4);
+      }
+      catch (const std::bad_alloc&)
+      {
+        os.close();
+        cerr << "Memory error" << endl;
+        return 2;
+      }
+      map<int, APSymbol> symDict = Aux::reverseMap(ba.getRenameSymbolMap());
+      BuchiAutomaton<int, APSymbol> outOrig = renCompl.renameAlphabet<APSymbol>(symDict);
+      outOrig.completeAPComplement();
+      stats.reachStates = outOrig.getStates().size();
+      stats.reachTrans = outOrig.getTransCount();
+
+      stats.duration = NAN;
+      if(params.stats)
+        printStat(stats);
+      cout << outOrig.toHOA() << endl;
     }
   }
   os.close();
