@@ -24,8 +24,6 @@ using std::tuple;
 
 class AutGraph;
 
-enum delayVersion : unsigned {oldVersion, newVersion, randomVersion, subsetVersion, stirlingVersion};
-
 struct Stat
 {
   size_t generatedStates;

@@ -8,7 +8,7 @@ BuchiAutomaton<StateGcoBA, int> GeneralizedCoBuchiAutomatonCompl::complementGcoB
 
     // initial states
     std::set<StateGcoBA> initials;
-    StateGcoBA init = {.S = this->getInitials(), .i = 0, .B = set<int>()};
+    StateGcoBA init = {.S = this->getInitials(), .B = set<int>(), .i = 0};
     init.B.clear();
     std::set_difference(this->getInitials().begin(), this->getInitials().end(), this->getFinals()[0].begin(), this->getFinals()[0].end(), std::inserter(init.B, init.B.begin()));
     initials.insert(init);

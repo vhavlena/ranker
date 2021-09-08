@@ -52,16 +52,16 @@ BuchiAutomaton<int, int> parseRenameBA(ifstream& os, BuchiAutomaton<string, stri
   return orig->renameAut();
 }
 
-void complementAutWrap(BuchiAutomaton<int, int>* ren, BuchiAutomaton<StateSch, int>* complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats, bool delay, double w, delayVersion version, bool elevatorRank, bool eta4)
+void complementAutWrap(BuchiAutomaton<int, int>* ren, BuchiAutomaton<StateSch, int>* complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats, ComplOptions &opt, bool elevatorRank)
 {
     BuchiAutomatonSpec sp(ren);
 
-    ComplOptions opt = { .cutPoint = true, .succEmptyCheck = true, .ROMinState = 8,
-        .ROMinRank = 6, .CacheMaxState = 6, .CacheMaxRank = 8, .semidetOpt = false };
+    // ComplOptions opt = { .cutPoint = true, .succEmptyCheck = true, .ROMinState = 8,
+    //     .ROMinRank = 6, .CacheMaxState = 6, .CacheMaxRank = 8, .semidetOpt = false };
     sp.setComplOptions(opt);
     BuchiAutomaton<StateSch, int> comp;
 
-    comp = sp.complementSchReduced(delay, ren->getFinals(), w, version, elevatorRank, eta4, stats);
+    comp = sp.complementSchReduced(ren->getFinals(), elevatorRank, stats);
     BuchiAutomatonDelay<int> compDelay(comp);
     *complOrig = comp;
 
@@ -112,7 +112,7 @@ void complementGcoBAWrap(GeneralizedCoBuchiAutomaton<int, int> *ren, BuchiAutoma
   *complRes = renCompl;
 }
 
-void complementScheweAutWrap(BuchiAutomaton<int, int>* ren, BuchiAutomaton<int, int>* complRes, Stat* stats, bool delay, double w, delayVersion version)
+void complementScheweAutWrap(BuchiAutomaton<int, int>* ren, BuchiAutomaton<int, int>* complRes, Stat* stats, bool delay, double w)
 {
     BuchiAutomatonSpec sp(ren);
 
@@ -120,7 +120,7 @@ void complementScheweAutWrap(BuchiAutomaton<int, int>* ren, BuchiAutomaton<int, 
         .semidetOpt = false };
     sp.setComplOptions(opt);
     BuchiAutomaton<StateSch, int> comp;
-    comp = sp.complementSchOpt(delay, ren->getFinals(), w, version, stats);
+    comp = sp.complementSchOpt(delay, ren->getFinals(), w, stats);
     BuchiAutomatonDelay<int> compDelay(comp);
 
     stats->generatedStates = comp.getStates().size();

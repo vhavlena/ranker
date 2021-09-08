@@ -38,7 +38,7 @@ public:
   }
 
 
-  GeneralizedBuchiAutomaton<int, int> complementSchReduced(bool delay, std::set<int> originalFinals, double w, delayVersion version, Stat *stats);
+  GeneralizedBuchiAutomaton<int, int> complementSchReduced(bool delay, std::set<int> originalFinals, double w, DelayVersion version, Stat *stats);
 };
 
 #endif

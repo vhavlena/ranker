@@ -587,7 +587,7 @@ void BuchiAutomatonSpec::getSchRanksTightReduced(vector<RankFunc>& out, vector<i
  * @return Set of all successors
  */
 vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int symbol,
-    map<int, int> reachCons, map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel, bool eta4, set<int> finals)
+    map<int, int> reachCons, map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel, set<int> finals)
 {
   vector<StateSch> ret;
   set<int> sprime;
@@ -682,7 +682,7 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
     retAll.insert(st);
     map<int, int> rnkMap((map<int, int>)st.f);
 
-    if (eta4){
+    if (this->opt.eta4){
       SCC intersection;
       std::set_intersection(st.S.begin(), st.S.end(), fin.begin(), fin.end(), std::inserter(intersection, intersection.begin()));
       if (intersection.size() == 0)
@@ -801,7 +801,7 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchStartReduced(set<int>& state, int
  * Optimized Schewe complementation procedure
  * @return Complemented automaton
  */
-BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool delay, std::set<int> originalFinals, double w, delayVersion version, bool elevatorRank, bool eta4, Stat *stats)
+BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(std::set<int> originalFinals, bool elevatorRank, Stat *stats)
 {
   std::stack<StateSch> stack;
   set<StateSch> comst;
@@ -897,9 +897,9 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
   // Compute states necessary to generate in the tight part
   set<StateSch> tightStart;
   map<StateSch, set<int>> tightStartDelay;
-  if (delay){
+  if (this->opt.delay){
     BuchiAutomatonDelay<int> delayB(comp);
-    tightStartDelay = delayB.getCycleClosingStates(ignoreAll, delayMp, w, version, stats);
+    tightStartDelay = delayB.getCycleClosingStates(ignoreAll, delayMp, this->opt.delayW, this->opt.delayVersion, stats);
   }
   else {
     tightStart = comp.getCycleClosingStates(ignoreAll);
@@ -908,11 +908,11 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
   stats->cycleClosingStates = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
 
   std::set<StateSch> tmpSet;
-  if (delay){
+  if (this->opt.delay){
     for(auto item : tightStartDelay)
       tmpSet.insert(item.first);
   }
-  for(const StateSch& tmp : (delay ? tmpSet : tightStart))
+  for(const StateSch& tmp : (this->opt.delay ? tmpSet : tightStart))
   {
     if(tmp.S.size() > 0)
     {
@@ -952,7 +952,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
       set<StateSch> dst;
       if(st.tight)
       {
-        succ = succSetSchTightReduced(st, sym, reachCons, maxReach, dirRel, oddRel, eta4, this->getFinals());
+        succ = succSetSchTightReduced(st, sym, reachCons, maxReach, dirRel, oddRel, this->getFinals());
       }
       else
       {
@@ -981,7 +981,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
             for(const auto& a : this->getAlphabet())
             {
               for(const auto& d : prev[{st, a}]) {
-                if ((not delay) or tightStartDelay[d].find(a) != tightStartDelay[d].end()){
+                if ((!this->opt.delay) or tightStartDelay[d].find(a) != tightStartDelay[d].end()){
                   mp[{d,a}].insert(dst.begin(), dst.end());
                   transitionsToTight += dst.size();
                 }
@@ -990,7 +990,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
         }
         else
         {
-          if (not delay)
+          if (!this->opt.delay)
             mp[pr].insert(dst.begin(), dst.end());
           else {
             if (tightStartDelay[st].find(sym) != tightStartDelay[st].end()){
@@ -1580,10 +1580,8 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
 
     for(const LabelState<StateSch, RankBound>* tmp : sts)
     {
-      if(tmp->state.S == dest->state.S && slignore.find(dest->state) != slignore.end())
-        continue;
-
-      m = std::max(m, tmp->label.bound);
+      if(tmp->state.S != dest->state.S || slignore.find(dest->state) == slignore.end())
+        m = std::max(m, tmp->label.bound);
 
       set<int> syms;
       for(int sym : this->getAlphabet())
@@ -1700,13 +1698,13 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
     return { .bound = rank, .stateBound = sbound };
   };
 
-  auto tmp = nfaSchewe.propagateGraphValues<RankBound>(updMaxFnc, initMaxFnc);
+  auto tmp = (this->opt.dataFlow == INNER) ? nfaSchewe.propagateGraphValues<RankBound>(updPred, initMaxFnc)
+    : nfaSchewe.propagateGraphValues<RankBound>(updMaxFnc, initMaxFnc);
   map<DFAState, RankBound> ret;
   for(const auto& t : tmp){
     ret[t.first.S] = t.second;
   }
 
-  //return { .bound = ret, .stateBound = map<int, int>() };
   return ret;
 }
 
@@ -2024,7 +2022,7 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchStartOpt(set<int>& state, int ran
  * Schewe complementation proceudre (with RankRestr)
  * @return Complemented automaton
  */
-BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchOpt(bool delay, std::set<int> originalFinals, double w, delayVersion version, Stat *stats)
+BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchOpt(bool delay, std::set<int> originalFinals, double w, Stat *stats)
 {
   std::stack<StateSch> stack;
   set<StateSch> comst;
@@ -2092,7 +2090,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchOpt(bool delay, s
   map<StateSch, set<int>> tightStartDelay;
   if (delay){
     BuchiAutomatonDelay<int> delayB(comp);
-    tightStartDelay = delayB.getCycleClosingStates(ignoreAll, delayMp, w, version, stats);
+    tightStartDelay = delayB.getCycleClosingStates(ignoreAll, delayMp, w, this->opt.delayVersion, stats);
   }
   else
     tightStart = comp.getCycleClosingStates(ignoreAll);

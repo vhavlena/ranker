@@ -25,13 +25,9 @@ int main(int argc, char *argv[])
 {
   Params params = { .output = "", .input = "", .stats = false, .checkWord = ""};
   ifstream os;
-  bool delay = false;
-  double w = 0.5;
-  delayVersion version = oldVersion;
   //bool error = false;
   bool elevatorTest = false;
   bool elevatorRank = false;
-  bool eta4 = false;
 
   args::ArgumentParser parser("Program complementing a (state-based acceptance condition) Buchi automaton.\n", "");
   args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
@@ -40,10 +36,15 @@ int main(int argc, char *argv[])
   args::Flag statsFlag(parser, "", "Print summary statistics", {"stats"});
   args::ValueFlag<std::string> delayFlag(parser, "version", "Use delay optimization, versions: old, new, random, subset, stirling", {"delay"});
   args::ValueFlag<std::string> checkFlag(parser, "word", "Product of the result with a given word", {"check"});
+  args::ValueFlag<std::string> dataFlowFlag(parser, "dataflow", "Data flow analysis [light/inner]", {"flow"});
   args::ValueFlag<double> weightFlag(parser, "value", "Weight parameter for delay - value in <0,1>", {'w', "weight"});
   args::Flag elevatorFlag(parser, "elevator rank", "Update rank upper bound of each macrostate based on elevator automaton structure", {"elevator-rank"});
   args::Flag eta4Flag(parser, "eta4", "Max rank optimization - eta 4 only when going from some accepting state", {"eta4"});
   args::Flag elevatorTestFlag(parser, "elevator test", "Test if INPUT is an elevator automaton", {"elevator-test"});
+
+  ComplOptions opt = { .cutPoint = true, .succEmptyCheck = true, .ROMinState = 8,
+      .ROMinRank = 6, .CacheMaxState = 6, .CacheMaxRank = 8, .semidetOpt = false,
+      .dataFlow = INNER, .delay = false, .delayVersion = oldVersion, .delayW = 0.5 };
 
   try
   {
@@ -73,7 +74,8 @@ int main(int argc, char *argv[])
   }
 
   // print statistics
-  if (statsFlag){
+  if (statsFlag)
+  {
     params.stats = true;
   }
 
@@ -82,20 +84,25 @@ int main(int argc, char *argv[])
     params.checkWord = args::get(checkFlag);
   }
 
+  if(dataFlowFlag && args::get(dataFlowFlag) == "light")
+  {
+    opt.dataFlow = LIGHT;
+  }
+
   // delay version
   if (delayFlag){
-    delay = true;
+    opt.delay = true;
     std::string v = args::get(delayFlag);
     if (v == "old")
-      version = oldVersion;
+      opt.delayVersion = oldVersion;
     else if (v == "new")
-      version = newVersion;
+      opt.delayVersion = newVersion;
     else if (v == "random")
-      version = randomVersion;
+      opt.delayVersion = randomVersion;
     else if (v == "subset")
-      version = subsetVersion;
+      opt.delayVersion = subsetVersion;
     else if (v == "stirling")
-      version = stirlingVersion;
+      opt.delayVersion = stirlingVersion;
     else {
       std::cerr << "Wrong delay version" << std::endl;
       return 1;
@@ -108,11 +115,12 @@ int main(int argc, char *argv[])
       std::cerr << "Wrong combination of arguments" << std::endl;
       return 1;
     }
-    w = args::get(weightFlag);
+    float w = args::get(weightFlag);
     if (w < 0.0 or w > 1.0) {
       std::cerr << "Wrong weight parameter" << std::endl;
       return 1;
     }
+    opt.delayW = w;
   }
 
   // elevator rank
@@ -122,17 +130,16 @@ int main(int argc, char *argv[])
 
   // eta4
   if (eta4Flag){
-    eta4 = true;
+    opt.eta4 = true;
   }
 
   if (elevatorTestFlag){
     elevatorTest = true;
-    if (statsFlag or delayFlag or weightFlag or elevatorFlag or eta4Flag){
+    if (statsFlag || delayFlag || weightFlag || elevatorFlag || eta4Flag){
       std::cerr << "Wrong combination of arguments" << std::endl;
       return 1;
     }
   }
-
 
   //string filename = params.input;
   os.open(params.input);
@@ -218,7 +225,7 @@ int main(int argc, char *argv[])
     {
       try
       {
-        complementAutWrap(&ren, &comp, &renCompl, &stats, delay, w, version, elevatorRank, eta4);
+        complementAutWrap(&ren, &comp, &renCompl, &stats, opt, elevatorRank);
       }
       catch (const std::bad_alloc&)
       {

@@ -29,7 +29,7 @@ int nCr(int n, int r)
 }
 
 template<typename Symbol>
-unsigned BuchiAutomatonDelay<Symbol> :: getAllPossibleRankings(unsigned maxRank, unsigned accStates, unsigned nonAccStates, delayVersion version){
+unsigned BuchiAutomatonDelay<Symbol> :: getAllPossibleRankings(unsigned maxRank, unsigned accStates, unsigned nonAccStates, DelayVersion version){
 
   // OLD VERSION
   if (version == oldVersion){
@@ -125,7 +125,7 @@ unsigned BuchiAutomatonDelay<Symbol> :: getAllPossibleRankings(unsigned maxRank,
  * @return Set of states and symbols for which transitions to the tight part should be generated
  */
 template <typename Symbol>
-std::map<StateSch, std::set<Symbol>> BuchiAutomatonDelay<Symbol> :: getCycleClosingStates(set<StateSch>& slignore, DelayMap<StateSch>& dmap, double w, delayVersion version, Stat *stats) {
+std::map<StateSch, std::set<Symbol>> BuchiAutomatonDelay<Symbol> :: getCycleClosingStates(set<StateSch>& slignore, DelayMap<StateSch>& dmap, double w, DelayVersion version, Stat *stats) {
 
   std::map<StateSch, std::set<Symbol>> statesToGenerate;
   std::vector<std::vector<StateSch>> allCycles;

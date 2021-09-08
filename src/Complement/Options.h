@@ -2,6 +2,14 @@
 #ifndef _COMPL_OPT_H_
 #define _COMPL_OPT_H_
 
+#include "BuchiDelay.h"
+
+enum DataFlowOptions
+{
+  LIGHT,
+  INNER
+};
+
 struct ComplOptions
 {
   bool cutPoint = false;
@@ -14,6 +22,13 @@ struct ComplOptions
   int CacheMaxRank = 8;
 
   bool semidetOpt = false;
+  DataFlowOptions dataFlow = INNER;
+
+  bool delay = false;
+  DelayVersion delayVersion = oldVersion;
+  float delayW = 0.5;
+
+  bool eta4 = false;
 };
 
 #endif
