@@ -51,7 +51,7 @@ public:
     this->finals = fin;
   }
 
-  GeneralizedBuchiAutomaton(SetStates st, GBAFinals fin, SetStates ini, Transitions trans, SetSymbols alp, map<string, int> aps) : AutomatonStruct<State, Symbol>(st, ini, trans, alp, aps)
+  GeneralizedBuchiAutomaton(SetStates st, GBAFinals fin, SetStates ini, Transitions trans, SetSymbols alp, vector<string> aps) : AutomatonStruct<State, Symbol>(st, ini, trans, alp, aps)
   {
     this->finals = fin;
   }

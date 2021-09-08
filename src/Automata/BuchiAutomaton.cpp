@@ -309,7 +309,7 @@ std::string BuchiAutomaton<int, APSymbol>::toHOA()
   res += "AP: " + std::to_string(this->apsPattern.size());
 
   for (auto symb : this->apsPattern) {
-    res += " \"" +  symb.first + "\"";
+    res += " \"" +  symb + "\"";
   }
 
   // transitions

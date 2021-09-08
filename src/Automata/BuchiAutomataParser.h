@@ -63,7 +63,7 @@ public:
 
 
   static APSymbol parseHoaSymbol(string& line, map<string, int>& apInd);
-  static pair<APWord, APWord> parseHoaInfWord(string& line, map<string, int>& apInd);
+  static pair<APWord, APWord> parseHoaInfWord(string& line, vector<string>& apInd);
   static APWord parseHoaFinWord(string& line, map<string, int>& apInd);
 
 private:

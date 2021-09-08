@@ -50,7 +50,7 @@ public:
     this->finals = fin;
   }
 
-  GeneralizedCoBuchiAutomaton(SetStates st, SetFins fin, SetStates ini, Transitions trans, SetSymbols alp, map<string, int> aps) : AutomatonStruct<State, Symbol>(st, ini, trans, alp, aps)
+  GeneralizedCoBuchiAutomaton(SetStates st, SetFins fin, SetStates ini, Transitions trans, SetSymbols alp, vector<string> aps) : AutomatonStruct<State, Symbol>(st, ini, trans, alp, aps)
   {
     this->finals = fin;
   }
@@ -84,7 +84,7 @@ public:
     this->apsPattern = other.apsPattern;
     return *this;
   }
-  
+
 
   std::string toString();
   std::string toGraphwiz();

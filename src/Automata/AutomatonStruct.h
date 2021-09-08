@@ -63,7 +63,7 @@ protected:
   SetStates initials;
   SetSymbols alph;
   Delta<State, Symbol> trans;
-  map<string, int> apsPattern;
+  vector<string> apsPattern;
 
 
   std::map<State, int> renameStateMap;
@@ -81,7 +81,7 @@ public:
     this->trans = trans;
     this->initials = ini;
     this->alph = getAlph();
-    this->apsPattern = map<string, int>();
+    this->apsPattern = vector<string>();
   }
 
   AutomatonStruct(SetStates st, SetStates ini, Transitions trans, SetSymbols alp)
@@ -90,10 +90,10 @@ public:
     this->trans = trans;
     this->initials = ini;
     this->alph = alp;
-    this->apsPattern = map<string, int>();
+    this->apsPattern = vector<string>();
   }
 
-  AutomatonStruct(SetStates st, SetStates ini, Transitions trans, SetSymbols alp, map<string, int> aps)
+  AutomatonStruct(SetStates st, SetStates ini, Transitions trans, SetSymbols alp, vector<string> aps)
   {
     this->states = st;
     this->trans = trans;
@@ -209,7 +209,7 @@ public:
    * Get atomic propositions
    * @return Vector of atomic propositions
    */
-  map<string, int> getAPPattern()
+  vector<string> getAPPattern()
   {
     return this->apsPattern;
   }
@@ -218,7 +218,7 @@ public:
    * Set atomic propositions
    * @param aps Vector of atomic propositions
    */
-  void setAPPattern(map<string, int> aps)
+  void setAPPattern(vector<string> aps)
   {
     this->apsPattern = aps;
   }

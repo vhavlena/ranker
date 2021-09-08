@@ -205,7 +205,7 @@ BuchiAutomaton<int, APSymbol> BuchiAutomataParser::parseHoaBA()
   AutomatonStruct<int, APSymbol>::Transitions trans;
   set<APSymbol> syms;
   int statesnum = 0;
-  map<string, int> aps;
+  vector<string> aps;
 
   string line;
   string linecp;
@@ -244,7 +244,7 @@ BuchiAutomaton<int, APSymbol> BuchiAutomataParser::parseHoaBA()
       for(int i = 0; i < count; i++)
       {
         ss >> std::quoted(singleap);
-        aps.insert({singleap, i});
+        aps.push_back(singleap);
       }
     }
 
@@ -280,7 +280,7 @@ GeneralizedCoBuchiAutomaton<int, APSymbol> BuchiAutomataParser::parseHoaGCOBA()
   AutomatonStruct<int, APSymbol>::Transitions trans;
   set<APSymbol> syms;
   int statesnum = 0;
-  map<string, int> aps;
+  vector<string> aps;
   int accSetsCount = 0;
 
   string line;
@@ -320,7 +320,7 @@ GeneralizedCoBuchiAutomaton<int, APSymbol> BuchiAutomataParser::parseHoaGCOBA()
       for(int i = 0; i < count; i++)
       {
         ss >> std::quoted(singleap);
-        aps.insert({singleap, i});
+        aps.push_back(singleap);
       }
     }
 
@@ -705,8 +705,11 @@ APWord BuchiAutomataParser::parseHoaFinWord(string& line, map<string, int>& apIn
  * @param apInd Mapping AP to indices
  * @return AP finite word
  */
-pair<APWord, APWord> BuchiAutomataParser::parseHoaInfWord(string& line, map<string, int>& apInd)
+pair<APWord, APWord> BuchiAutomataParser::parseHoaInfWord(string& line, vector<string>& apInd)
 {
+  map<string, int> apMap;
+  for(int i = 0; i < (int)apInd.size(); i++)
+    apMap[apInd[i]] = i;
   //remove whitespaces
   line.erase(remove_if(line.begin(), line.end(), ::isspace), line.end());
   boost::regex e("([a-zA-Z0-9!;&]*)cycle\\{([a-zA-Z0-9!;&]*)\\}$");
@@ -715,7 +718,7 @@ pair<APWord, APWord> BuchiAutomataParser::parseHoaInfWord(string& line, map<stri
   {
     string prefix = what[1];
     string loop = what[2];
-    return { BuchiAutomataParser::parseHoaFinWord(prefix, apInd), BuchiAutomataParser::parseHoaFinWord(loop, apInd) };
+    return { BuchiAutomataParser::parseHoaFinWord(prefix, apMap), BuchiAutomataParser::parseHoaFinWord(loop, apMap) };
   }
   else
   {
