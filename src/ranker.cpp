@@ -49,18 +49,18 @@ int main(int argc, char *argv[])
   {
       parser.ParseCLI(argc, argv);
   }
-  catch (args::Help)
+  catch (args::Help&)
   {
       std::cout << parser;
       return 0;
   }
-  catch (args::ParseError e)
+  catch (args::ParseError& e)
   {
       std::cerr << e.what() << std::endl;
       std::cerr << parser;
       return 1;
   }
-  catch (args::ValidationError e)
+  catch (args::ValidationError& e)
   {
       std::cerr << e.what() << std::endl;
       std::cerr << parser;
@@ -148,10 +148,6 @@ int main(int argc, char *argv[])
       BuchiAutomaton<string, string> ba;
       BuchiAutomaton<int, int> renBA = parseRenameBA(os, &ba);
 
-      // BuchiAutomaton<int, int> *renBA = nullptr;
-      // if (dynamic_cast<BuchiAutomaton<int, int>*>(ren))
-      //   renBA = (BuchiAutomaton<int, int>*)ren;
-
       BuchiAutomaton<int, int> renCompl;
       BuchiAutomaton<StateSch, int> comp;
 
@@ -185,9 +181,6 @@ int main(int argc, char *argv[])
 
     else if(fmt == HOA)
     {
-      // AutomatonStruct<int, APSymbol> *ba;
-      // AutomatonStruct<int, int> *ren;
-
       BuchiAutomaton<int, int> renCompl;
       BuchiAutomaton<StateSch, int> compBA;
       BuchiAutomaton<StateGcoBA, int> compGcoBA;
@@ -217,15 +210,6 @@ int main(int argc, char *argv[])
           symDict = Aux::reverseMap(orig.getRenameSymbolMap());
         }
 
-        // ba = parseRenameHOA(os);
-        // ren = ba->renameAut();
-
-        // if (dynamic_cast<BuchiAutomaton<int, int>*>(ren))
-        //   renBuchi = (BuchiAutomaton<int, int>*)ren;
-        // else if (dynamic_cast<GeneralizedCoBuchiAutomaton<int, int>*>(ren)){
-        //   renGcoBA = (GeneralizedCoBuchiAutomaton<int, int>*)ren;
-        // }
-
         // elevator test
         if (elevatorTest && autType == AUTBA){
           std::cout << "Elevator automaton: " << (renBuchi.isElevator() ? "Yes" : "No") << std::endl;
@@ -247,24 +231,6 @@ int main(int argc, char *argv[])
         return 2;
       }
 
-      // try
-      // {
-      //   if (renBuchi != nullptr)
-      //     complementAutWrap(renBuchi, &compBA, &renCompl, &stats, delay, w, version, elevatorRank, eta4);
-      //   else if (renGcoBA != nullptr){
-      //     //cerr << renGcoBA->toGraphwiz() << std::endl;
-      //     complementGcoBAWrap(renGcoBA, &compGcoBA, &renCompl, &stats);
-      //   }
-      // }
-      // catch (const std::bad_alloc&)
-      // {
-      //   os.close();
-      //   cerr << "Memory error" << endl;
-      //   return 2;
-      // }
-
-
-
       //Product with a word
       if(params.checkWord.size() > 0 && autType == AUTBA)
       {
@@ -281,7 +247,6 @@ int main(int argc, char *argv[])
         os.close();
         return 0;
       }
-
 
       BuchiAutomaton<int, APSymbol> outOrig = renCompl.renameAlphabet<APSymbol>(symDict);
       outOrig.completeAPComplement();

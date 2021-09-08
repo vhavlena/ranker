@@ -57,7 +57,7 @@ public:
 
   GeneralizedCoBuchiAutomaton() : GeneralizedCoBuchiAutomaton({}, {}, {}, {}) {};
 
-  GeneralizedCoBuchiAutomaton(GeneralizedCoBuchiAutomaton<State, Symbol>& other)
+  GeneralizedCoBuchiAutomaton(GeneralizedCoBuchiAutomaton<State, Symbol>& other) : AutomatonStruct<State, Symbol>(other)
   {
     this->states = other.states;
     this->finals = other.finals;

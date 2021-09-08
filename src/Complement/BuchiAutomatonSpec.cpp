@@ -433,11 +433,11 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSch()
 
   // Compute rank upper bound on the macrostates
   this->rankBound = this->getRankBound(comp, slIgnore, maxReach, reachCons);
-  map<StateSch, DelayLabel> delayMp;
-  for(const auto& st : comp.getStates())
-  {
-    delayMp[st] = { .macrostateSize = (unsigned)st.S.size(), .maxRank = (unsigned)this->rankBound[st.S].bound };
-  }
+  // map<StateSch, DelayLabel> delayMp;
+  // for(const auto& st : comp.getStates())
+  // {
+  //   delayMp[st] = { .macrostateSize = (unsigned)st.S.size(), .maxRank = (unsigned)this->rankBound[st.S].bound, .nonAccStates = 0 };
+  // }
   // Compute states necessary to generate in the tight part
   //set<StateSch> tightStart = comp.getCycleClosingStates(slIgnore, delayMp);
   set<StateSch> tightStart = comp.getCycleClosingStates(slIgnore);
@@ -883,15 +883,15 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
   map<StateSch, DelayLabel> delayMp;
   for(const auto& st : comp.getStates())
   {
-    delayMp[st] = {
-      .macrostateSize = (unsigned)st.S.size(),
-      .maxRank = (unsigned)this->rankBound[st.S].bound
-    };
-
     // nonaccepting states
     std::set<int> result;
     std::set_difference(st.S.begin(), st.S.end(), originalFinals.begin(), originalFinals.end(), std::inserter(result, result.end()));
-    delayMp[st].nonAccStates = result.size();
+
+    delayMp[st] = {
+      .macrostateSize = (unsigned)st.S.size(),
+      .maxRank = (unsigned)this->rankBound[st.S].bound,
+      .nonAccStates = (unsigned)result.size()
+    };
   }
 
   // Compute states necessary to generate in the tight part
@@ -1264,10 +1264,10 @@ unsigned BuchiAutomatonSpec::elevatorStates(){
   }
 
   // propagate BAD back
-  for (unsigned i = sortedComponents.size()-1; i >= 0; i--){
+  for (int i = sortedComponents.size()-1; i >= 0; i--){
     if (typeMap[sortedComponents[i]] == BAD){
       // type of all components before this one will also be BAD
-      for (unsigned j = 0; j < i; j++){
+      for (int j = 0; j < i; j++){
         typeMap[sortedComponents[j]] = BAD;
       }
       break;
@@ -1334,10 +1334,10 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe){
   }
 
   // propagate BAD back
-  for (unsigned i = sortedComponents.size()-1; i >= 0; i--){
+  for (int i = sortedComponents.size()-1; i >= 0; i--){
     if (typeMap[sortedComponents[i]] == BAD){
       // type of all components before this one will also be BAD
-      for (unsigned j = 0; j < i; j++){
+      for (int j = 0; j < i; j++){
         typeMap[sortedComponents[j]] = BAD;
       }
       break;
@@ -1485,7 +1485,7 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe){
     if (macrostate.S.size() > 0){
       // pick max
       bool first = true;
-      unsigned max;
+      unsigned max = 2*(macrostate.S.size()) - 1;
       bool bad = false;
       for (auto state : macrostate.S){
         if (newRank.find(state) == newRank.end()){
@@ -1700,7 +1700,7 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
     return { .bound = rank, .stateBound = sbound };
   };
 
-  auto tmp = nfaSchewe.propagateGraphValues<RankBound>(updPred, initMaxFnc);
+  auto tmp = nfaSchewe.propagateGraphValues<RankBound>(updMaxFnc, initMaxFnc);
   map<DFAState, RankBound> ret;
   for(const auto& t : tmp){
     ret[t.first.S] = t.second;
@@ -2077,15 +2077,15 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchOpt(bool delay, s
   map<StateSch, DelayLabel> delayMp;
   for(const auto& st : comp.getStates())
   {
-    delayMp[st] = {
-      .macrostateSize = (unsigned)st.S.size(),
-      .maxRank = (unsigned)this->rankBound[st.S].bound
-    };
-
     // nonaccepting states
     std::set<int> result;
     std::set_difference(st.S.begin(), st.S.end(), originalFinals.begin(), originalFinals.end(), std::inserter(result, result.end()));
-    delayMp[st].nonAccStates = result.size();
+
+    delayMp[st] = {
+      .macrostateSize = (unsigned)st.S.size(),
+      .maxRank = (unsigned)this->rankBound[st.S].bound,
+      .nonAccStates = (unsigned)result.size()
+    };
   }
   // Compute states necessary to generate in the tight part
   set<StateSch> tightStart;

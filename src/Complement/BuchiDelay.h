@@ -7,6 +7,7 @@
 #include <vector>
 #include <stack>
 #include <chrono>
+#include <cmath>
 
 #include <iostream>
 #include <algorithm>

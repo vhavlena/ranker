@@ -58,7 +58,7 @@ public:
 
   GeneralizedBuchiAutomaton() : GeneralizedBuchiAutomaton({}, {}, {}, {}) {};
 
-  GeneralizedBuchiAutomaton(GeneralizedBuchiAutomaton<State, Symbol>& other)
+  GeneralizedBuchiAutomaton(GeneralizedBuchiAutomaton<State, Symbol>& other) : AutomatonStruct<State, Symbol>(other)
   {
     this->states = other.states;
     this->finals = other.finals;

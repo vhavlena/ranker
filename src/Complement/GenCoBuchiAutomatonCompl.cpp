@@ -5,14 +5,14 @@ BuchiAutomaton<StateGcoBA, int> GeneralizedCoBuchiAutomatonCompl::complementGcoB
     map<std::pair<StateGcoBA, int>, set<StateGcoBA>> mp;
     std::set<StateGcoBA> states;
     std::set<StateGcoBA> finals;
-    
+
     // initial states
     std::set<StateGcoBA> initials;
-    StateGcoBA init = {.S = this->getInitials(), .i = 0};
+    StateGcoBA init = {.S = this->getInitials(), .i = 0, .B = set<int>()};
     init.B.clear();
-    std::set_difference(this->getInitials().begin(), this->getInitials().end(), this->getFinals()[0].begin(), this->getFinals()[0].end(), std::inserter(init.B, init.B.begin())); 
-    initials.insert(init); 
-    states.insert(init);  
+    std::set_difference(this->getInitials().begin(), this->getInitials().end(), this->getFinals()[0].begin(), this->getFinals()[0].end(), std::inserter(init.B, init.B.begin()));
+    initials.insert(init);
+    states.insert(init);
     if (init.B.size() == 0 or init.S.size() == 0)
         finals.insert(init);
 

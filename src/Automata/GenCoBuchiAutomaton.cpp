@@ -542,12 +542,10 @@ bool GeneralizedCoBuchiAutomaton<int,int>::isEmpty(){
     // empty <=> there are only inherently weak sccs (for all fins)
     std::vector<std::vector<int>> allCycles = this->getAllCycles();
     for (auto v : allCycles){
-      bool missing = false;
       std::vector<int> intersection;
       for (auto it = this->getFinals().begin(); it != this->getFinals().end(); it++){
         std::set_intersection(v.begin(), v.end(), it->second.begin(), it->second.end(), std::back_inserter(intersection));
         if (intersection.empty()){
-          missing = true;
           return false;
         }
       }
