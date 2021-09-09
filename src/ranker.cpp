@@ -200,8 +200,10 @@ int main(int argc, char *argv[])
         ba = parseRenameHOA(os);
         ren = ba->renameAut();
 
-        if (dynamic_cast<BuchiAutomaton<int, int>*>(ren))
+        if (dynamic_cast<BuchiAutomaton<int, int>*>(ren)){
           renBuchi = (BuchiAutomaton<int, int>*)ren;
+          //std::cerr << renBuchi->toGraphwiz() << std::endl;
+        }
         else if (dynamic_cast<GeneralizedCoBuchiAutomaton<int, int>*>(ren)){
           renGcoBA = (GeneralizedCoBuchiAutomaton<int, int>*)ren;
         }

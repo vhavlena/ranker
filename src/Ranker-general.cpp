@@ -68,6 +68,8 @@ void complementAutWrap(AutomatonStruct<int, int>* ren, BuchiAutomaton<StateSch, 
     renptr.removeUseless();
     renptr = renptr.renameAutDict(id);
 
+    //std::cerr << renptr.toGraphwiz() << std::endl;
+
     BuchiAutomatonSpec sp(&renptr);
   
     ComplOptions opt = { .cutPoint = true, .succEmptyCheck = true, .ROMinState = 8,

@@ -1437,6 +1437,12 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe){
             rank = scc.rank;
           else if ((scc.det or scc.inhWeak) and scc.rank+1 > rank)
             rank = scc.rank + 1;
+          else if (not (scc.det or scc.inhWeak or scc.nonDet)){
+            if (scc.rank%2==0 and scc.rank+1 > rank)
+              rank = scc.rank + 1;
+            else if (scc.rank%2==1 and scc.rank > rank)
+              rank = scc.rank;
+          }
         }
         it->rank = rank; 
         it->det = false;
@@ -1451,6 +1457,12 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe){
             rank = scc.rank;
           else if (scc.nonDet and scc.rank+1 > rank)
             rank = scc.rank + 1;
+          else if (not (scc.det or scc.inhWeak or scc.nonDet)){
+            if (scc.rank%2==0 and scc.rank > rank)
+              rank = scc.rank;
+            else if (scc.rank%2==1 and scc.rank+1 > rank)
+              rank = scc.rank + 1;
+          }
         }
         if (it->rank == -1 or rank < it->rank){
           it->rank = rank;
@@ -1486,8 +1498,17 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe){
               rank = scc.rank;
             else if ((not det) and scc.rank+2 > rank)
               rank = scc.rank + 2;
+            else if (not (scc.det or scc.inhWeak or scc.nonDet)){
+              if (scc.rank%2==0 and scc.rank > rank)
+                rank = scc.rank;
+              else if (scc.rank%2==1 and scc.rank+1 > rank)
+                rank = scc.rank + 1;
+            }
           }
         }
+        // D rank must be at least 2
+        if (rank < 2)
+          rank = 2;
         if (it->rank == -1 or rank < it->rank){
           it->rank = rank;
           it->nonDet = false;
@@ -1495,12 +1516,22 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe){
         }
       }
 
-      // TODO: not elevator!!!
+      // non-elevator scc
+      if (not (it->det or it->inhWeak or it->nonDet)){
+        int max = -1;
+        for (auto scc : succ){
+          if (max = -1)
+            max = scc.rank;
+          else if (max < scc.rank)
+            max = scc.rank;
+        }
+        it->rank = max + 2*it->states.size() - 1;
+      }
     }
   }
 
   // output original automaton with ranks
-  //std::cerr << this->toHOA(sccClass) << std::endl;
+  std::cerr << this->toHOA(sccClass) << std::endl;
 
   // update rank upper bound if lower
   for (auto macrostate : nfaSchewe.getStates()){
