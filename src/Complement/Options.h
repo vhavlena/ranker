@@ -29,6 +29,8 @@ struct ComplOptions
   float delayW = 0.5;
 
   bool eta4 = false;
+
+  bool debug = false;
 };
 
 #endif

@@ -41,10 +41,12 @@ int main(int argc, char *argv[])
   args::Flag elevatorFlag(parser, "elevator rank", "Update rank upper bound of each macrostate based on elevator automaton structure", {"elevator-rank"});
   args::Flag eta4Flag(parser, "eta4", "Max rank optimization - eta 4 only when going from some accepting state", {"eta4"});
   args::Flag elevatorTestFlag(parser, "elevator test", "Test if INPUT is an elevator automaton", {"elevator-test"});
+  args::Flag debugFlag(parser, "debug", "Print debug statistics", {"debug"});
 
   ComplOptions opt = { .cutPoint = true, .succEmptyCheck = true, .ROMinState = 8,
       .ROMinRank = 6, .CacheMaxState = 6, .CacheMaxRank = 8, .semidetOpt = false,
-      .dataFlow = INNER, .delay = false, .delayVersion = oldVersion, .delayW = 0.5 };
+      .dataFlow = INNER, .delay = false, .delayVersion = oldVersion, .delayW = 0.5,
+      .debug = false};
 
   try
   {
@@ -107,6 +109,11 @@ int main(int argc, char *argv[])
       std::cerr << "Wrong delay version" << std::endl;
       return 1;
     }
+  }
+
+  if(debugFlag)
+  {
+    opt.debug = true;
   }
 
   // weight parameters for delay

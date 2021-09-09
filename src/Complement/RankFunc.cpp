@@ -499,7 +499,7 @@ bool RankFunc::eqEven() const
  * Implementation of <
  * @return this < f
  */
-bool RankFunc::isAllLeq(const RankFunc& f)
+bool RankFunc::isAllLeq(const RankFunc& f) const
 {
   vector<int> rnk = f.getRanks();
   if(this->ranks.size() != rnk.size())

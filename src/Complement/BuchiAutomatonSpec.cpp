@@ -769,16 +769,21 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchStartReduced(set<int>& state, int
     RankConstr constr = rankConstr(maxRank, sprime);
     auto tmp = RankFunc::tightFromRankConstr(constr, dirRel, oddRel, reachCons, reachMaxAct, this->opt.cutPoint);
 
-    set<RankFunc> tmpSet(tmp.begin(), tmp.end());
+    //RankFunc ubound(this->rankBound[sprime].stateBound, false);
+    set<RankFunc> tmpSet (tmp.begin(), tmp.end());
+    // for(const RankFunc& f : tmp)
+    // {
+    //   // if(!f.isAllLeq(ubound))
+    //   // {
+    //   //   continue;
+    //   // }
+    //   tmpSet.insert(f);
+    // }
 
-    RankFunc ubound(this->rankBound[sprime].stateBound, false);
 
     bool cnt = true;
     for(auto& r : tmp)
     {
-      if(!r.isAllLeq(ubound))
-        continue;
-
       cnt = true;
       auto it = tmpSet.upper_bound(r);
       while(it != tmpSet.end())
@@ -829,7 +834,11 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(std::set<
 
   map<std::pair<StateSch, int>, set<StateSch>> prev = comp.getReverseTransitions();
   // cout << StateSch::printSet(originalFinals) << endl;
-  // std::cout << comp.toGraphwiz() << std::endl;
+  if(this->opt.debug)
+  {
+    cout << "Waiting part: " << endl;
+    cout << comp.toGraphwiz() << endl << endl;
+  }
 
   set<StateSch> slIgnore = this->nfaSlAccept(comp);
   set<pair<DFAState,int>> slNonEmpty = this->nfaSingleSlNoAccept(comp);
@@ -866,12 +875,16 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(std::set<
   auto invComp = comp.reverseBA(); //inverse automaton
   this->rankBound = this->getRankBound(invComp, ignoreAll, maxReach, reachCons);
 
-  // for(auto & s: this->rankBound)
-  // {
-  //   cout << StateSch::printSet(s.first) << " : " << s.second.bound << endl;
-  //   RankFunc fnc(s.second.stateBound, false);
-  //   cout << fnc.toString() << endl << endl;
-  // }
+  if(this->opt.debug)
+  {
+    cout << "Rank bound: " << endl;
+    for(auto & s: this->rankBound)
+    {
+      RankFunc fnc(s.second.stateBound, false);
+      cout << fnc.toString() << " : " << s.second.bound << endl;
+    }
+    cout << endl;
+  }
 
   end = std::chrono::high_resolution_clock::now();
   stats->rankBound = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();

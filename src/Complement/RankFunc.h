@@ -95,7 +95,7 @@ public:
   bool isSuccValid(RankFunc& prev, map<int, set<int> >& succ) const;
   bool isMaxRankValid(vector<int>& maxRank) const;
 
-  bool isAllLeq(const RankFunc& f);
+  bool isAllLeq(const RankFunc& f) const;
 
   /*
    * Get number of remaining tight positions
