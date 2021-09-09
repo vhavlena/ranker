@@ -1482,14 +1482,16 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe){
             bool det = true;
             for (auto state : it->states){
               for (auto a : this->getAlphabet()){
-                unsigned trans = 0;
+                bool self = false;
+                bool other = false;
                 for (auto succ : this->getTransitions()[{state, a}]){
-                  if (scc.states.find(succ) != scc.states.end()){
-                    if (trans > 0){
-                      det = false;
-                      break;
-                    }
-                    trans++;
+                  if (it->states.find(succ) != it->states.end())
+                    self = true;
+                  if (scc.states.find(succ) != scc.states.end())
+                    other = true;
+                  if (self and other){
+                    det = false;
+                    break;
                   }
                 }
               }
