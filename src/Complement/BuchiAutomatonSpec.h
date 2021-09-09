@@ -27,17 +27,6 @@ enum delayVersion : unsigned;
 enum sccType {D, ND, BAD, BOTH}; // deterministic with accepting states / nondeterministic without accepting states / bad = nondeterministic with accepting states / both = deterministic without accepting states
 
 /*
- * Data structure for information about possible types of scc
- */
-struct SccClassification {
-  set<int> states;
-  bool det = false;
-  bool inhWeak = false;
-  bool nonDet = false;
-  int rank = -1;
-};
-
-/*
  * Data structure for rank bounding data flow analysis
  */
 struct RankBound
@@ -114,7 +103,7 @@ public:
   
   BuchiAutomaton<StateKV, int> complementKV();
   BuchiAutomaton<StateSch, int> complementSch();
-  BuchiAutomaton<StateSch, int> complementSchReduced(bool delay, std::set<int> originalFinals, double w, delayVersion version, bool elevatorRank, bool eta4, Stat *stats);
+  BuchiAutomaton<StateSch, int> complementSchReduced(bool delay, std::set<int> originalFinals, double w, delayVersion version, elevatorOptions elevatorRank, bool eta4, Stat *stats);
   BuchiAutomaton<StateSch, int> complementSchNFA(set<int>& start);
   //BuchiAutomaton<StateSch, int> complementSchOpt(bool delay);
   BuchiAutomaton<StateSch, int> complementSchOpt(bool delay, std::set<int> originalFinals, double w, delayVersion version, Stat *stats);
@@ -133,7 +122,7 @@ public:
   void setComplOptions(ComplOptions& co) { this->opt = co; }
   ComplOptions getComplOptions() const { return this->opt; }
 
-  void elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe);
+  void elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe, bool detBeginning);
   unsigned elevatorStates();
   vector<set<int>> topologicalSort();
   void topologicalSortUtil(set<int> currentScc, vector<set<int>> allSccs, map<set<int>, bool> &visited, stack<set<int>> &Stack);

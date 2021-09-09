@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
   delayVersion version = oldVersion;
   //bool error = false;
   bool elevatorTest = false;
-  bool elevatorRank = false;
+  elevatorOptions elevator = {.elevatorRank = false, .detBeginning = false};
   bool eta4 = false;
 
   args::ArgumentParser parser("Program complementing a (state-based acceptance condition) Buchi automaton.\n", "");
@@ -42,6 +42,7 @@ int main(int argc, char *argv[])
   args::ValueFlag<std::string> checkFlag(parser, "word", "Product of the result with a given word", {"check"});
   args::ValueFlag<double> weightFlag(parser, "value", "Weight parameter for delay - value in <0,1>", {'w', "weight"});
   args::Flag elevatorFlag(parser, "elevator rank", "Update rank upper bound of each macrostate based on elevator automaton structure", {"elevator-rank"});
+  args::Flag elevatorDetBeg(parser, "elevator deterministic beginning", "Rank 0/1 to all states in the D/IW component in the beginning", {"det-beg"});
   args::Flag eta4Flag(parser, "eta4", "Max rank optimization - eta 4 only when going from some accepting state", {"eta4"});
   args::Flag elevatorTestFlag(parser, "elevator test", "Test if INPUT is an elevator automaton", {"elevator-test"});
 
@@ -117,7 +118,9 @@ int main(int argc, char *argv[])
 
   // elevator rank
   if (elevatorFlag){
-    elevatorRank = true;
+    elevator.elevatorRank = true;
+    if (elevatorDetBeg)
+      elevator.detBeginning = true;
   }
 
   // eta4
@@ -164,7 +167,7 @@ int main(int argc, char *argv[])
 
       try
       {
-        complementAutWrap(ren, &comp, &renCompl, &stats, delay, w, version, elevatorRank, eta4);
+        complementAutWrap(ren, &comp, &renCompl, &stats, delay, w, version, elevator, eta4);
       }
       catch (const std::bad_alloc&)
       {
@@ -226,7 +229,7 @@ int main(int argc, char *argv[])
       try
       {
         if (renBuchi != nullptr)
-          complementAutWrap(renBuchi, &compBA, &renCompl, &stats, delay, w, version, elevatorRank, eta4);
+          complementAutWrap(renBuchi, &compBA, &renCompl, &stats, delay, w, version, elevator, eta4);
         else if (renGcoBA != nullptr){
           //cerr << renGcoBA->toGraphwiz() << std::endl;
           complementGcoBAWrap(renGcoBA, &compGcoBA, &renCompl, &stats);

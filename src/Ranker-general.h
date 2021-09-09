@@ -44,7 +44,8 @@ AutomatonStruct<int, APSymbol>* parseRenameHOA(ifstream& os);
 AutomatonStruct<int, int>* parseRenameBA(ifstream& os, BuchiAutomaton<string, string>* orig);
 
 void complementScheweAutWrap(AutomatonStruct<int, int>* ren, BuchiAutomaton<int, int>* complRes, Stat* stats, bool delay, double w, delayVersion version); 
-void complementAutWrap(AutomatonStruct<int, int>* ren, BuchiAutomaton<StateSch, int>* complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats, bool delay, double w, delayVersion version, bool elevatorRank, bool eta4);
+void complementAutWrap(AutomatonStruct<int, int>* ren, BuchiAutomaton<StateSch, int>* complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats, bool delay, 
+  double w, delayVersion version, elevatorOptions elevatorRank, bool eta4);
 void printStat(Stat& st);
 
 BuchiAutomaton<int, int> createBA(vector<int>& loop);

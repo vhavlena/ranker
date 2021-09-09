@@ -54,7 +54,7 @@ AutomatonStruct<int, int>* parseRenameBA(ifstream& os, BuchiAutomaton<string, st
   return orig->renameAut();
 }
 
-void complementAutWrap(AutomatonStruct<int, int>* ren, BuchiAutomaton<StateSch, int>* complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats, bool delay, double w, delayVersion version, bool elevatorRank, bool eta4)
+void complementAutWrap(AutomatonStruct<int, int>* ren, BuchiAutomaton<StateSch, int>* complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats, bool delay, double w, delayVersion version, elevatorOptions elevatorRank, bool eta4)
 {
   if (dynamic_cast<BuchiAutomaton<int, int>*>(ren)){
     BuchiAutomaton<int, int> *rentmp = (BuchiAutomaton<int, int>*) ren;

@@ -801,7 +801,7 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchStartReduced(set<int>& state, int
  * Optimized Schewe complementation procedure
  * @return Complemented automaton
  */
-BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool delay, std::set<int> originalFinals, double w, delayVersion version, bool elevatorRank, bool eta4, Stat *stats)
+BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool delay, std::set<int> originalFinals, double w, delayVersion version, elevatorOptions elevatorRank, bool eta4, Stat *stats)
 {
   std::stack<StateSch> stack;
   set<StateSch> comst;
@@ -868,9 +868,9 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(bool dela
   stats->rankBound = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
 
   // update rank upper bound of each macrostate based on elevator automaton structure
-  if (elevatorRank){
+  if (elevatorRank.elevatorRank){
     start = std::chrono::high_resolution_clock::now();
-    this->elevatorRank(comp);
+    this->elevatorRank(comp, elevatorRank.detBeginning);
     end = std::chrono::high_resolution_clock::now();;
     stats->elevatorRank = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
   }
@@ -1357,7 +1357,7 @@ bool BuchiAutomatonSpec::isInherentlyWeak(std::set<int> scc){
 /**
  * Updates rankBound of every state based on elevator automaton structure (minimum of these two options)
  */
-void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe){
+void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe, bool detBeginning){
 
   // get all sorted sccs 
   std::vector<std::set<int>> sccs = this->topologicalSort();
@@ -1370,21 +1370,17 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe){
   // scc classification
   for (auto it = sccClass.begin(); it != sccClass.end(); it++){
     // deterministic
-    if (isDeterministic(it->states)){
+    if (isDeterministic(it->states))
       it->det = true;
-      //std::cerr << "deterministic" << std::endl;
-    }
     // nondeterministic
-    if (isNonDeterministic(it->states)){
+    if (isNonDeterministic(it->states))
       it->nonDet = true;
-      //std::cerr << "nondeterministic" << std::endl;
-    }
     // inherently weak
-    if (isInherentlyWeak(it->states)){
+    if (isInherentlyWeak(it->states))
       it->inhWeak = true;
-      //std::cerr << "inherently weak" << std::endl;
-    }
   }
+
+  int absoluteMax = -1;
 
   // apply rules from the last component
   for (auto it = sccClass.rbegin(); it != sccClass.rend(); it++){
@@ -1530,10 +1526,31 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe){
         it->rank = max + 2*it->states.size() - 1;
       }
     }
+
+    // update absolute max
+    if (absoluteMax == -1)
+      absoluteMax = it->rank;
+    else if (absoluteMax < it->rank)
+      absoluteMax = it->rank;
+  }
+
+  // deterministic / inherently weak beginning
+  if (detBeginning and absoluteMax%2 == 0){
+    for (auto it = sccClass.begin(); it != sccClass.end(); it++){
+      // components with absolute max rank
+      if (it->rank == absoluteMax){
+        if (it->inhWeak){
+          it->rank = 0;
+        }
+        else if (it->det){
+          it->detBeginning = true;
+        }
+      }
+    }
   }
 
   // output original automaton with ranks
-  std::cerr << this->toHOA(sccClass) << std::endl;
+  //std::cerr << this->toHOA(sccClass) << std::endl;
 
   // update rank upper bound if lower
   for (auto macrostate : nfaSchewe.getStates()){
@@ -1545,238 +1562,30 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe){
       for (auto state : macrostate.S){
         if (first){
           for (auto scc : sccClass){
-            if (scc.states.find(state) != scc.states.end())
+            if (scc.states.find(state) != scc.states.end()){
               max = scc.rank;
-          }
-          first = false;
-        } else {
-          for (auto scc : sccClass){
-            if (scc.states.find(state) != scc.states.end())
-              if (scc.rank > max)
-                max = scc.rank;
-          }
-        }
-      }
-      // update rank upper bound if lower
-      if (!bad && this->rankBound[macrostate.S].bound > (int)max){
-        this->rankBound[macrostate.S].bound = max;
-      }
-    }
-  }
-
-  /**********************************************************************/
-
-  /*
-  // topological sort
-  std::vector<std::set<int>> sortedComponents = this->topologicalSort();
-
-  // determine scc type (deterministic, nondeterministic, bad, both)
-  std::map<std::set<int>, sccType> typeMap;
-  for (auto scc : sortedComponents){
-    // is scc deterministic?
-    bool det = true;
-    for (auto state : scc){
-      if (not det)
-        break;
-      for (auto a : this->getAlphabet()){
-        if (not det)
-          break;
-        unsigned trans = 0;
-        for (auto succ : this->getTransitions()[{state, a}]){
-          if (scc.find(succ) != scc.end()){
-            if (trans > 0){
-              det = false;
+              if (detBeginning and scc.detBeginning){
+                if (this->getFinals().find(state) != this->getFinals().end())
+                  max = 0;
+                else
+                  max = 1;
+              }
               break;
             }
-            trans++;
           }
-        }
-      }
-    }
-
-    // does scc contain accepting states?
-    bool finalStates = false;
-    if (std::any_of(scc.begin(), scc.end(), [this](int state){return this->getFinals().find(state) != this->getFinals().end();}))
-      finalStates = true;
-
-    // type of scc
-    sccType type;
-    if (det and finalStates)
-      type = D;
-    else if (not det and not finalStates)
-      type = ND;
-    else if (det and not finalStates)
-      type = BOTH;
-    else
-      type = BAD;
-    typeMap.insert({scc, type});
-  }
-
-  // propagate BAD back
-  for (unsigned i = sortedComponents.size()-1; i >= 0; i--){
-    if (typeMap[sortedComponents[i]] == BAD){
-      // type of all components before this one will also be BAD
-      for (unsigned j = 0; j < i; j++){
-        typeMap[sortedComponents[j]] = BAD;
-      }
-      break;
-    }
-    if (i == 0) // i is unsigned
-      break;
-  }
-
-  // merge sccs if possible
-  // from back to front -> lower rank
-  std::vector<std::pair<std::set<int>, sccType>> partition;
-  std::pair<std::set<int>, sccType> tmpComponent;
-  for (unsigned i = sortedComponents.size()-1; i > 0; i--){
-
-    if (typeMap[sortedComponents[i]] == BAD or typeMap[sortedComponents[i-1]] == BAD){
-      tmpComponent.second = BAD;
-      break;
-    }
-
-    if (tmpComponent.first.size() == 0){
-      tmpComponent.first.insert(sortedComponents[i].begin(), sortedComponents[i].end());
-      tmpComponent.second = typeMap[sortedComponents[i]];
-    }
-
-    // BOTH + BOTH - can happen only at the beginning -> check (non)determinism of transitions
-    if (i == sortedComponents.size() and typeMap[sortedComponents[i]] == BOTH){
-      tmpComponent.second = D;
-      typeMap[sortedComponents[i]] = D;
-    }
-
-    // 1) ND + ND or BOTH + ND - can always be merged
-    if (typeMap[sortedComponents[i]] == ND){
-      if (typeMap[sortedComponents[i-1]] == ND or typeMap[sortedComponents[i-1]] == BOTH){
-        std::set_union(tmpComponent.first.begin(), tmpComponent.first.end(), sortedComponents[i-1].begin(), sortedComponents[i-1].end(), std::inserter(tmpComponent.first, tmpComponent.first.begin()));
-        tmpComponent.second = ND;
-        typeMap[sortedComponents[i-1]] = ND;
-      } else {
-        // cannot be merged
-        partition.push_back({tmpComponent.first, tmpComponent.second});
-        tmpComponent.first.clear();
-      }
-    }
-
-    // 2) D + D or BOTH + D - can be merged only if transitions between them are deterministic
-    else if (typeMap[sortedComponents[i]] == D){
-      if (typeMap[sortedComponents[i-1]] == D or typeMap[sortedComponents[i-1]] == BOTH){
-        // test if transitions between are deterministic
-        bool det = true;
-        for (auto state : sortedComponents[i-1]){
-          for (auto a : this->getAlphabet()){
-            unsigned trans = 0;
-            for (auto succ : this->getTransitions()[{state, a}]){
-              if (sortedComponents[i-1].find(succ) != sortedComponents[i-1].end()){
-                if (trans > 0){
-                  det = false;
-                  break;
-                }
-                trans++;
-              }
-            }
-          }
-        }
-        if (det){
-          std::set_union(tmpComponent.first.begin(), tmpComponent.first.end(), sortedComponents[i-1].begin(), sortedComponents[i-1].end(), std::inserter(tmpComponent.first, tmpComponent.first.begin()));
-          tmpComponent.second = D;
-          typeMap[sortedComponents[i-1]] = D;
-        } else {
-          // cannot be merged
-          partition.push_back({tmpComponent.first, tmpComponent.second});
-          tmpComponent.first.clear();
-        }
-      } else {
-        // cannot be merged
-        partition.push_back({tmpComponent.first, tmpComponent.second});
-        tmpComponent.first.clear();
-      }
-    }
-
-    // 3) BOTH + ND - always, BOTH + D - in case of deterministic transitions, BOTH + BOTH - can happen only at the beginning -> check (non)determinism of transitions
-    else if (typeMap[sortedComponents[i]] == BOTH){
-      if (typeMap[sortedComponents[i-1]] == D){
-        // test if transitions between are deterministic
-        bool det = true;
-        for (auto state : sortedComponents[i-1]){
-          for (auto a : this->getAlphabet()){
-            unsigned trans = 0;
-            for (auto succ : this->getTransitions()[{state, a}]){
-              if (sortedComponents[i-1].find(succ) != sortedComponents[i-1].end()){
-                if (trans > 0){
-                  det = false;
-                  break;
-                }
-                trans++;
-              }
-            }
-          }
-        }
-        if (det){
-          std::set_union(tmpComponent.first.begin(), tmpComponent.first.end(), sortedComponents[i-1].begin(), sortedComponents[i-1].end(), std::inserter(tmpComponent.first, tmpComponent.first.begin()));
-          tmpComponent.second = D;
-          typeMap[sortedComponents[i-1]] = D;
-        } else {
-          // cannot be merged
-          partition.push_back({tmpComponent.first, tmpComponent.second});
-          tmpComponent.first.clear();
-        }
-      } else if (typeMap[sortedComponents[i-1]] == ND) {
-        std::set_union(tmpComponent.first.begin(), tmpComponent.first.end(), sortedComponents[i-1].begin(), sortedComponents[i-1].end(), std::inserter(tmpComponent.first, tmpComponent.first.begin()));
-        tmpComponent.second = ND;
-        typeMap[sortedComponents[i-1]] = ND;
-      } else {
-        // cannot be merged
-        partition.push_back({tmpComponent.first, tmpComponent.second});
-        tmpComponent.first.clear();
-      }
-    }
-  }
-
-  // insert last component if it was not merged
-  partition.push_back({tmpComponent.first, tmpComponent.second});
-  tmpComponent.first.clear();
-
-  // assign rank to each state
-  std::map<int, unsigned> newRank;
-  // for every partition from back to front (rank is increasing)
-  unsigned rank = 2;
-  for (auto part : partition){
-    // rank is odd for ND and even for D
-    if (part.second == D and rank%2 == 1)
-      rank++;
-    else if (part.second == ND and rank%2 == 0)
-      rank++;
-    else if (part.second == BAD)
-      continue;
-
-    for (auto state : part.first){
-      newRank.insert({state, rank});
-    }
-
-    rank++; // increase rank upper bound
-  }
-
-  // update rank upper bound if lower
-  for (auto macrostate : nfaSchewe.getStates()){
-    if (macrostate.S.size() > 0){
-      // pick max
-      bool first = true;
-      unsigned max;
-      bool bad = false;
-      for (auto state : macrostate.S){
-        if (newRank.find(state) == newRank.end()){
-          bad = true;
-          break;
-        }
-        if (first){
-          max = newRank[state];
           first = false;
         } else {
-          if (newRank[state] > max)
-            max = newRank[state];
+          for (auto scc : sccClass){
+            if (scc.states.find(state) != scc.states.end()){
+              if (detBeginning and scc.detBeginning){
+                if (this->getFinals().find(state) == this->getFinals().end() and max < 1)
+                  max = 1;
+              }
+              else if (scc.rank > max)
+                max = scc.rank;
+              break;
+            }
+          }
         }
       }
       // update rank upper bound if lower
@@ -1785,17 +1594,6 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe){
       }
     }
   }
-
-  bool first = true;
-  int maxRank;
-  for (auto macrostate : nfaSchewe.getStates()){
-    if (first){
-      maxRank = this->rankBound[macrostate.S].bound;
-      first = false;
-    } else if (this->rankBound[macrostate.S].bound > maxRank)
-      maxRank = this->rankBound[macrostate.S].bound;
-  }
-  */
 }
 
 /*

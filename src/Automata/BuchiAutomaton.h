@@ -27,6 +27,11 @@ struct RankBound;
 
 enum delayVersion : unsigned {oldVersion, newVersion, randomVersion, subsetVersion, stirlingVersion};
 
+struct elevatorOptions{
+  bool elevatorRank = false;
+  bool detBeginning = false;
+};
+
 struct Stat
 {
   size_t generatedStates;
@@ -73,6 +78,7 @@ struct SccClassif {
   bool inhWeak = false;
   bool nonDet = false;
   int rank = -1;
+  bool detBeginning = false;
 };
 
 /*
