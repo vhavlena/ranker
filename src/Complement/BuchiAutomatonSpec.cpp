@@ -771,9 +771,14 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchStartReduced(set<int>& state, int
 
     set<RankFunc> tmpSet(tmp.begin(), tmp.end());
 
+    RankFunc ubound(this->rankBound[sprime].stateBound, false);
+
     bool cnt = true;
     for(auto& r : tmp)
     {
+      if(!r.isAllLeq(ubound))
+        continue;
+
       cnt = true;
       auto it = tmpSet.upper_bound(r);
       while(it != tmpSet.end())
@@ -1613,6 +1618,7 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
     for(const int& i : dest->state.S)
     {
       tmpm = min(ret.stateBound[i], mrank[i]);
+      tmpm = std::min(tmpm, ret.bound);
       if(fin.find(i) != fin.end() && tmpm % 2 != 0)
         tmpm--;
       ret.stateBound[i] = tmpm;
@@ -1622,6 +1628,8 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
 
     if(tmpmax < ret.bound)
       ret.bound = tmpmax;
+    if(ret.bound % 2 == 0)
+      ret.bound = std::max(0, ret.bound - 1);
 
     return ret;
   };
