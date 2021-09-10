@@ -225,7 +225,7 @@ public:
 
   BuchiAutomaton<int, int> renameAutDict(map<Symbol, int>& mpsymbol, int start = 0);
 
-  bool isElevator();
+  //bool isElevator();
 
   /*
    * Rename symbols of the automaton.

@@ -1353,6 +1353,32 @@ bool BuchiAutomatonSpec::isInherentlyWeak(std::set<int> scc){
   return true;
 }
 
+bool BuchiAutomatonSpec::isElevator(){
+  // get all sorted sccs 
+  std::vector<std::set<int>> sccs = this->topologicalSort();
+  std::vector<SccClassif> sccClass;
+  for (auto scc : sccs){
+    SccClassif tmp = {.states = scc, .det = false, .inhWeak = false, .nonDet = false};
+    sccClass.push_back(tmp);
+  }
+  
+  // scc classification
+  for (auto it = sccClass.begin(); it != sccClass.end(); it++){
+    // deterministic
+    if (isDeterministic(it->states))
+      it->det = true;
+    // nondeterministic
+    else if (isNonDeterministic(it->states))
+      it->nonDet = true;
+    // inherently weak
+    else if (isInherentlyWeak(it->states))
+      it->inhWeak = true;
+    else
+      return false;
+  }
+
+  return true;
+}
 
 /**
  * Updates rankBound of every state based on elevator automaton structure (minimum of these two options)

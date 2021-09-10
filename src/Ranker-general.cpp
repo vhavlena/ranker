@@ -98,7 +98,7 @@ void complementAutWrap(AutomatonStruct<int, int>* ren, BuchiAutomaton<StateSch, 
     stats->reachTrans = renCompl.getTransCount();
     stats->engine = "Ranker";
     stats->transitionsToTight = -1;
-    stats->elevator = renptr.isElevator(); // original automaton before complementation
+    stats->elevator = sp.isElevator(); // original automaton before complementation
     stats->elevatorStates = sp.elevatorStates();
     stats->originalStates = sp.getStates().size();
     *complRes = renCompl;
@@ -156,7 +156,7 @@ void complementScheweAutWrap(AutomatonStruct<int, int>* ren, BuchiAutomaton<int,
     stats->reachStates = renCompl.getStates().size();
     stats->reachTrans = renCompl.getTransCount();
     stats->engine = "Ranker";
-    stats->elevator = renptr->isElevator(); // original automaton before complementation
+    stats->elevator = sp.isElevator(); // original automaton before complementation
     stats->elevatorStates = sp.elevatorStates();
     stats->originalStates = sp.getStates().size();
     *complRes = renCompl;

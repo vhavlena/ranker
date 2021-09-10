@@ -131,6 +131,8 @@ public:
   bool isNonDeterministic(set<int> scc);
   bool isInherentlyWeak(set<int> scc);
 
+  bool isElevator();
+
   void getSchRanksTightReduced(vector<RankFunc>& out, vector<int>& max,
       set<int>& states, int symbol, StateSch& macrostate,
       map<int, int> reachCons, int reachMax, BackRel& dirRel, BackRel& oddRel);

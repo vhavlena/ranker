@@ -160,7 +160,8 @@ int main(int argc, char *argv[])
 
       // elevator test
       if (elevatorTest){
-        std::cout << "Elevator automaton: " << (renBA->isElevator() ? "Yes" : "No") << std::endl;
+        BuchiAutomatonSpec sp(renBA);
+        std::cout << "Elevator automaton: " << (sp.isElevator() ? "Yes" : "No") << std::endl;
         os.close();
         return 0;
       }
@@ -213,7 +214,8 @@ int main(int argc, char *argv[])
 
         // elevator test
         if (elevatorTest and renBuchi != nullptr){
-          std::cout << "Elevator automaton: " << (renBuchi->isElevator() ? "Yes" : "No") << std::endl;
+          BuchiAutomatonSpec sp(renBuchi);
+          std::cout << "Elevator automaton: " << (sp.isElevator() ? "Yes" : "No") << std::endl;
           os.close();
           return 0;
         } 

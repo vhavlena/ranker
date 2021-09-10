@@ -4,8 +4,9 @@
 /*
 * Is it an elevator automaton?
 */
-template <typename State, typename Symbol>
+/*template <typename State, typename Symbol>
 bool BuchiAutomaton<State, Symbol>::isElevator() {
+  
   // get all sccs
   std::vector<std::set<State>> sccs = this->getAutGraphSCCs();
   for (auto scc : sccs){
@@ -38,7 +39,7 @@ bool BuchiAutomaton<State, Symbol>::isElevator() {
       return false;
   }
   return true;
-}
+}*/
 
 /*
  * Rename states and symbols of the automaton to numbers (symbols are renamed
@@ -308,10 +309,6 @@ std::string BuchiAutomaton<int, APSymbol>::toHOA()
   res += "Acceptance: 1 Inf(0)\n";
   res += "properties: trans-labels explicit-labels state-acc\n";
   res += "AP: " + std::to_string(this->apsPattern.size());
-
-  //for (auto symb : this->apsPattern) {
-  //  res += " \"" +  symb.first + "\"";
-  //}
 
   // !!! sort map by value !!!
   std::vector<pair> vec;
