@@ -1392,7 +1392,7 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe, b
     SccClassif tmp = {.states = scc, .det = false, .inhWeak = false, .nonDet = false};
     sccClass.push_back(tmp);
   }
-  
+
   // scc classification
   for (auto it = sccClass.begin(); it != sccClass.end(); it++){
     // deterministic
@@ -1451,6 +1451,9 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe, b
 
     else {
       int rank = -1;
+      bool n = false;
+      bool iw = false;
+      bool d = false;
 
       // rule #3: N
       if (it->nonDet){
@@ -1467,8 +1470,7 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe, b
           }
         }
         it->rank = rank; 
-        it->det = false;
-        it->inhWeak = false; 
+        n = true; 
       }
 
       // rule #4 : IW
@@ -1488,8 +1490,9 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe, b
         }
         if (it->rank == -1 or rank < it->rank){
           it->rank = rank;
-          it->det = false;
           it->nonDet = false;
+          n = false;
+          iw = true;
         }
       }
 
@@ -1537,6 +1540,9 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe, b
           it->rank = rank;
           it->nonDet = false;
           it->inhWeak = false;
+          d = true;
+          n = false;
+          iw = false;
         }
       }
 
@@ -1561,7 +1567,7 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe, b
   }
 
   // deterministic / inherently weak beginning
-  if (detBeginning and absoluteMax%2 == 0){
+  if (detBeginning){
     for (auto it = sccClass.begin(); it != sccClass.end(); it++){
       // components with absolute max rank
       if (it->rank == absoluteMax){
@@ -1571,12 +1577,20 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe, b
         else if (it->det){
           it->detBeginning = true;
         }
+        else if (it->nonDet){
+          if (this->isInherentlyWeak(it->states)){
+            it->rank = 0;
+          }
+          else if (this->isDeterministic(it->states)){
+            it->detBeginning = true;
+          }
+        }
       }
     }
   }
 
   // output original automaton with ranks
-  //std::cerr << this->toHOA(sccClass) << std::endl;
+  std::cerr << this->toHOA(sccClass) << std::endl;
 
   // update rank upper bound if lower
   for (auto macrostate : nfaSchewe.getStates()){
