@@ -23,6 +23,12 @@
 using std::tuple;
 
 class AutGraph;
+struct RankBound;
+
+struct elevatorOptions{
+  bool elevatorRank = false;
+  bool detBeginning = false;
+};
 
 struct Stat
 {
@@ -37,6 +43,7 @@ struct Stat
   size_t originalStates;
   long duration;
   string engine;
+  std::map<std::set<int>, RankBound> ranks;
 
   // time
   std::chrono::time_point<std::chrono::high_resolution_clock> beginning;
@@ -58,6 +65,18 @@ struct DelayLabel {
   unsigned macrostateSize;
   unsigned maxRank;
   unsigned nonAccStates;
+};
+
+/*
+ * Data structure for information about possible types of scc
+ */
+struct SccClassif {
+  set<int> states;
+  bool det = false;
+  bool inhWeak = false;
+  bool nonDet = false;
+  int rank = -1;
+  bool detBeginning = false;
 };
 
 /*
@@ -161,6 +180,7 @@ public:
   std::string toString();
   std::string toGraphwiz();
   std::string toHOA();
+  std::string toHOA(std::map<int,int> sccs);
   std::string toGff();
 
   /*
@@ -236,7 +256,7 @@ public:
 
   BuchiAutomaton<int, int> renameAutDict(map<Symbol, int>& mpsymbol, int start = 0);
 
-  bool isElevator();
+  //bool isElevator();
 
   /*
    * Rename symbols of the automaton.
