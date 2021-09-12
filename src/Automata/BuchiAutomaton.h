@@ -149,7 +149,7 @@ public:
   std::string toString();
   std::string toGraphwiz();
   std::string toHOA();
-  std::string toHOA(std::vector<SccClassif> sccs);
+  std::string toHOA(std::map<int,int> sccs);
   std::string toGff();
   
   /*

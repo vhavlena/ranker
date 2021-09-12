@@ -1383,7 +1383,7 @@ bool BuchiAutomatonSpec::isElevator(){
 /**
  * Updates rankBound of every state based on elevator automaton structure (minimum of these two options)
  */
-void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe, bool detBeginning){
+std::map<int, int> BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe, bool detBeginning){
 
   // get all sorted sccs 
   std::vector<std::set<int>> sccs = this->topologicalSort();
@@ -1500,7 +1500,7 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe, b
       rank = -1;
       if (it->det){
         for (auto scc : succ){
-          if (scc.nonDet and scc.rank > rank)
+          if (scc.nonDet and scc.rank+1 > rank)
             rank = scc.rank + 1;
           else if ((scc.det or scc.inhWeak) and scc.rank+2 > rank){
             // deterministic transitions -> scc.rank, otherwise scc.rank+2
@@ -1525,12 +1525,12 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe, b
               rank = scc.rank;
             else if ((not det) and scc.rank+2 > rank)
               rank = scc.rank + 2;
-            else if (not (scc.det or scc.inhWeak or scc.nonDet)){
-              if (scc.rank%2==0 and scc.rank > rank)
-                rank = scc.rank;
-              else if (scc.rank%2==1 and scc.rank+1 > rank)
-                rank = scc.rank + 1;
-            }
+          }
+          else if (not (scc.det or scc.inhWeak or scc.nonDet)){
+            if (scc.rank%2==0 and scc.rank > rank)
+              rank = scc.rank;
+            else if (scc.rank%2==1 and scc.rank+1 > rank)
+              rank = scc.rank + 1;
           }
         }
         // D rank must be at least 2
@@ -1589,10 +1589,31 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe, b
     }
   }
 
-  // output original automaton with ranks
-  std::cerr << this->toHOA(sccClass) << std::endl;
+  std::map<int, int> ranks;
+  for (auto scc : sccClass){
+    for (auto state : scc.states){
+      if (scc.detBeginning){
+        if (this->getFinals().find(state) != this->getFinals().end())
+          ranks.insert({state, 0});
+        else
+          ranks.insert({state, 1});
+      } else {
+        ranks.insert({state, scc.rank});
+      }
+    }
+  }
 
-  // update rank upper bound if lower
+  // output original automaton with ranks
+  //std::cerr << this->toHOA(ranks) << std::endl;
+
+  //for (auto pr : ranks){
+  //  std::cerr << pr.first << ": " << pr.second << std::endl;
+  //}
+
+  return ranks;
+
+  // update rank upper bound
+  /*
   for (auto macrostate : nfaSchewe.getStates()){
     if (macrostate.S.size() > 0){
       // pick max
@@ -1634,6 +1655,7 @@ void BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe, b
       }
     }
   }
+  */
 }
 
 /*

@@ -345,9 +345,8 @@ std::string BuchiAutomaton<int, APSymbol>::toHOA()
 }
 
 template <>
-std::string BuchiAutomaton<int, int>::toHOA(std::vector<SccClassif> sccs)
+std::string BuchiAutomaton<int, int>::toHOA(std::map<int, int> sccs)
 {
-  // TODO: enter correct symbols (now not retained while doing renameAut)
   std::string res;
   size_t alph_size = this->alph.size();
   res += "HOA: v1\n";
@@ -385,12 +384,14 @@ std::string BuchiAutomaton<int, int>::toHOA(std::vector<SccClassif> sccs)
     res += "State: " + std::to_string(seq_st);
 
     // state label
-    for (auto scc : sccs){
+    res += " \"" + std::to_string(sccs[st]) + "\"";
+    
+    /*for (auto scc : sccs){
       if (scc.states.find(st) != scc.states.end()){
         res += " \"" + std::to_string(scc.rank) + "\"";
         break;
       }
-    }
+    }*/
 
     if (this->finals.find(st) != this->finals.end()) {
       res += " {0}";
