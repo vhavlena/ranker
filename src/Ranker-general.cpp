@@ -52,7 +52,7 @@ BuchiAutomaton<int, int> parseRenameBA(ifstream& os, BuchiAutomaton<string, stri
   return orig->renameAut();
 }
 
-void complementAutWrap(BuchiAutomaton<int, int>* ren, BuchiAutomaton<StateSch, int>* complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats, ComplOptions &opt, elevatorOptions elevatorRank)
+void complementAutWrap(BuchiAutomaton<int, int>* ren, BuchiAutomaton<StateSch, int>* complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats, ComplOptions &opt)
 {
     //TODO
     // rename automaton
@@ -62,7 +62,7 @@ void complementAutWrap(BuchiAutomaton<int, int>* ren, BuchiAutomaton<StateSch, i
     BuchiAutomaton<int, int> renptr = ren->renameAutDict(id);
     renptr.removeUseless();
     renptr = renptr.renameAutDict(id);
-    
+
     BuchiAutomatonSpec sp(&renptr); //TODO
 
     // ComplOptions opt = { .cutPoint = true, .succEmptyCheck = true, .ROMinState = 8,
@@ -70,7 +70,7 @@ void complementAutWrap(BuchiAutomaton<int, int>* ren, BuchiAutomaton<StateSch, i
     sp.setComplOptions(opt);
     BuchiAutomaton<StateSch, int> comp;
 
-    comp = sp.complementSchReduced(ren->getFinals(), elevatorRank, stats);
+    comp = sp.complementSchReduced(ren->getFinals(), stats);
 
     BuchiAutomatonDelay<int> compDelay(comp);
     *complOrig = comp;

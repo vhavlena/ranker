@@ -31,6 +31,8 @@ struct ComplOptions
   bool eta4 = false;
 
   bool debug = false;
+
+  ElevatorOptions elevator = { .elevatorRank = true, .detBeginning = false };
 };
 
 #endif

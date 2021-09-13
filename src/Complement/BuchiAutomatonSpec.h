@@ -93,6 +93,8 @@ protected:
   vector<StateSch> succSetSchTightOpt(StateSch& state, int symbol, map<int, int> reachCons,
       map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel);
 
+  vector<RankFunc> getFuncAntichain(set<RankFunc>& tmp);
+
 public:
   BuchiAutomatonSpec(BuchiAutomaton<int, int> *t) : BuchiAutomaton<int, int>(*t), rankBound(), rankCache()
   {
@@ -103,7 +105,7 @@ public:
 
   BuchiAutomaton<StateKV, int> complementKV();
   BuchiAutomaton<StateSch, int> complementSch();
-  BuchiAutomaton<StateSch, int> complementSchReduced(std::set<int> originalFinals, elevatorOptions elevatorRank, Stat *stats);
+  BuchiAutomaton<StateSch, int> complementSchReduced(std::set<int> originalFinals, Stat *stats);
   BuchiAutomaton<StateSch, int> complementSchNFA(set<int>& start);
   //BuchiAutomaton<StateSch, int> complementSchOpt(bool delay);
   BuchiAutomaton<StateSch, int> complementSchOpt(bool delay, std::set<int> originalFinals, double w, Stat *stats);
@@ -122,7 +124,7 @@ public:
   void setComplOptions(ComplOptions& co) { this->opt = co; }
   ComplOptions getComplOptions() const { return this->opt; }
 
-  std::map<int, int> elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe, bool detBeginning);
+  std::map<int, int> elevatorRank(bool detBeginning);
   unsigned elevatorStates();
   vector<set<int>> topologicalSort();
   void topologicalSortUtil(set<int> currentScc, vector<set<int>> allSccs, map<set<int>, bool> &visited, stack<set<int>> &Stack);

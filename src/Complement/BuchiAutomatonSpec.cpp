@@ -758,10 +758,14 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchStartReduced(set<int>& state, int
   }
 
   vector<RankFunc> maxRanks;
+  vector<RankFunc>* maxPtr;
+  vector<RankFunc> maxRanks1;
+  vector<RankFunc> maxRanks2;
 
   if(state.size() >= this->opt.ROMinState && m >= this->opt.ROMinRank)
   {
     maxRanks = RankFunc::getRORanks(rankBound, state, fin, this->opt.cutPoint);
+    maxPtr = &maxRanks;
   }
   else
   {
@@ -769,41 +773,70 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchStartReduced(set<int>& state, int
     RankConstr constr = rankConstr(maxRank, sprime);
     auto tmp = RankFunc::tightFromRankConstr(constr, dirRel, oddRel, reachCons, reachMaxAct, this->opt.cutPoint);
 
-    //RankFunc ubound(this->rankBound[sprime].stateBound, false);
-    set<RankFunc> tmpSet (tmp.begin(), tmp.end());
-    // for(const RankFunc& f : tmp)
-    // {
-    //   // if(!f.isAllLeq(ubound))
-    //   // {
-    //   //   continue;
-    //   // }
-    //   tmpSet.insert(f);
-    // }
-
-
-    bool cnt = true;
-    for(auto& r : tmp)
+    RankFunc ubound(this->rankBound[sprime].stateBound, false);
+    set<RankFunc> tmpSet2(tmp.begin(), tmp.end());
+    set<RankFunc> tmpSet1; //(tmp.begin(), tmp.end());
+    for(const RankFunc& f : tmp)
     {
-      cnt = true;
-      auto it = tmpSet.upper_bound(r);
-      while(it != tmpSet.end())
+      if(!f.isAllLeq(ubound))
       {
-        if(r != (*it) && r.getMaxRank() == it->getMaxRank() && r.isAllLeq(*it))
-        {
-          cnt = false;
-          break;
-        }
-        it = std::next(it, 1);
+        continue;
       }
-      if(cnt) maxRanks.push_back(r);
+      tmpSet1.insert(f);
     }
+
+    maxRanks1 = getFuncAntichain(tmpSet1);
+    maxRanks2= getFuncAntichain(tmpSet2);
+    maxPtr = maxRanks1.size() > maxRanks2.size() ? &maxRanks2 : &maxRanks1;
+
+
+
+    // bool cnt = true;
+    // for(auto& r : tmpSet)
+    // {
+    //   cnt = true;
+    //   auto it = tmpSet.upper_bound(r);
+    //   while(it != tmpSet.end())
+    //   {
+    //     if(r != (*it) && r.getMaxRank() == it->getMaxRank() && r.isAllLeq(*it))
+    //     {
+    //       cnt = false;
+    //       break;
+    //     }
+    //     it = std::next(it, 1);
+    //   }
+    //   if(cnt) maxRanks.push_back(r);
+    // }
   }
 
-  for(const RankFunc& item : maxRanks)
+  for(const RankFunc& item : *maxPtr)
   {
     ret.push_back({sprime, set<int>(), item, 0, true});
   }
   return ret;
+}
+
+
+vector<RankFunc> BuchiAutomatonSpec::getFuncAntichain(set<RankFunc>& tmp)
+{
+  vector<RankFunc> maxRanks;
+  bool cnt = true;
+  for(auto& r : tmp)
+  {
+    cnt = true;
+    auto it = tmp.upper_bound(r);
+    while(it != tmp.end())
+    {
+      if(r != (*it) && r.getMaxRank() == it->getMaxRank() && r.isAllLeq(*it))
+      {
+        cnt = false;
+        break;
+      }
+      it = std::next(it, 1);
+    }
+    if(cnt) maxRanks.push_back(r);
+  }
+  return maxRanks;
 }
 
 
@@ -812,7 +845,7 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchStartReduced(set<int>& state, int
  * @return Complemented automaton
  */
 
-BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(std::set<int> originalFinals, elevatorOptions elevatorRank, Stat *stats)
+BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(std::set<int> originalFinals, Stat *stats)
 {
   std::stack<StateSch> stack;
   set<StateSch> comst;
@@ -829,7 +862,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(std::set<
   BuchiAutomaton<StateSch, int> comp = this->complementSchNFA(this->getInitials());
   auto end = std::chrono::high_resolution_clock::now();
   stats->waitingPart = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
-  
+
   if (comp.getStates().size() == 1){
     comp.setAPPattern(this->getAPPattern());
     return comp;
@@ -896,12 +929,12 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(std::set<
   stats->rankBound = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
 
   // update rank upper bound of each macrostate based on elevator automaton structure
-  if (elevatorRank.elevatorRank){
-    start = std::chrono::high_resolution_clock::now();
-    this->elevatorRank(comp, elevatorRank.detBeginning);
-    end = std::chrono::high_resolution_clock::now();;
-    stats->elevatorRank = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
-  }
+  // if (elevatorRank.elevatorRank){
+  //   start = std::chrono::high_resolution_clock::now();
+  //   this->elevatorRank(elevatorRank.detBeginning);
+  //   end = std::chrono::high_resolution_clock::now();;
+  //   stats->elevatorRank = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
+  // }
   stats->ranks = this->rankBound;
 
   start = std::chrono::high_resolution_clock::now();
@@ -1343,7 +1376,7 @@ bool BuchiAutomatonSpec::isInherentlyWeak(std::set<int> scc){
   SetStates empty;
   SetStates ini = this->getInitials();
   SetStates newIni;
-  
+
   // states without accepting states
   for (auto state : scc){
     if (fin.find(state) == fin.end()){
@@ -1382,14 +1415,14 @@ bool BuchiAutomatonSpec::isInherentlyWeak(std::set<int> scc){
 }
 
 bool BuchiAutomatonSpec::isElevator(){
-  // get all sorted sccs 
+  // get all sorted sccs
   std::vector<std::set<int>> sccs = this->topologicalSort();
   std::vector<SccClassif> sccClass;
   for (auto scc : sccs){
     SccClassif tmp = {.states = scc, .det = false, .inhWeak = false, .nonDet = false};
     sccClass.push_back(tmp);
   }
-  
+
   // scc classification
   for (auto it = sccClass.begin(); it != sccClass.end(); it++){
     // deterministic
@@ -1411,9 +1444,9 @@ bool BuchiAutomatonSpec::isElevator(){
 /**
  * Updates rankBound of every state based on elevator automaton structure (minimum of these two options)
  */
-std::map<int, int> BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int> nfaSchewe, bool detBeginning){
+std::map<int, int> BuchiAutomatonSpec::elevatorRank(bool detBeginning){
 
-  // get all sorted sccs 
+  // get all sorted sccs
   std::vector<std::set<int>> sccs = this->topologicalSort();
   std::vector<SccClassif> sccClass;
   for (auto scc : sccs){
@@ -1500,8 +1533,8 @@ std::map<int, int> BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int
               rank = scc.rank;
           }
         }
-        it->rank = rank; 
-        n = true; 
+        it->rank = rank;
+        n = true;
       }
 
       // rule #4 : IW
@@ -1581,7 +1614,7 @@ std::map<int, int> BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int
       if (not (it->det or it->inhWeak or it->nonDet)){
         int max = -1;
         for (auto scc : succ){
-          if (max = -1)
+          if (max == -1)
             max = scc.rank;
           else if (max < scc.rank)
             max = scc.rank;
@@ -1639,8 +1672,12 @@ std::map<int, int> BuchiAutomatonSpec::elevatorRank(BuchiAutomaton<StateSch, int
   // output original automaton with ranks
   //std::cerr << this->toHOA(ranks) << std::endl;
 
-  for (auto pr : ranks){
-    std::cerr << pr.first << ": " << pr.second << std::endl;
+  if(this->opt.debug)
+  {
+    cout << "Elevator ranks: " << endl;
+    for (auto pr : ranks){
+      cout << pr.first << ": " << pr.second << endl;
+    }
   }
 
   return ranks;
@@ -1709,6 +1746,8 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
   map<StateSch, int> rnkmap;
   map<set<int>, int> classesMap;
   int classes;
+
+  map<int, int> elevatorBound = this->elevatorRank(this->opt.elevator.detBeginning);
 
   bool sd = false;
   if(this->opt.semidetOpt && this->isSemiDeterministic()){
@@ -1815,7 +1854,7 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
     return { .bound = std::min(a->label.bound, m), .stateBound = a->label.stateBound };
   };
 
-  auto initMaxFnc = [this, &maxReachSize, &minReachSize, &rnkmap] (const StateSch& act) -> RankBound
+  auto initMaxFnc = [this, &maxReachSize, &minReachSize, &rnkmap, &elevatorBound] (const StateSch& act) -> RankBound
   {
     set<int> ret;
     set<int> fin = this->getFinals();
@@ -1867,9 +1906,9 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
     for(const int& s : act.S)
     {
       if(fin.find(s) != fin.end() && rank % 2 != 0)
-        sbound[s] = std::max(rank - 1, 0);
+        sbound[s] = std::min(std::max(rank - 1, 0), elevatorBound[s]);
       else
-        sbound[s] = rank;
+        sbound[s] = std::min(rank, elevatorBound[s]);
     }
     return { .bound = rank, .stateBound = sbound };
   };

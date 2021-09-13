@@ -25,7 +25,7 @@ using std::tuple;
 class AutGraph;
 struct RankBound;
 
-struct elevatorOptions{
+struct ElevatorOptions{
   bool elevatorRank = false;
   bool detBeginning = false;
 };

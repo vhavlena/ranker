@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
   ifstream os;
   //bool error = false;
   bool elevatorTest = false;
-  elevatorOptions elevator = {.elevatorRank = false, .detBeginning = false};
+  //elevatorOptions elevator = {.elevatorRank = false, .detBeginning = false};
 
   args::ArgumentParser parser("Program complementing a (state-based acceptance condition) Buchi automaton.\n", "");
   args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
   args::ValueFlag<std::string> checkFlag(parser, "word", "Product of the result with a given word", {"check"});
   args::ValueFlag<std::string> dataFlowFlag(parser, "dataflow", "Data flow analysis [light/inner]", {"flow"});
   args::ValueFlag<double> weightFlag(parser, "value", "Weight parameter for delay - value in <0,1>", {'w', "weight"});
-  args::Flag elevatorFlag(parser, "elevator rank", "Update rank upper bound of each macrostate based on elevator automaton structure", {"elevator-rank"});
+  args::Flag elevatorFlag(parser, "elevator rank", "Update rank upper bound of each macrostate based on elevator automaton structure", {"no-elevator-rank"});
   args::Flag elevatorDetBeg(parser, "elevator deterministic beginning", "Rank 0/1 to all states in the D/IW component in the beginning", {"det-beg"});
   args::Flag eta4Flag(parser, "eta4", "Max rank optimization - eta 4 only when going from some accepting state", {"eta4"});
   args::Flag elevatorTestFlag(parser, "elevator test", "Test if INPUT is an elevator automaton", {"elevator-test"});
@@ -133,9 +133,9 @@ int main(int argc, char *argv[])
 
   // elevator rank
   if (elevatorFlag){
-    elevator.elevatorRank = true;
-    if (elevatorDetBeg)
-      elevator.detBeginning = true;
+    opt.elevator.elevatorRank = false;
+    // if (elevatorDetBeg)
+    //   elevator.detBeginning = true;
   }
 
   // eta4
@@ -181,7 +181,7 @@ int main(int argc, char *argv[])
 
       try
       {
-        complementAutWrap(&renBA, &comp, &renCompl, &stats, opt, elevator);
+        complementAutWrap(&renBA, &comp, &renCompl, &stats, opt);
       }
       catch (const std::bad_alloc&)
       {
@@ -220,7 +220,7 @@ int main(int argc, char *argv[])
         {
           BuchiAutomaton<int, APSymbol> orig = parseRenameHOABA(parser);
           renBuchi = orig.renameAut();
-          complementAutWrap(&renBuchi, &compBA, &renCompl, &stats, opt, elevator);
+          complementAutWrap(&renBuchi, &compBA, &renCompl, &stats, opt);
           symDict = Aux::reverseMap(orig.getRenameSymbolMap());
         }
         if(autType == AUTGCOBA)
