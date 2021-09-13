@@ -1324,10 +1324,10 @@ unsigned BuchiAutomatonSpec::elevatorStates(){
 
   // propagate BAD back
   if (sortedComponents.size() > 0){
-    for (unsigned i = sortedComponents.size()-1; i >= 0; i--){
+    for (int i = (int)sortedComponents.size()-1; i >= 0; i--){
       if (typeMap[sortedComponents[i]] == BAD){
         // type of all components before this one will also be BAD
-        for (unsigned j = 0; j < i; j++){
+        for (int j = 0; j < i; j++){
           typeMap[sortedComponents[j]] = BAD;
         }
         break;
@@ -1467,6 +1467,14 @@ std::map<int, int> BuchiAutomatonSpec::elevatorRank(bool detBeginning){
       it->inhWeak = true;
   }
 
+  // for(auto cl : sccClass)
+  // {
+  //   cout << cl.det << " " << cl.inhWeak << " " << cl.nonDet << endl;
+  //   for(auto st : cl.states)
+  //     cout << st << " ";
+  //   cout << endl << endl;
+  // }
+
   int absoluteMax = -1;
 
   // apply rules from the last component
@@ -1510,14 +1518,11 @@ std::map<int, int> BuchiAutomatonSpec::elevatorRank(bool detBeginning){
     else if (succ.size() == 0 and not(it->det or it->inhWeak or it->nonDet)){
       std::vector<int> intersection;
       std::set_intersection(it->states.begin(), it->states.end(), this->getFinals().begin(), this->getFinals().end(), std::back_inserter(intersection));
-      it->rank = 2*(it->states.size() - intersection.size()) - 1;
+      it->rank = 2*(it->states.size() - intersection.size());
     }
 
     else {
       int rank = -1;
-      bool n = false;
-      bool iw = false;
-      bool d = false;
 
       // rule #3: N
       if (it->nonDet){
@@ -1534,7 +1539,9 @@ std::map<int, int> BuchiAutomatonSpec::elevatorRank(bool detBeginning){
           }
         }
         it->rank = rank;
-        n = true;
+        //n = true;
+        it->inhWeak = false;
+        it->det = false;
       }
 
       // rule #4 : IW
@@ -1555,9 +1562,10 @@ std::map<int, int> BuchiAutomatonSpec::elevatorRank(bool detBeginning){
         if (it->rank == -1 or rank < it->rank){
           it->rank = rank;
           it->nonDet = false;
-          n = false;
-          iw = true;
         }
+
+        it->nonDet = false;
+        it->det = false;
       }
 
       // rule #5: D
@@ -1604,24 +1612,25 @@ std::map<int, int> BuchiAutomatonSpec::elevatorRank(bool detBeginning){
           it->rank = rank;
           it->nonDet = false;
           it->inhWeak = false;
-          d = true;
-          n = false;
-          iw = false;
         }
+
+        it->nonDet = false;
+        it->inhWeak = false;
       }
 
       // non-elevator scc
       if (not (it->det or it->inhWeak or it->nonDet)){
-        int max = -1;
+        int mx = -1;
         for (auto scc : succ){
-          if (max == -1)
-            max = scc.rank;
-          else if (max < scc.rank)
-            max = scc.rank;
+          if (mx == -1)
+            mx = scc.rank;
+          else if (mx < scc.rank)
+            mx = scc.rank;
         }
         std::vector<int> intersection;
+        mx = max(mx, 0);
         std::set_intersection(it->states.begin(), it->states.end(), this->getFinals().begin(), this->getFinals().end(), std::back_inserter(intersection));
-        it->rank = max + 2*(it->states.size() - intersection.size()) - 1;
+        it->rank = mx + 2*(it->states.size() - intersection.size());
       }
     }
 
@@ -1747,7 +1756,17 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
   map<set<int>, int> classesMap;
   int classes;
 
-  map<int, int> elevatorBound = this->elevatorRank(this->opt.elevator.detBeginning);
+  map<int, int> elevatorBound;
+
+  if(this->opt.elevator.elevatorRank)
+  {
+    elevatorBound = this->elevatorRank(this->opt.elevator.detBeginning);
+  }
+  else
+  {
+    for(int st : this->getStates())
+      elevatorBound[st] = 2*this->getStates().size() - 1;
+  }
 
   bool sd = false;
   if(this->opt.semidetOpt && this->isSemiDeterministic()){
