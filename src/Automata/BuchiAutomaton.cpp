@@ -2,45 +2,6 @@
 #include <boost/math/special_functions/factorials.hpp>
 
 /*
-* Is it an elevator automaton?
-*/
-template <typename State, typename Symbol>
-bool BuchiAutomaton<State, Symbol>::isElevator() {
-  // get all sccs
-  std::vector<std::set<State>> sccs = this->getAutGraphSCCs();
-  for (auto scc : sccs){
-    // is scc deterministic?
-    bool det = true;
-    for (auto state : scc){
-      if (not det)
-        break;
-      for (auto a : this->alph){
-        if (not det)
-          break;
-        unsigned trans = 0;
-        for (auto succ : this->trans[{state, a}]){
-          if (scc.find(succ) != scc.end()){
-            if (trans > 0){
-              det = false;
-              break;
-            }
-            trans++;
-          }
-        }
-      }
-    }
-    // does scc contain accepting states?
-    bool finalStates = false;
-    if (std::any_of(scc.begin(), scc.end(), [this](State state){return this->getFinals().find(state) !=  this->getFinals().end();}))
-      finalStates = true;
-    // problem: nondeterministic scc with accepting states
-    if ((not det) and finalStates)
-      return false;
-  }
-  return true;
-}
-
-/*
  * Rename states and symbols of the automaton to numbers (symbols are renamed
  * by the explicit map).
  * @param mpsymbol Explicit map assigning numbers to original symbols
@@ -235,7 +196,7 @@ std::string BuchiAutomaton<int, string>::toHOA()
   std::map<string, size_t> symb_to_pos;
   size_t symb_cnt = 0;
   for (auto symb : this->alph) {
-    res += " \"" + symb + "\"";
+    res += " \"" + symb + "\"";   
     symb_to_pos.insert({symb, symb_cnt++});
   }
 
@@ -277,7 +238,6 @@ std::string BuchiAutomaton<int, string>::toHOA()
   return res;
 }
 
-
 /*
  * Function converting the automaton <int, APSymbol> to hoa format.
  * @return Hoa representation of the automaton
@@ -285,6 +245,9 @@ std::string BuchiAutomaton<int, string>::toHOA()
 template <>
 std::string BuchiAutomaton<int, APSymbol>::toHOA()
 {
+  /*
+  typedef std::pair<std::string, int> pair;
+  
   // TODO: enter correct symbols (now not retained while doing renameAut)
   std::string res;
   //size_t alph_size = this->alph.size();
@@ -308,9 +271,14 @@ std::string BuchiAutomaton<int, APSymbol>::toHOA()
   res += "properties: trans-labels explicit-labels state-acc\n";
   res += "AP: " + std::to_string(this->apsPattern.size());
 
-  for (auto symb : this->apsPattern) {
-    res += " \"" +  symb + "\"";
-  }
+  // !!! sort map by value !!!
+  std::vector<pair> vec;
+  std::copy(this->apsPattern.begin(), this->apsPattern.end(), std::back_inserter<std::vector<pair>>(vec));
+  std::sort(vec.begin(), vec.end(), [](const pair &l, const pair &r){if (l.second != r.second) return l.second < r.second; return l.first < r.first;});
+
+  for (auto item : vec){
+    res += " \"" + item.first + "\"";
+  } 
 
   // transitions
   res += "\n--BODY--\n";
@@ -328,6 +296,89 @@ std::string BuchiAutomaton<int, APSymbol>::toHOA()
 
       for (auto dst : it->second) {
         res += "[" + symb.toString() + "] " + std::to_string(state_to_seq[dst]) + "\n";
+      }
+    }
+  }
+
+  res += "--END--\n";
+
+  return res;
+  */
+}
+
+template <>
+std::string BuchiAutomaton<int, int>::toHOA(std::map<int, int> sccs)
+{
+  std::string res;
+  size_t alph_size = this->alph.size();
+  res += "HOA: v1\n";
+  res += "States: " + std::to_string(this->states.size()) + "\n";
+
+  // renumber states to be a continuous sequence
+  std::map<int, size_t> state_to_seq;
+  size_t state_cnt = 0;
+  for (auto st : this->states) {
+    state_to_seq.insert({st, state_cnt++});
+  }
+
+  // initial states
+  for (auto st : this->initials) {
+    res += "Start: " + std::to_string(state_to_seq[st]) + "\n";
+  }
+
+  res += "acc-name: Buchi\n";
+  res += "Acceptance: 1 Inf(0)\n";
+  res += "properties: trans-labels explicit-labels state-acc\n";
+  res += "AP: " + std::to_string(alph_size);
+
+  // renumber symbols
+  std::map<string, size_t> symb_to_pos;
+  size_t symb_cnt = 0;
+  for (auto symb : this->alph) {
+    res += " \"" + std::to_string(symb) + "\"";
+    symb_to_pos.insert({std::to_string(symb), symb_cnt++});
+  }
+
+  // transitions
+  res += "\n--BODY--\n";
+  for (auto st : this->states) {
+    size_t seq_st = state_to_seq[st];
+    res += "State: " + std::to_string(seq_st);
+
+    // state label
+    res += " \"" + std::to_string(sccs[st]) + "\"";
+    
+    /*for (auto scc : sccs){
+      if (scc.states.find(st) != scc.states.end()){
+        res += " \"" + std::to_string(scc.rank) + "\"";
+        break;
+      }
+    }*/
+
+    if (this->finals.find(st) != this->finals.end()) {
+      res += " {0}";
+    }
+    res += "\n";
+
+    for (auto symb : this->alph) {
+      auto it = this->trans.find({st, symb});
+      if (it == this->trans.end() || it->second.empty()) continue;
+
+      // construct the string for the symbol first (composed of atomic propositions)
+      std::string symb_str;
+      symb_str += "[";
+      bool first = true;
+      for (size_t i = 0; i < alph_size; ++i) {
+        if (first) first = false;
+        else symb_str += " & ";
+
+        if (symb_to_pos[std::to_string(symb)] != i) symb_str += "!";
+        symb_str += std::to_string(i);
+      }
+      symb_str += "]";
+
+      for (auto dst : it->second) {
+        res += symb_str + " " + std::to_string(state_to_seq[dst]) + "\n";
       }
     }
   }
@@ -672,7 +723,7 @@ template <>
 void BuchiAutomaton<int, APSymbol>::completeAPComplement()
 {
   this->complete(this->getStates().size(), false);
-  set<APSymbol> allsyms;
+  set<APSymbol> allsyms; 
   if(this->getAPPattern().size() > 0)
   {
     vector<int> cnum(this->getAPPattern().size());

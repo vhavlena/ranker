@@ -52,9 +52,18 @@ BuchiAutomaton<int, int> parseRenameBA(ifstream& os, BuchiAutomaton<string, stri
   return orig->renameAut();
 }
 
-void complementAutWrap(BuchiAutomaton<int, int>* ren, BuchiAutomaton<StateSch, int>* complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats, ComplOptions &opt, bool elevatorRank)
+void complementAutWrap(BuchiAutomaton<int, int>* ren, BuchiAutomaton<StateSch, int>* complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats, ComplOptions &opt, elevatorOptions elevatorRank)
 {
-    BuchiAutomatonSpec sp(ren);
+    //TODO
+    // rename automaton
+    map<int, int> id;
+    for(auto al : ren->getAlphabet())
+      id[al] = al;
+    BuchiAutomaton<int, int> renptr = ren->renameAutDict(id);
+    renptr.removeUseless();
+    renptr = renptr.renameAutDict(id);
+    
+    BuchiAutomatonSpec sp(&renptr); //TODO
 
     // ComplOptions opt = { .cutPoint = true, .succEmptyCheck = true, .ROMinState = 8,
     //     .ROMinRank = 6, .CacheMaxState = 6, .CacheMaxRank = 8, .semidetOpt = false };
@@ -62,6 +71,7 @@ void complementAutWrap(BuchiAutomaton<int, int>* ren, BuchiAutomaton<StateSch, i
     BuchiAutomaton<StateSch, int> comp;
 
     comp = sp.complementSchReduced(ren->getFinals(), elevatorRank, stats);
+
     BuchiAutomatonDelay<int> compDelay(comp);
     *complOrig = comp;
 
@@ -69,9 +79,10 @@ void complementAutWrap(BuchiAutomaton<int, int>* ren, BuchiAutomaton<StateSch, i
     stats->generatedTrans = comp.getTransCount();
     stats->generatedTransitionsToTight = compDelay.getTransitionsToTight();
 
-    map<int, int> id;
-    for(auto al : comp.getAlphabet())
-      id[al] = al;
+    // rename automaton
+    //map<int, int> id;
+    //for(auto al : comp.getAlphabet())
+    //  id[al] = al;
     BuchiAutomaton<int, int> renCompl = comp.renameAutDict(id);
     renCompl.removeUseless();
     renCompl = renCompl.renameAutDict(id);
@@ -80,7 +91,7 @@ void complementAutWrap(BuchiAutomaton<int, int>* ren, BuchiAutomaton<StateSch, i
     stats->reachTrans = renCompl.getTransCount();
     stats->engine = "Ranker";
     stats->transitionsToTight = -1;
-    stats->elevator = ren->isElevator(); // original automaton before complementation
+    stats->elevator = sp.isElevator(); // original automaton before complementation
     stats->elevatorStates = sp.elevatorStates();
     stats->originalStates = sp.getStates().size();
     *complRes = renCompl;
@@ -136,7 +147,7 @@ void complementScheweAutWrap(BuchiAutomaton<int, int>* ren, BuchiAutomaton<int, 
     stats->reachStates = renCompl.getStates().size();
     stats->reachTrans = renCompl.getTransCount();
     stats->engine = "Ranker";
-    stats->elevator = ren->isElevator(); // original automaton before complementation
+    stats->elevator = sp.isElevator(); // original automaton before complementation
     stats->elevatorStates = sp.elevatorStates();
     stats->originalStates = sp.getStates().size();
     *complRes = renCompl;
