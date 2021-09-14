@@ -78,7 +78,8 @@ ranker: ranker.cpp $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/BuchiAutomaton.o $(OBJ)/AutomatonStruct.o $(OBJ)/BuchiAutomatonSpec.o \
 	$(OBJ)/RankFunc.o $(OBJ)/AutGraph.o $(OBJ)/Simulations.o $(OBJ)/AuxFunctions.o \
 	$(OBJ)/ranker-general.o $(OBJ)/BuchiAutomatonDebug.o $(OBJ)/BuchiDelay.o \
-	$(OBJ)/GenCoBuchiAutomaton.o $(OBJ)/GenCoBuchiAutomatonCompl.o
+	$(OBJ)/GenCoBuchiAutomaton.o $(OBJ)/GenCoBuchiAutomatonCompl.o \
+	$(OBJ)/ElevatorAutomaton.o
 	$(GCC) $(CPPFLAGS) -o $@ $^ $(SUFF)
 
 ranker-sim: ranker-sim.cpp $(OBJ)/BuchiAutomataParser.o \
@@ -92,7 +93,8 @@ ranker-composition: ranker-composition.cpp $(OBJ)/ranker-general.o $(OBJ)/AuxFun
 	$(OBJ)/RankFunc.o $(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/Simulations.o   $(OBJ)/AutGraph.o  $(OBJ)/BuchiAutomatonSpec.o \
 	$(OBJ)/BuchiAutomatonDebug.o $(OBJ)/BuchiDelay.o $(OBJ)/AutomatonStruct.o \
-	$(OBJ)/GenCoBuchiAutomaton.o $(OBJ)/GenCoBuchiAutomatonCompl.o
+	$(OBJ)/GenCoBuchiAutomaton.o $(OBJ)/GenCoBuchiAutomatonCompl.o \
+	$(OBJ)/ElevatorAutomaton.o
 	$(GCC) $(CPPFLAGS) -o ranker-composition $^ $(SUFF)
 
 ranker-tight: ranker-tight.cpp $(OBJ)/AuxFunctions.o $(OBJ)/ranker-general.o \
@@ -144,6 +146,10 @@ $(OBJ)/Simulations.o: Algorithms/Simulations.cpp Algorithms/Simulations.h \
 $(OBJ)/AutGraph.o: Automata/AutGraph.cpp Automata/AutGraph.h
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 
+$(OBJ)/ElevatorAutomaton.o: Complement/ElevatorAutomaton.cpp Automata/AutomatonStruct.h Automata/BuchiAutomaton.h \
+	Complement/ElevatorAutomaton.h $(OBJ)/BuchiAutomaton.o $(OBJ)/AutomatonStruct.o
+	$(GCC) $(CPPFLAGS) -c -o $@ $<
+
 $(OBJ)/AuxFunctions.o: Algorithms/AuxFunctions.cpp Algorithms/AuxFunctions.h
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 
@@ -151,7 +157,7 @@ $(OBJ)/BuchiAutomatonSpec.o: Complement/BuchiAutomatonSpec.cpp \
 	Automata/BuchiAutomaton.h Automata/AutomatonStruct.h Complement/StateKV.h \
 	Complement/StateSch.h Complement/BuchiAutomatonSpec.h Complement/Options.h \
 	$(OBJ)/RankFunc.o $(OBJ)/AuxFunctions.o $(OBJ)/BuchiDelay.o \
-	$(OBJ)/BuchiAutomaton.o $(OBJ)/AutomatonStruct.o
+	$(OBJ)/BuchiAutomaton.o $(OBJ)/AutomatonStruct.o $(OBJ)/ElevatorAutomaton.o
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 
 $(OBJ)/GenCoBuchiAutomatonCompl.o: Complement/GenCoBuchiAutomatonCompl.cpp Complement/GenCoBuchiAutomatonCompl.h \

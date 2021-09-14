@@ -14,6 +14,7 @@
 #include "../Algorithms/AuxFunctions.h"
 #include "../Automata/BuchiAutomaton.h"
 #include "BuchiDelay.h"
+#include "ElevatorAutomaton.h"
 #include "StateKV.h"
 #include "RankFunc.h"
 #include "StateSch.h"
@@ -22,9 +23,6 @@
 using std::vector;
 using std::set;
 using std::map;
-
-//enum delayVersion : unsigned;
-enum sccType {D, ND, BAD, BOTH}; // deterministic with accepting states / nondeterministic without accepting states / bad = nondeterministic with accepting states / both = deterministic without accepting states
 
 /*
  * Data structure for rank bounding data flow analysis
@@ -62,6 +60,7 @@ private:
   SuccRankCache rankCache;
 
   ComplOptions opt;
+  ElevatorAutomaton elev;
 
 protected:
   RankConstr rankConstr(vector<int>& max, set<int>& states);
@@ -96,7 +95,7 @@ protected:
   vector<RankFunc> getFuncAntichain(set<RankFunc>& tmp);
 
 public:
-  BuchiAutomatonSpec(BuchiAutomaton<int, int> *t) : BuchiAutomaton<int, int>(*t), rankBound(), rankCache()
+  BuchiAutomatonSpec(BuchiAutomaton<int, int> *t) : BuchiAutomaton<int, int>(*t), rankBound(), rankCache(), elev(*t)
   {
     opt = { .cutPoint = false};
   }
@@ -123,17 +122,6 @@ public:
 
   void setComplOptions(ComplOptions& co) { this->opt = co; }
   ComplOptions getComplOptions() const { return this->opt; }
-
-  std::map<int, int> elevatorRank(bool detBeginning);
-  unsigned elevatorStates();
-  vector<set<int>> topologicalSort();
-  void topologicalSortUtil(set<int> currentScc, vector<set<int>> allSccs, map<set<int>, bool> &visited, stack<set<int>> &Stack);
-
-  bool isDeterministic(set<int> scc);
-  bool isNonDeterministic(set<int> scc);
-  bool isInherentlyWeak(set<int> scc);
-
-  bool isElevator();
 
   void getSchRanksTightReduced(vector<RankFunc>& out, vector<int>& max,
       set<int>& states, int symbol, StateSch& macrostate,

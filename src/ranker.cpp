@@ -173,7 +173,7 @@ int main(int argc, char *argv[])
 
       // elevator test
       if (elevatorTest){
-        BuchiAutomatonSpec sp(&renBA);
+        ElevatorAutomaton sp(renBA);
         std::cout << "Elevator automaton: " << (sp.isElevator() ? "Yes" : "No") << std::endl;
         os.close();
         return 0;
@@ -233,7 +233,7 @@ int main(int argc, char *argv[])
 
         // elevator test
         if (elevatorTest && autType == AUTBA){
-          BuchiAutomatonSpec sp(&renBuchi);
+          ElevatorAutomaton sp(renBuchi);
           std::cout << "Elevator automaton: " << (sp.isElevator() ? "Yes" : "No") << std::endl;
           os.close();
           return 0;
