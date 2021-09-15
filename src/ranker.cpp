@@ -221,6 +221,7 @@ int main(int argc, char *argv[])
           BuchiAutomaton<int, APSymbol> orig = parseRenameHOABA(parser);
           renBuchi = orig.renameAut();
           complementAutWrap(&renBuchi, &compBA, &renCompl, &stats, opt);
+          //cout << compBA.toGraphwiz() << endl;
           symDict = Aux::reverseMap(orig.getRenameSymbolMap());
         }
         if(autType == AUTGCOBA)

@@ -1028,7 +1028,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(std::set<
       }
 
       auto it = slTrans.find({st.S, sym});
-      if(it != slTrans.end())
+      if(!st.tight && it != slTrans.end())
       {
         dst.insert(it->second);
       }
