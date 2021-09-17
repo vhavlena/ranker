@@ -44,7 +44,9 @@ int main(int argc, char *argv[])
 
   ComplOptions opt = { .cutPoint = true, .succEmptyCheck = true, .ROMinState = 8,
       .ROMinRank = 6, .CacheMaxState = 6, .CacheMaxRank = 8, .semidetOpt = false,
-      .dataFlow = INNER, .delay = false, .delayVersion = oldVersion, .delayW = 0.5 };
+      .dataFlow = INNER, .delay = false, .delayVersion = oldVersion, .delayW = 0.5,
+      .debug = false, .elevator = { .elevatorRank = true, .detBeginning = false },
+      .sim = true, .sl = true, .reach = true};
 
   try
   {
@@ -166,7 +168,7 @@ int main(int argc, char *argv[])
 
     try
     {
-      ba = parseRenameHOABA(parser);
+      ba = parseRenameHOABA(parser, opt);
       ren = ba.renameAut();
     }
     catch(const ParserException& e)

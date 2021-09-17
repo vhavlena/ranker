@@ -879,19 +879,39 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(std::set<
     cout << comp.toGraphwiz() << endl << endl;
   }
 
-  set<StateSch> slIgnore = this->nfaSlAccept(comp);
-  set<pair<DFAState,int>> slNonEmpty = this->nfaSingleSlNoAccept(comp);
+  set<StateSch> slIgnore;
+  set<pair<DFAState,int>> slNonEmpty;
   set<StateSch> ignoreAll;
-  for(const auto& t : slNonEmpty)
-    ignoreAll.insert({t.first, set<int>(), RankFunc(), 0, false});
-  ignoreAll.insert(slIgnore.begin(), slIgnore.end());
+
+  if(this->opt.sl)
+  {
+    slIgnore = this->nfaSlAccept(comp);
+    slNonEmpty = this->nfaSingleSlNoAccept(comp);
+
+    for(const auto& t : slNonEmpty)
+      ignoreAll.insert({t.first, set<int>(), RankFunc(), 0, false});
+    ignoreAll.insert(slIgnore.begin(), slIgnore.end());
+  }
+
 
   set<StateSch> nfaStates = comp.getStates();
   comst.insert(nfaStates.begin(), nfaStates.end());
 
-  // Compute reachability restrictions
-  map<int, int> reachCons = this->getMinReachSize();
-  map<DFAState, int> maxReach = this->getMaxReachSize(comp, slIgnore);
+  map<int, int> reachCons;
+  map<DFAState, int> maxReach;
+  if(this->opt.reach)
+  {
+    // Compute reachability restrictions
+    reachCons = this->getMinReachSize();
+    maxReach = this->getMaxReachSize(comp, slIgnore);
+  }
+  else
+  {
+    for(const auto& t : comp.getStates())
+      maxReach[t.S] = this->getStates().size();
+    for(const auto& t : this->getStates())
+      reachCons[t] = 0;
+  }
 
   mp.insert(comp.getTransitions().begin(), comp.getTransitions().end());
   finals = set<StateSch>(comp.getFinals());
@@ -978,13 +998,18 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(std::set<
     }
   }
 
+  //cout << " : " << stack.size() << endl;
+
   StateSch init = {getInitials(), set<int>(), RankFunc(), 0, false};
   initials.insert(init);
 
   // simulations
   start = std::chrono::high_resolution_clock::now();
   set<int> cl;
-  this->computeRankSim(cl);
+  if(this->opt.sim)
+  {
+    this->computeRankSim(cl);
+  }
 
   BackRel dirRel = createBackRel(this->getDirectSim());
   BackRel oddRel = createBackRel(this->getOddRankSim());
@@ -993,6 +1018,22 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(std::set<
 
   bool cnt = true;
   unsigned transitionsToTight = 0;
+
+  map<DFAState, set<int> > symsPred;
+  auto tr = comp.getTransitions();
+  for(const auto& m : comp.getStates())
+  {
+    symsPred[m.S] = set<int>();
+    for(int sym : this->getAlphabet())
+    {
+
+      if(tr[{m, sym}].size() > 2)
+        symsPred[m.S].insert(sym);
+      if(tr[{m, sym}].size() == 1 && tr[{m, sym}].begin()->S.size() > 0)
+        symsPred[m.S].insert(sym);
+
+    }
+  }
 
   // tight part construction
   start = std::chrono::high_resolution_clock::now();
@@ -1004,7 +1045,9 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(std::set<
       finals.insert(st);
     cnt = true;
 
-    for(int sym : alph)
+    //cout << st.toString() << endl;
+
+    for(int sym : symsPred[st.S])
     {
       auto pr = std::make_pair(st, sym);
       set<StateSch> dst;
@@ -1274,33 +1317,50 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
 
   for(const StateSch& s : nfaSchewe.getStates())
   {
-    rnkmap[s] = 0;
+    rnkmap[s] = 2*s.S.size() - 1;
   }
 
-  for(const StateSch& s : nfaSchewe.getStates())
+  if(this->opt.sim)
   {
-    for(vector<int>& sub : Aux::getAllSubsets(vector<int>(s.S.begin(), s.S.end())))
+    for(const StateSch& s : nfaSchewe.getStates())
     {
-      set<int> st(sub.begin(), sub.end());
+      rnkmap[s] = 0;
+      for(vector<int>& sub : Aux::getAllSubsets(vector<int>(s.S.begin(), s.S.end())))
+      {
+        set<int> st(sub.begin(), sub.end());
 
-      if(classesMap.find(st) == classesMap.end())
-      {
-        this->computeRankSim(st);
-        classes = Aux::countEqClasses(this->getStates().size(), st, this->getOddRankSim());
-      }
-      else
-      {
-        classes = classesMap[st];
-      }
-      rnkmap[s] = std::max(rnkmap[s], classes);
-      if(sd)
-      {
-        rnkmap[s] = std::min(rnkmap[s], 3);
+        if(classesMap.find(st) == classesMap.end())
+        {
+          this->computeRankSim(st);
+          classes = Aux::countEqClasses(this->getStates().size(), st, this->getOddRankSim());
+        }
+        else
+        {
+          classes = classesMap[st];
+        }
+        rnkmap[s] = std::max(rnkmap[s], classes);
+        if(sd)
+        {
+          rnkmap[s] = std::min(rnkmap[s], 3);
+        }
       }
     }
   }
 
-  auto updPred = [this, &slignore] (LabelState<StateSch, RankBound>* dest, const std::vector<LabelState<StateSch, RankBound>*> sts) -> RankBound
+  map<DFAState, set<int> > symsPred;
+  auto tr = nfaSchewe.getTransitions();
+  for(const auto& m : nfaSchewe.getStates())
+  {
+    symsPred[m.S] = set<int>();
+    for(int sym : this->getAlphabet())
+    {
+      if(tr[{m, sym}].size() > 0)
+        symsPred[m.S].insert(sym);
+
+    }
+  }
+
+  auto updPred = [this, &slignore, &symsPred] (LabelState<StateSch, RankBound>* dest, const std::vector<LabelState<StateSch, RankBound>*> sts) -> RankBound
   {
     int n = this->getStates().size();
     vector<int> mrank(n, 0);
@@ -1313,13 +1373,13 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
       if(tmp->state.S != dest->state.S || slignore.find(dest->state) == slignore.end())
         m = std::max(m, tmp->label.bound);
 
-      set<int> syms;
-      for(int sym : this->getAlphabet())
-      {
-        if(this->succSet(tmp->state.S, sym) == dest->state.S)
-          syms.insert(sym);
-      }
-      for (const int& sym : syms)
+      // set<int> syms;
+      // for(int sym : this->getAlphabet())
+      // {
+      //   if(this->succSet(tmp->state.S, sym) == dest->state.S)
+      //     syms.insert(sym);
+      // }
+      for (const int& sym : symsPred[dest->state.S])
       {
         vector<int> tmpMrank(n, 2*n);
         for(const int& s : tmp->state.S)
@@ -1421,13 +1481,18 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
     rank = std::min(rank, rnkmap[act]);
 
     rank = std::max(2*rank-1, 0);
+    int my = 0;
     for(const int& s : act.S)
     {
       if(fin.find(s) != fin.end() && rank % 2 != 0)
         sbound[s] = std::min(std::max(rank - 1, 0), elevatorBound[s]);
       else
         sbound[s] = std::min(rank, elevatorBound[s]);
+      my = std::max(my, sbound[s]);
     }
+
+    rank = std::min(rank, my);
+
     return { .bound = rank, .stateBound = sbound };
   };
 
@@ -1860,6 +1925,8 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchOpt(bool delay, s
     if(isSchFinal(st))
       finals.insert(st);
     cnt = true;
+
+    //cout << st.toString() << endl;
 
     for(int sym : alph)
     {

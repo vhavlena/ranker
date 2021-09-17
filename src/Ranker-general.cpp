@@ -23,16 +23,26 @@ GeneralizedCoBuchiAutomaton<int, APSymbol> parseRenameHOAGCOBA(BuchiAutomataPars
   return hoa;
 }
 
-BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser)
+BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, ComplOptions opt)
 {
   //BuchiAutomataParser parser(os);
   BuchiAutomaton<int, APSymbol> orig = parser.parseHoaBA();
 
   Simulations sim;
-  auto ranksim = sim.directSimulation<int, APSymbol>(orig, -1);
-  orig.setDirectSim(ranksim);
-  auto cl = set<int>();
-  orig.computeRankSim(cl);
+  if(!opt.sim)
+  {
+    auto ranksim = sim.identity(orig);
+    orig.setDirectSim(ranksim);
+    orig.setOddRankSim(ranksim);
+  }
+  else
+  {
+    auto ranksim = sim.directSimulation<int, APSymbol>(orig, -1);
+    orig.setDirectSim(ranksim);
+
+    auto cl = set<int>();
+    orig.computeRankSim(cl);
+  }
 
   return orig;
 }
@@ -92,8 +102,8 @@ void complementAutWrap(BuchiAutomaton<int, int>* ren, BuchiAutomaton<StateSch, i
     stats->reachTrans = renCompl.getTransCount();
     stats->engine = "Ranker";
     stats->transitionsToTight = -1;
-    stats->elevator = elev.isElevator(); // original automaton before complementation
-    stats->elevatorStates = elev.elevatorStates();
+    // stats->elevator = elev.isElevator(); // original automaton before complementation
+    // stats->elevatorStates = elev.elevatorStates();
     stats->originalStates = sp.getStates().size();
     *complRes = renCompl;
 }

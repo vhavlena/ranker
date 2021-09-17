@@ -34,11 +34,11 @@ public:
   std::map<int, int> elevatorRank(bool detBeginning);
 
 protected:
-  bool isDeterministic(std::set<int> scc);
-  bool isNonDeterministic(std::set<int> scc);
-  bool isInherentlyWeak(std::set<int> scc);
+  bool isDeterministic(std::set<int>& scc, map<int, set<int> >& predSyms);
+  bool isNonDeterministic(std::set<int>& scc);
+  bool isInherentlyWeak(std::set<int>& scc, map<int, set<int> >& predSyms);
 
-  void topologicalSortUtil(std::set<int> currentScc, std::vector<std::set<int>> allSccs, std::map<std::set<int>, bool> &visited, std::stack<std::set<int>> &Stack);
+  void topologicalSortUtil(std::set<int> currentScc, std::vector<std::set<int>> allSccs, std::map<std::set<int>, bool> &visited, std::stack<std::set<int>> &Stack, vector<set<int>>& adjList);
 
 };
 

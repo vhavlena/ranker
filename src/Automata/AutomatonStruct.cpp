@@ -138,6 +138,21 @@ std::set<State> AutomatonStruct<State, Symbol> :: getAllSuccessors(State state)
   return successors;
 }
 
+
+template<typename State, typename Symbol>
+std::set<State> AutomatonStruct<State, Symbol> :: getAllSuccessors(State state, map<State, set<Symbol>>& predMap)
+{
+  std::set<State> successors;
+  std::set<State> tmp;
+  for (auto symbol : predMap[state])
+  {
+    tmp = this->trans[std::pair<State, Symbol>(state, symbol)];
+    successors.insert(tmp.begin(), tmp.end());
+  }
+  return successors;
+}
+
+
 /*
  * Get reachable states wrt given restrictions
  * @params from Initial state

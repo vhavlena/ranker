@@ -33,6 +33,10 @@ struct ComplOptions
   bool debug = false;
 
   ElevatorOptions elevator = { .elevatorRank = true, .detBeginning = false };
+
+  bool sim = true;
+  bool sl = true;
+  bool reach = true;
 };
 
 #endif

@@ -52,7 +52,7 @@ BuchiAutomaton<int, int> createBA(vector<int>& loop);
 void complementGcoBAWrap(GeneralizedCoBuchiAutomaton<int, int> *ren, BuchiAutomaton<StateGcoBA, int> *complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats);
 
 GeneralizedCoBuchiAutomaton<int, APSymbol> parseRenameHOAGCOBA(BuchiAutomataParser& parser);
-BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser);
+BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, ComplOptions opt);
 
 /**
  * @brief  Retrieves the help message

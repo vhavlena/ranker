@@ -90,12 +90,14 @@ class BuchiAutomaton : public AutomatonStruct<State, Symbol> {
 
 public:
   typedef std::set<State> SetStates;
+  typedef std::vector< Transition<State, Symbol> > SetTrans;
   typedef std::set<Symbol> SetSymbols;
   typedef Delta<State, Symbol> Transitions;
   typedef std::set<std::pair<State, State> > StateRelation;
 
 private:
   SetStates finals;
+  SetTrans accTrans;
 
   StateRelation directSim;
   StateRelation oddRankSim;
@@ -115,16 +117,37 @@ public:
   BuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans) : AutomatonStruct<State, Symbol>(st, ini, trans)
   {
     this->finals = fin;
+    this->accTrans = SetTrans();
   }
 
   BuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans, SetSymbols alp) : AutomatonStruct<State, Symbol>(st, ini, trans, alp)
   {
     this->finals = fin;
+    this->accTrans = SetTrans();
   }
 
   BuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans, SetSymbols alp, vector<string> aps) : AutomatonStruct<State, Symbol>(st, ini, trans, alp, aps)
   {
     this->finals = fin;
+    this->accTrans = SetTrans();
+  }
+
+  BuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans, SetTrans accTr) : AutomatonStruct<State, Symbol>(st, ini, trans)
+  {
+    this->finals = fin;
+    this->accTrans = accTr;
+  }
+
+  BuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans, SetTrans accTr, SetSymbols alp) : AutomatonStruct<State, Symbol>(st, ini, trans, alp)
+  {
+    this->finals = fin;
+    this->accTrans = accTr;
+  }
+
+  BuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans, SetTrans accTr, SetSymbols alp, vector<string> aps) : AutomatonStruct<State, Symbol>(st, ini, trans, alp, aps)
+  {
+    this->finals = fin;
+    this->accTrans = accTr;
   }
 
   BuchiAutomaton() : BuchiAutomaton({}, {}, {}, {}) {};
@@ -142,6 +165,7 @@ public:
     this->renameSymbolMap = other.renameSymbolMap;
     this->invRenameMap = other.invRenameMap;
     this->apsPattern = other.apsPattern;
+    this->accTrans = other.accTrans;
   }
 
   // BuchiAutomaton<State, Symbol>& operator=(BuchiAutomaton<State, Symbol> other)
@@ -173,6 +197,7 @@ public:
     this->renameSymbolMap = other.renameSymbolMap;
     this->invRenameMap = other.invRenameMap;
     this->apsPattern = other.apsPattern;
+    this->accTrans = other.accTrans;
     return *this;
   }
 
@@ -404,6 +429,8 @@ public:
   BuchiAutomaton<State, Symbol> reverseBA();
 
   BuchiAutomaton<StateSch, int> getComplStructure(std::map<int, StateSch>& mpst);
+
+  map<State, set<Symbol> > getPredSymbolMap();
 };
 
 #endif

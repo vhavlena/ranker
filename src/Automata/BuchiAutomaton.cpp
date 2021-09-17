@@ -1249,6 +1249,26 @@ BuchiAutomaton<StateSch, int> BuchiAutomaton<int, int>::getComplStructure(std::m
   return ret;
 }
 
+
+template <typename State, typename Symbol>
+map<State, set<Symbol> > BuchiAutomaton<State, Symbol>::getPredSymbolMap()
+{
+  auto trans = this->getTransitions();
+  map<State, set<Symbol>> ret;
+  for(const State& s : this->getStates())
+  {
+    ret[s] = set<Symbol>();
+    for(const Symbol& sym : this->getAlphabet())
+    {
+      if(trans[{s, sym}].size() > 0)
+        ret[s].insert(sym);
+    }
+  }
+  return ret;
+}
+
+
+
 template class BuchiAutomaton<int, int>;
 template class BuchiAutomaton<std::string, std::string>;
 template class BuchiAutomaton<StateSch, int>;

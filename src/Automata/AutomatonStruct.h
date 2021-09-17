@@ -243,6 +243,7 @@ public:
   void getAutGraphComponents(AdjList& adjList, Vertices& vrt);
   set<State> getSelfLoops();
   set<State> getAllSuccessors(State state);
+  set<State> getAllSuccessors(State state, map<State, set<Symbol>>& predMap);
 
   /*
    * Implementation of a simple data flow analysis. The values are iteratively

@@ -43,11 +43,13 @@ int main(int argc, char *argv[])
   args::Flag eta4Flag(parser, "eta4", "Max rank optimization - eta 4 only when going from some accepting state", {"eta4"});
   args::Flag elevatorTestFlag(parser, "elevator test", "Test if INPUT is an elevator automaton", {"elevator-test"});
   args::Flag debugFlag(parser, "debug", "Print debug statistics", {"debug"});
+  args::Flag lightFlag(parser, "light", "Use lightweight optimizations", {"light"});
 
   ComplOptions opt = { .cutPoint = true, .succEmptyCheck = true, .ROMinState = 8,
       .ROMinRank = 6, .CacheMaxState = 6, .CacheMaxRank = 8, .semidetOpt = false,
       .dataFlow = INNER, .delay = false, .delayVersion = oldVersion, .delayW = 0.5,
-      .debug = false, .elevator = { .elevatorRank = true, .detBeginning = false }};
+      .debug = false, .elevator = { .elevatorRank = true, .detBeginning = false },
+      .sim = true, .sl = true, .reach = true};
 
   try
   {
@@ -151,6 +153,16 @@ int main(int argc, char *argv[])
     }
   }
 
+  if(lightFlag)
+  {
+    opt.sim = false;
+    opt.sl = false;
+    opt.reach = false;
+    opt.succEmptyCheck = false;
+    opt.elevator.elevatorRank = true;
+    opt.dataFlow = LIGHT;
+  }
+
 
   string filename(params.input);
   os.open(filename);
@@ -218,10 +230,13 @@ int main(int argc, char *argv[])
       {
         if(autType == AUTBA)
         {
-          BuchiAutomaton<int, APSymbol> orig = parseRenameHOABA(parser);
+          BuchiAutomaton<int, APSymbol> orig = parseRenameHOABA(parser, opt);
           renBuchi = orig.renameAut();
           complementAutWrap(&renBuchi, &compBA, &renCompl, &stats, opt);
           //cout << compBA.toGraphwiz() << endl;
+
+          // for (auto t : compBA.getRenameStateMap())
+          //   cout << t.first << " " << t.second << endl;
           symDict = Aux::reverseMap(orig.getRenameSymbolMap());
         }
         if(autType == AUTGCOBA)
