@@ -206,6 +206,7 @@ BuchiAutomaton<int, APSymbol> BuchiAutomataParser::parseHoaBA()
   set<APSymbol> syms;
   int statesnum = 0;
   vector<string> aps;
+  VecTrans<int, APSymbol> accTrans;
 
   string line;
   string linecp;
@@ -261,11 +262,11 @@ BuchiAutomaton<int, APSymbol> BuchiAutomataParser::parseHoaBA()
 
     else if(line.rfind("--BODY--", 0) == 0)
     {
-      trans = parseHoaBodyBA(aps.size(), this->os, finsBA);
+      trans = parseHoaBodyBA(aps.size(), this->os, finsBA, accTrans);
     }
   }
 
-  return BuchiAutomaton<int, APSymbol>(states, finsBA, ini, trans, syms, aps);
+  return BuchiAutomaton<int, APSymbol>(states, finsBA, ini, trans, accTrans, syms, aps);
 }
 
 /*
@@ -363,14 +364,16 @@ GeneralizedCoBuchiAutomaton<int, APSymbol> BuchiAutomataParser::parseHoaGCOBA()
  * @param line String with the transition
  * @return Transition
  */
-Transition<int, APSymbol> BuchiAutomataParser::parseHoaTransition(int srcstate, int apNum, string& line)
+Transition<int, APSymbol> BuchiAutomataParser::parseHoaTransition(int srcstate, int apNum, string& line, bool* acc)
 {
-  boost::regex e("\\s*\\[([!&\\|\\s0-9]+)\\]\\s*([0-9]+)");
+  boost::regex e("\\s*\\[([!&\\|\\s0-9]+)\\]\\s*([0-9]+)\\s*(\\{\\s*0\\s*\\})?");
   boost::smatch what;
   if(boost::regex_match(line, what, e))
   {
     string tr = what[1];
     int dest = std::stoi(what[2]);
+    if(what[3].length() > 1)
+      *acc = true;
     return {srcstate, dest, parseHoaExpression(tr, apNum)};
   }
   else
@@ -386,7 +389,7 @@ Transition<int, APSymbol> BuchiAutomataParser::parseHoaTransition(int srcstate, 
  * @param finsBA Accepting states of the BA
  * @return Transition function
  */
-Delta<int, APSymbol> BuchiAutomataParser::parseHoaBodyBA(int apNum, ifstream & os, set<int>& finsBA)
+Delta<int, APSymbol> BuchiAutomataParser::parseHoaBodyBA(int apNum, ifstream & os, set<int>& finsBA, VecTrans<int, APSymbol>& accTrans)
 {
   Delta<int, APSymbol> trans;
   int src;
@@ -424,7 +427,10 @@ Delta<int, APSymbol> BuchiAutomataParser::parseHoaBodyBA(int apNum, ifstream & o
     }
     else
     {
-      Transition<int, APSymbol> tr = parseHoaTransition(src, apNum, line);
+      bool acc = false;
+      Transition<int, APSymbol> tr = parseHoaTransition(src, apNum, line, &acc);
+      if(acc)
+        accTrans.push_back(tr);
       auto pr = std::make_pair(src, tr.symbol);
       if(trans.find(pr) == trans.end())
       {
@@ -502,7 +508,8 @@ Delta<int, APSymbol> BuchiAutomataParser::parseHoaBodyGCOBA(int apNum, ifstream 
     }
     else
     {
-      Transition<int, APSymbol> tr = parseHoaTransition(src, apNum, line);
+      bool acc = false;
+      Transition<int, APSymbol> tr = parseHoaTransition(src, apNum, line, &acc);
       auto pr = std::make_pair(src, tr.symbol);
       if(trans.find(pr) == trans.end())
       {

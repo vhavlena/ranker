@@ -20,6 +20,7 @@ BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAutDict(map<Symbol
   std::set<int> rfin;
   std::set<int> rini;
   set<int> rsym;
+  VecTrans<int, int> ftrans;
   this->invRenameMap = std::vector<State>(this->states.size() + start);
 
   for(auto st : this->states)
@@ -45,8 +46,14 @@ BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAutDict(map<Symbol
     std::set<int> to = Aux::mapSet(mpstate, p.second);
     rtrans.insert({std::make_pair(mpstate[p.first.first], val), to});
   }
+  for(unsigned i = 0; i < this->accTrans.size(); i++)
+  {
+    ftrans.push_back({ .from = mpstate[this->accTrans[i].from],
+        .to = mpstate[this->accTrans[i].to],
+        .symbol = mpsymbol[this->accTrans[i].symbol] });
+  }
 
-  auto ret = BuchiAutomaton<int, int>(rstate, rfin, rini, rtrans, rsym);
+  auto ret = BuchiAutomaton<int, int>(rstate, rfin, rini, rtrans, ftrans, rsym);
   this->renameStateMap = mpstate;
   this->renameSymbolMap = mpsymbol;
 
@@ -88,6 +95,10 @@ std::string BuchiAutomaton<State, Symbol>::toStringWith(std::function<std::strin
   for(auto p : this->finals)
     str += stateStr(p) + "\n";
 
+  for(const auto& tr : this->accTrans)
+    str += symStr(tr.symbol) + "," + stateStr(tr.from)
+      + "->" + stateStr(tr.to) + "\n";
+
   if(str.back() == '\n')
     str.pop_back();
   return str;
@@ -104,6 +115,11 @@ template <typename State, typename Symbol>
 std::string BuchiAutomaton<State, Symbol>::toGffWith(std::function<std::string(State)>& stateStr,
   std::function<std::string(Symbol)>& symStr)
 {
+  /*
+  TODO: add support for accepting transitions
+  */
+  assert(this->accTrans.size() == 0);
+
   int tid = 0;
   std::string str = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n";
   str += "<structure label-on=\"transition\" type=\"fa\">\n";
@@ -189,7 +205,7 @@ std::string BuchiAutomaton<int, string>::toHOA()
 
   res += "acc-name: Buchi\n";
   res += "Acceptance: 1 Inf(0)\n";
-  res += "properties: trans-labels explicit-labels state-acc\n";
+  res += "properties: trans-labels explicit-labels\n";
   res += "AP: " + std::to_string(alph_size);
 
   // renumber symbols
@@ -228,7 +244,11 @@ std::string BuchiAutomaton<int, string>::toHOA()
       symb_str += "]";
 
       for (auto dst : it->second) {
-        res += symb_str + " " + std::to_string(state_to_seq[dst]) + "\n";
+        Transition<int, string> tr = { .from = st, .to = dst, .symbol = symb};
+        if(std::find(this->accTrans.begin(), this->accTrans.end(), tr) != this->accTrans.end())
+          res += symb_str + " " + std::to_string(state_to_seq[dst]) + " {0} \n";
+        else
+          res += symb_str + " " + std::to_string(state_to_seq[dst]) + "\n";
       }
     }
   }
@@ -286,7 +306,11 @@ std::string BuchiAutomaton<int, APSymbol>::toHOA()
       if (it == this->trans.end() || it->second.empty()) continue;
 
       for (auto dst : it->second) {
-        res += "[" + symb.toString() + "] " + std::to_string(state_to_seq[dst]) + "\n";
+        Transition<int, APSymbol> tr = { .from = st, .to = dst, .symbol = symb};
+        if(std::find(this->accTrans.begin(), this->accTrans.end(), tr) != this->accTrans.end())
+          res += "[" + symb.toString() + "] " + std::to_string(state_to_seq[dst]) + " {0} \n";
+        else
+          res += "[" + symb.toString() + "] " + std::to_string(state_to_seq[dst]) + "\n";
       }
     }
   }
@@ -368,7 +392,11 @@ std::string BuchiAutomaton<int, int>::toHOA(std::map<int, int> sccs)
       symb_str += "]";
 
       for (auto dst : it->second) {
-        res += symb_str + " " + std::to_string(state_to_seq[dst]) + "\n";
+        Transition<int, int> tr = { .from = st, .to = dst, .symbol = symb };
+        if(std::find(this->accTrans.begin(), this->accTrans.end(), tr) != this->accTrans.end())
+          res += symb_str + " " + std::to_string(state_to_seq[dst]) + " {0} \n";
+        else
+          res += symb_str + " " + std::to_string(state_to_seq[dst]) + "\n";
       }
     }
   }
@@ -402,8 +430,14 @@ std::string BuchiAutomaton<State, Symbol>::toGraphwizWith(std::function<std::str
   for (auto p : this->trans)
   {
     for(auto d : p.second)
+    {
+      std::string isAcc = "";
+      Transition<State, Symbol> tr = { .from = p.first.first, .to = d, .symbol = p.first.second };
+      if(std::find(this->accTrans.begin(), this->accTrans.end(), tr) != this->accTrans.end())
+        isAcc = "\\n{0}";
       str +=  "\"" + stateStr(p.first.first) + "\" -> \"" + stateStr(d) +
-        + "\" [label = \"" + symStr(p.first.second) + "\"];\n";
+        + "\" [label = \"" + symStr(p.first.second) + isAcc + "\"];\n";
+    }
   }
   str += "}\n";
   return str;
@@ -603,6 +637,12 @@ void BuchiAutomaton<int, int>::removeUseless()
   vector<vector<int> > revList(this->states.size());
   vector<VertItem> vrt;
 
+  set<pair<int, int> > accTrSet;
+  for(const auto& tr : this->accTrans)
+  {
+    accTrSet.insert({tr.from, tr.to});
+  }
+
   getAutGraphComponents(adjList, vrt);
   for(unsigned i = 0; i < adjList.size(); i++)
   {
@@ -611,7 +651,7 @@ void BuchiAutomaton<int, int>::removeUseless()
   }
 
   AutGraph gr(adjList, vrt, this->finals);
-  gr.computeSCCs();
+  gr.computeSCCs(accTrSet);
   set<int> fin;
   for(auto s : gr.getFinalComponents())
   {
@@ -638,6 +678,7 @@ void BuchiAutomaton<State, Symbol>::restriction(set<State>& st)
   Transitions newtrans;
   set<State> newfin;
   set<State> newini;
+  VecTrans<State, Symbol> ftrans;
   for(auto tr : this->trans)
   {
     if(st.find(tr.first.first) == st.end())
@@ -649,6 +690,13 @@ void BuchiAutomaton<State, Symbol>::restriction(set<State>& st)
     newtrans[tr.first] = dst;
   }
 
+  for(const auto& tr : this->accTrans)
+  {
+    if(st.find(tr.to) == st.end() || st.find(tr.from) == st.end())
+      continue;
+    ftrans.push_back(tr);
+  }
+
   std::set_intersection(this->finals.begin(),this->finals.end(),st.begin(),
     st.end(), std::inserter(newfin, newfin.begin()));
   std::set_intersection(this->initials.begin(),this->initials.end(),st.begin(),
@@ -657,6 +705,7 @@ void BuchiAutomaton<State, Symbol>::restriction(set<State>& st)
   this->states = st;
   this->finals = newfin;
   this->initials = newini;
+  this->accTrans = ftrans;
 }
 
 
@@ -737,6 +786,11 @@ void BuchiAutomaton<int, APSymbol>::completeAPComplement()
 template <typename State, typename Symbol>
 void BuchiAutomaton<State, Symbol>::computeRankSim(std::set<State>& cl)
 {
+  /*
+  TODO: add support for accepting transitions
+  */
+  assert(this->accTrans.size() == 0);
+
   StateRelation rel = this->directSim;
   bool add = false;
   std::map<Symbol, bool> ignore;
@@ -780,6 +834,11 @@ void BuchiAutomaton<State, Symbol>::computeRankSim(std::set<State>& cl)
 template <typename State, typename Symbol>
 bool BuchiAutomaton<State, Symbol>::containsRankSimEq(std::set<State>& cl)
 {
+  /*
+  TODO: add support for accepting transitions
+  */
+  assert(this->accTrans.size() == 0);
+
   this->computeRankSim(cl);
   for(auto& item : this->oddRankSim)
   {
@@ -801,6 +860,11 @@ template <typename State, typename Symbol>
 void BuchiAutomaton<State, Symbol>::transitiveClosure(
     BuchiAutomaton<State, Symbol>::StateRelation& rel, std::set<State>& cl)
 {
+  /*
+  TODO: add support for accepting transitions
+  */
+  assert(this->accTrans.size() == 0);
+
   unsigned s = rel.size();
   do
   {
@@ -831,6 +895,11 @@ template <typename State, typename Symbol>
 bool BuchiAutomaton<State, Symbol>::deriveRankConstr(State& st1, State& st2,
     BuchiAutomaton<State, Symbol>::StateRelation& rel)
 {
+  /*
+  TODO: add support for accepting transitions
+  */
+  assert(this->accTrans.size() == 0);
+
   bool leq = true;
   bool geq = true;
   bool ret = false;
@@ -871,6 +940,11 @@ void BuchiAutomaton<State, Symbol>::propagateFwd(State& st1, State& st2,
     BuchiAutomaton<State, Symbol>::StateRelation& rel,
     BuchiAutomaton<State, Symbol>::StateRelation& nw)
 {
+  /*
+  TODO: add support for accepting transitions
+  */
+  assert(this->accTrans.size() == 0);
+
   std::set<State> fset1, fset2;
   std::set_difference(set1.begin(), set1.end(), this->finals.begin(), this->finals.end(),
     std::inserter(fset1, fset1.begin()));
@@ -895,6 +969,11 @@ template <typename State, typename Symbol>
 bool BuchiAutomaton<State, Symbol>::isRankLeq(std::set<State>& set1, std::set<State>& set2,
     BuchiAutomaton<State, Symbol>::StateRelation& rel)
 {
+  /*
+  TODO: add support for accepting transitions
+  */
+  assert(this->accTrans.size() == 0);
+
   for(State st1 : set1)
   {
     if(this->finals.find(st1) != this->finals.end())
@@ -920,9 +999,6 @@ template <typename State, typename Symbol>
 set<State> BuchiAutomaton<State, Symbol>::getEventReachable(set<State>& sls)
 {
   BuchiAutomaton<int, int> renAutBA = this->renameAut();
-
-  // if (dynamic_cast<BuchiAutomaton<int, int>*>(renAut)){
-  //   BuchiAutomaton<int, int> *renAutBA = (BuchiAutomaton<int, int>*)renAut;
 
   vector<vector<int>> adjList(this->states.size());
   std::set<int> ini = renAutBA.getInitials();
@@ -1016,8 +1092,14 @@ bool BuchiAutomaton<int, int>::isEmpty()
 
   getAutGraphComponents(adjList, vrt);
 
+  set<pair<int, int> > accTrSet;
+  for(const auto& tr : this->accTrans)
+  {
+    accTrSet.insert({tr.from, tr.to});
+  }
+
   AutGraph gr(adjList, vrt, this->finals);
-  gr.computeSCCs();
+  gr.computeSCCs(accTrSet);
   set<int> fin;
   for(auto s : gr.getFinalComponents())
   {
@@ -1043,6 +1125,11 @@ bool BuchiAutomaton<int, int>::isEmpty()
 template <typename State, typename Symbol>
 BuchiAutomaton<tuple<State, int, bool>, Symbol> BuchiAutomaton<State, Symbol>::productBA(BuchiAutomaton<int, Symbol>& other)
 {
+  /*
+  TODO: add support for accepting transitions
+  */
+  assert(this->accTrans.size() == 0);
+
   typedef tuple<State, int, bool> ProdState;
   set<ProdState> nstates;
   set<ProdState> nini;
@@ -1123,6 +1210,11 @@ BuchiAutomaton<tuple<State, int, bool>, Symbol> BuchiAutomaton<State, Symbol>::p
 template <typename State, typename Symbol>
 BuchiAutomaton<pair<State, int>, Symbol> BuchiAutomaton<State, Symbol>::cartProductBA(BuchiAutomaton<int, Symbol>& other)
 {
+  /*
+  TODO: add support for accepting transitions
+  */
+  assert(this->accTrans.size() == 0);
+
   typedef pair<State, int> ProdState;
   set<ProdState> nstates;
   set<ProdState> nini;
@@ -1185,6 +1277,10 @@ BuchiAutomaton<pair<State, int>, Symbol> BuchiAutomaton<State, Symbol>::cartProd
 template <typename State, typename Symbol>
 BuchiAutomaton<State, Symbol> BuchiAutomaton<State, Symbol>::unionBA(BuchiAutomaton<State, Symbol>& other)
 {
+  /*
+  TODO: add support for accepting transitions
+  */
+  assert(this->accTrans.size() == 0);
 
   set<State> nstates;
   set<State> nini;
@@ -1219,7 +1315,13 @@ template <typename State, typename Symbol>
 BuchiAutomaton<State, Symbol> BuchiAutomaton<State, Symbol>::reverseBA()
 {
   Transitions rev = this->getReverseTransitions();
-  return BuchiAutomaton(this->getStates(), this->getInitials(), this->getFinals(), rev, this->getAlphabet());
+  VecTrans<State, Symbol> revAccTr;
+  for(const auto& tr : this->accTrans)
+  {
+    revAccTr.push_back({ .from = tr.to, .symbol = tr.symbol, .to = tr.from });
+  }
+
+  return BuchiAutomaton(this->getStates(), this->getInitials(), this->getFinals(), rev, revAccTr, this->getAlphabet());
 }
 
 

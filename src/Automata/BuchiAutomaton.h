@@ -90,14 +90,14 @@ class BuchiAutomaton : public AutomatonStruct<State, Symbol> {
 
 public:
   typedef std::set<State> SetStates;
-  typedef std::vector< Transition<State, Symbol> > SetTrans;
+  typedef VecTrans<State, Symbol> VecTransG;
   typedef std::set<Symbol> SetSymbols;
   typedef Delta<State, Symbol> Transitions;
   typedef std::set<std::pair<State, State> > StateRelation;
 
 private:
   SetStates finals;
-  SetTrans accTrans;
+  VecTransG accTrans;
 
   StateRelation directSim;
   StateRelation oddRankSim;
@@ -117,34 +117,34 @@ public:
   BuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans) : AutomatonStruct<State, Symbol>(st, ini, trans)
   {
     this->finals = fin;
-    this->accTrans = SetTrans();
+    this->accTrans = VecTransG();
   }
 
   BuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans, SetSymbols alp) : AutomatonStruct<State, Symbol>(st, ini, trans, alp)
   {
     this->finals = fin;
-    this->accTrans = SetTrans();
+    this->accTrans = VecTransG();
   }
 
   BuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans, SetSymbols alp, vector<string> aps) : AutomatonStruct<State, Symbol>(st, ini, trans, alp, aps)
   {
     this->finals = fin;
-    this->accTrans = SetTrans();
+    this->accTrans = VecTransG();
   }
 
-  BuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans, SetTrans accTr) : AutomatonStruct<State, Symbol>(st, ini, trans)
+  BuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans, VecTransG accTr) : AutomatonStruct<State, Symbol>(st, ini, trans)
   {
     this->finals = fin;
     this->accTrans = accTr;
   }
 
-  BuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans, SetTrans accTr, SetSymbols alp) : AutomatonStruct<State, Symbol>(st, ini, trans, alp)
+  BuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans, VecTransG accTr, SetSymbols alp) : AutomatonStruct<State, Symbol>(st, ini, trans, alp)
   {
     this->finals = fin;
     this->accTrans = accTr;
   }
 
-  BuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans, SetTrans accTr, SetSymbols alp, vector<string> aps) : AutomatonStruct<State, Symbol>(st, ini, trans, alp, aps)
+  BuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans, VecTransG accTr, SetSymbols alp, vector<string> aps) : AutomatonStruct<State, Symbol>(st, ini, trans, alp, aps)
   {
     this->finals = fin;
     this->accTrans = accTr;
@@ -223,6 +223,8 @@ public:
     std::set<int> rfin;
     std::set<int> rini;
     set<int> rsym;
+    VecTrans<int, int> ftrans;
+
     this->invRenameMap = std::vector<State>(this->states.size() + start);
 
     for(auto st : this->states)
@@ -260,7 +262,14 @@ public:
       rtrans.insert({std::make_pair(mpstate[p.first.first], val), to});
     }
 
-    BuchiAutomaton<int, int> ret = BuchiAutomaton<int, int>(rstate, rfin, rini, rtrans, rsym);
+    for(unsigned i = 0; i < this->accTrans.size(); i++)
+    {
+      ftrans.push_back({ .from = mpstate[this->accTrans[i].from],
+          .to = mpstate[this->accTrans[i].to],
+          .symbol = mpsymbol[this->accTrans[i].symbol] });
+    }
+
+    BuchiAutomaton<int, int> ret = BuchiAutomaton<int, int>(rstate, rfin, rini, rtrans, ftrans, rsym);
     this->renameStateMap = mpstate;
     this->renameSymbolMap = mpsymbol;
 
@@ -293,6 +302,7 @@ public:
   {
     std::set<NewSymbol> ralph;
     Delta<State, NewSymbol> rtrans;
+    VecTrans<State, NewSymbol> ftrans;
     for(const auto& al : this->alph)
     {
       ralph.insert(mpsymbol[al]);
@@ -302,7 +312,12 @@ public:
       NewSymbol val = mpsymbol[p.first.second];
       rtrans.insert({std::make_pair(p.first.first, val), p.second});
     }
-    auto ret = BuchiAutomaton<State, NewSymbol>(this->states, this->finals, this->initials, rtrans, ralph, this->apsPattern);
+    for(unsigned i = 0; i < this->accTrans.size(); i++)
+    {
+      ftrans.push_back({ .from = this->accTrans[i].from, .to = this->accTrans[i].to,
+          .symbol = mpsymbol[this->accTrans[i].symbol] });
+    }
+    auto ret = BuchiAutomaton<State, NewSymbol>(this->states, this->finals, this->initials, rtrans, ftrans, ralph, this->apsPattern);
     ret.setDirectSim(this->directSim);
     ret.setOddRankSim(this->oddRankSim);
     ret.setAPPattern(this->apsPattern);
@@ -316,6 +331,11 @@ public:
   SetStates& getFinals()
   {
     return this->finals;
+  }
+
+  VecTransG& getFinTrans()
+  {
+    return this->accTrans;
   }
 
   void addStates(State state){
@@ -416,7 +436,14 @@ public:
    */
   bool isSemiDeterministic()
   {
-    return this->isReachDeterministic(this->finals);
+    set<State> rch;
+    for(const auto& tr : this->accTrans)
+      rch.insert(tr.from);
+
+    set<State> sun;
+    set_union(rch.begin(), rch.end(), this->finals.begin(), this->finals.end(),
+        inserter(sun, sun.begin()));
+    return this->isReachDeterministic(sun);
   }
 
   void setFinals(SetStates finals){
@@ -431,6 +458,11 @@ public:
   BuchiAutomaton<StateSch, int> getComplStructure(std::map<int, StateSch>& mpst);
 
   map<State, set<Symbol> > getPredSymbolMap();
+
+  bool isTBA() const
+  {
+    return this->accTrans.size() > 0;
+  }
 };
 
 #endif

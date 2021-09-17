@@ -15,6 +15,7 @@ using std::map;
 using std::vector;
 using std::string;
 using std::stack;
+using std::pair;
 
 /*
  * Vertex with additional information for Tarjan
@@ -65,6 +66,7 @@ public:
   }
 
   void computeSCCs();
+  void computeSCCs(set<pair<int, int> >& accTrans);
   void computeSCCs(map<int, set<int>> finals, bool coBuchi, std::vector<std::vector<int>> alCycles);
   set<int> reachableVertices(set<int>& from);
   static set<int> reachableVertices(AdjList &lst, set<int>& from);

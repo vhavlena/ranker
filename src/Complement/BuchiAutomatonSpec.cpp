@@ -596,6 +596,7 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
   vector<int> maxRank(getStates().size(), state.f.getMaxRank());
   map<int, set<int> > succ;
   map<int, bool > pre;
+  VecTrans<int, int> accTrans = this->getFinTrans();
 
   this->setFinals(finals);
   auto fin = getFinals();
@@ -605,7 +606,11 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
     set<int> dst = getTransitions()[std::make_pair(st, symbol)];
     for(int d : dst)
     {
-      maxRank[d] = std::min(maxRank[d], state.f[st]);
+      Transition<int, int> tr = { .from = st, .symbol = symbol, .to = d };
+      if(std::find(accTrans.begin(), accTrans.end(), tr) != accTrans.end() )
+        maxRank[d] = std::min(maxRank[d], BuchiAutomatonSpec::evenceil(state.f[st]));
+      else
+        maxRank[d] = std::min(maxRank[d], state.f[st]);
     }
     sprime.insert(dst.begin(), dst.end());
     if(fin.find(st) == fin.end())
@@ -1233,6 +1238,11 @@ bool BuchiAutomatonSpec::acceptSl(StateSch& state, vector<int>& alp)
  */
 set<StateSch> BuchiAutomatonSpec::nfaSlAccept(BuchiAutomaton<StateSch, int>& nfaSchewe)
 {
+  /*
+  TODO: add support for accepting transitions
+  */
+  assert(this->getFinTrans().size() == 0);
+
   vector<int> alph;
   set<StateSch> slAccept;
   for(StateSch st : nfaSchewe.getStates())
@@ -1256,6 +1266,11 @@ set<StateSch> BuchiAutomatonSpec::nfaSlAccept(BuchiAutomaton<StateSch, int>& nfa
  */
 set<pair<DFAState,int>> BuchiAutomatonSpec::nfaSingleSlNoAccept(BuchiAutomaton<StateSch, int>& nfaSchewe)
 {
+  /*
+  TODO: add support for accepting transitions
+  */
+  assert(this->getFinTrans().size() == 0);
+
   vector<int> alph;
   set<pair<DFAState,int>> slNoAccept;
   for(StateSch st : nfaSchewe.getStates())
@@ -1289,6 +1304,7 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
   map<StateSch, int> rnkmap;
   map<set<int>, int> classesMap;
   int classes;
+  VecTrans<int, int> accTrans = this->getFinTrans();
 
   map<int, int> elevatorBound;
 
@@ -1360,7 +1376,7 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
     }
   }
 
-  auto updPred = [this, &slignore, &symsPred] (LabelState<StateSch, RankBound>* dest, const std::vector<LabelState<StateSch, RankBound>*> sts) -> RankBound
+  auto updPred = [this, &slignore, &symsPred, &accTrans] (LabelState<StateSch, RankBound>* dest, const std::vector<LabelState<StateSch, RankBound>*> sts) -> RankBound
   {
     int n = this->getStates().size();
     vector<int> mrank(n, 0);
@@ -1388,7 +1404,11 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
           for(int d : dst)
           {
             auto it = tmp->label.stateBound.find(s);
-            tmpMrank[d] = std::min(tmpMrank[d], it->second);
+            Transition<int, int> tr = { .from = s, .symbol = sym, .to = d };
+            if(std::find(accTrans.begin(), accTrans.end(), tr) != accTrans.end() )
+              tmpMrank[d] = std::min(tmpMrank[d], BuchiAutomatonSpec::evenceil(it->second));
+            else
+              tmpMrank[d] = std::min(tmpMrank[d], it->second);
           }
         }
         for(const int& i : dest->state.S)
@@ -1692,6 +1712,11 @@ void BuchiAutomatonSpec::getSchRanksTightOpt(vector<RankFunc>& out, vector<int>&
 vector<StateSch> BuchiAutomatonSpec::succSetSchTightOpt(StateSch& state, int symbol,
     map<int, int> reachCons, map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel)
 {
+  /*
+  TODO: add support for accepting transitions
+  */
+  assert(this->getFinTrans().size() == 0);
+
   vector<StateSch> ret;
   set<int> sprime;
   set<int> oprime;
@@ -1791,6 +1816,11 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchStartOpt(set<int>& state, int ran
     map<int, int> reachCons, map<DFAState, int> maxReach, BackRel& dirRel,
     BackRel& oddRel)
 {
+  /*
+  TODO: add support for accepting transitions
+  */
+  assert(this->getFinTrans().size() == 0);
+
   vector<StateSch> ret;
   set<int> sprime = state;
   set<int> schfinal;
@@ -1822,6 +1852,11 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchStartOpt(set<int>& state, int ran
  */
 BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchOpt(bool delay, std::set<int> originalFinals, double w, Stat *stats)
 {
+  /*
+  TODO: add support for accepting transitions
+  */
+  assert(this->getFinTrans().size() == 0);
+
   std::stack<StateSch> stack;
   set<StateSch> comst;
   set<StateSch> initials;

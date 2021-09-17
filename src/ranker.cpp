@@ -231,6 +231,13 @@ int main(int argc, char *argv[])
         if(autType == AUTBA)
         {
           BuchiAutomaton<int, APSymbol> orig = parseRenameHOABA(parser, opt);
+
+          if(orig.isTBA())
+          {
+            opt.sim = false;
+            opt.sl = false;
+          }
+
           renBuchi = orig.renameAut();
           complementAutWrap(&renBuchi, &compBA, &renCompl, &stats, opt);
           //cout << compBA.toGraphwiz() << endl;

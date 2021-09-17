@@ -209,6 +209,37 @@ void AutGraph::computeSCCs()
   }
 }
 
+
+/*
+ * Compute all strongly connected components (SCCs)
+ */
+void AutGraph::computeSCCs(set<pair<int, int> >& accTrans)
+{
+  this->index = 0;
+  this->S = stack<int>();
+  this->finalComponents.clear();
+  this->allComponents.clear();
+  for(VertItem v : this->vertices)
+  {
+    if(v.index == -1)
+    {
+      this->strongConnect(v.label);
+    }
+  }
+
+  set<set<int> > accComp(this->finalComponents.begin(), this->finalComponents.end());
+  for(const auto& scc : this->allComponents)
+  {
+    for(const auto& tr : accTrans)
+    {
+      if(scc.find(tr.first) != scc.end() && scc.find(tr.second) != scc.end())
+        accComp.insert(scc);
+    }
+  }
+  this->finalComponents = vector<set<int>>(accComp.begin(), accComp.end());
+}
+
+
 void AutGraph::computeSCCs(std::map<int, std::set<int>> finals, bool coBuchi, std::vector<std::vector<int>> allCycles)
 {
   this->index = 0;
@@ -266,4 +297,3 @@ set<int> AutGraph::reachableVertices(AdjList &lst, set<int>& from)
   }
   return all;
 }
-

@@ -31,6 +31,11 @@ struct Transition {
   State from;
   State to;
   Symbol symbol;
+
+  bool operator==(const Transition& other) const
+  {
+    return other.from == from && other.to == to && other.symbol == symbol;
+  }
 };
 
 /*
@@ -47,6 +52,7 @@ struct LabelState {
  */
 template<typename State, typename Symbol> using Delta = std::map<std::pair<State, Symbol>, std::set<State>>;
 template<typename State, typename Label> using VecLabelStatesPtr = std::vector<LabelState<State, Label>* >;
+template<typename State, typename Symbol> using VecTrans = std::vector< Transition<State, Symbol> >;
 
 
 template <typename State, typename Symbol>

@@ -7,6 +7,7 @@
 #include <vector>
 #include <stack>
 #include <chrono>
+#include <algorithm>
 
 #include <iostream>
 #include <algorithm>
@@ -130,6 +131,13 @@ public:
       map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel, set<int> finals);
   vector<StateSch> succSetSchTightReduced(StateSch& state, int symbol, map<int, int> reachCons,
       map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel, set<int> finals);
+
+  static inline int evenceil(int val)
+  {
+    if(val % 2 == 0)
+      return val;
+    return val - 1;
+  };
 };
 
 #endif
