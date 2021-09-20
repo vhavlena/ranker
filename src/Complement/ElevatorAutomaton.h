@@ -28,7 +28,7 @@ public:
   ElevatorAutomaton(BuchiAutomaton<int, int> t) : BuchiAutomaton<int, int>(t) { }
 
   bool isElevator();
-  std::vector<std::set<int>> topologicalSort();
+  std::vector<std::set<int>> topologicalSort(map<int, set<int>>& predSyms);
 
   unsigned elevatorStates();
   std::map<int, int> elevatorRank(bool detBeginning);
