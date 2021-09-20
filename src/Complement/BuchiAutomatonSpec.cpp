@@ -1179,10 +1179,12 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchNFA(set<int>& sta
  */
 bool BuchiAutomatonSpec::acceptSl(StateSch& state, vector<int>& alp)
 {
-  set<int> rel;
+  set<pair<int,int>> rel;
   bool all = true;
   set<int> symAcc;
   set<int> fin = getFinals();
+  VecTrans<int, int> accTrans = this->getFinTrans();
+
   std::stack<set<int>> stack;
   std::set<set<int>> comst;
 
@@ -1192,16 +1194,22 @@ bool BuchiAutomatonSpec::acceptSl(StateSch& state, vector<int>& alp)
   for(int st : state.S)
   {
     if(fin.find(st) != fin.end())
-      rel.insert(st);
+      rel.insert({st,st});
   }
+  for(const auto& tr : accTrans)
+  {
+    if(state.S.find(tr.from) != state.S.end() && state.S.find(tr.to) != state.S.end() && find(alp.begin(), alp.end(), tr.symbol) != alp.end())
+      rel.insert({tr.to, tr.from});
+  }
+
   if(rel.size() == 0)
     return false;
   for(const int& a : alp)
   {
-    for(int st : rel)
+    for(pair<int, int> st : rel)
     {
       all = false;
-      set<int> sng = {st};
+      set<int> sng = {st.first};
       stack = std::stack<set<int>>();
       comst.clear();
       stack.push(succSet(sng, a));
@@ -1211,7 +1219,7 @@ bool BuchiAutomatonSpec::acceptSl(StateSch& state, vector<int>& alp)
       {
         set<int> pst = stack.top();
         stack.pop();
-        if(pst.find(st) != pst.end())
+        if(pst.find(st.second) != pst.end())
         {
           symAcc.insert(a);
           all = true;
@@ -1238,11 +1246,6 @@ bool BuchiAutomatonSpec::acceptSl(StateSch& state, vector<int>& alp)
  */
 set<StateSch> BuchiAutomatonSpec::nfaSlAccept(BuchiAutomaton<StateSch, int>& nfaSchewe)
 {
-  /*
-  TODO: add support for accepting transitions
-  */
-  assert(this->getFinTrans().size() == 0);
-
   vector<int> alph;
   set<StateSch> slAccept;
   for(StateSch st : nfaSchewe.getStates())
@@ -1266,11 +1269,6 @@ set<StateSch> BuchiAutomatonSpec::nfaSlAccept(BuchiAutomaton<StateSch, int>& nfa
  */
 set<pair<DFAState,int>> BuchiAutomatonSpec::nfaSingleSlNoAccept(BuchiAutomaton<StateSch, int>& nfaSchewe)
 {
-  /*
-  TODO: add support for accepting transitions
-  */
-  assert(this->getFinTrans().size() == 0);
-
   vector<int> alph;
   set<pair<DFAState,int>> slNoAccept;
   for(StateSch st : nfaSchewe.getStates())

@@ -235,7 +235,6 @@ int main(int argc, char *argv[])
           if(orig.isTBA())
           {
             opt.sim = false;
-            opt.sl = false;
           }
 
           renBuchi = orig.renameAut();

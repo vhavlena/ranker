@@ -29,7 +29,7 @@ BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, Comp
   BuchiAutomaton<int, APSymbol> orig = parser.parseHoaBA();
 
   Simulations sim;
-  if(!opt.sim)
+  if(!opt.sim || orig.isTBA())
   {
     auto ranksim = sim.identity(orig);
     orig.setDirectSim(ranksim);
