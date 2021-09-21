@@ -19,9 +19,11 @@ bool ElevatorAutomaton::isDeterministic(std::set<int>& scc, map<int, set<int> >&
 }
 
 
-bool ElevatorAutomaton::isNonDeterministic(std::set<int>& scc){
+bool ElevatorAutomaton::isNonDeterministic(std::set<int>& scc, map<int, set<int>>& predSyms){
   if (std::any_of(scc.begin(), scc.end(), [this](int state){return this->getFinals().find(state) != this->getFinals().end();}))
-      return false;
+    return false;
+  else if (std::any_of(this->getFinTrans().begin(), this->getFinTrans().end(), [this, scc](auto trans){return scc.find(trans.from) != scc.end() and scc.find(trans.to) != scc.end();}))
+    return false;
   else
     return true;
 }
@@ -33,6 +35,7 @@ bool ElevatorAutomaton::isInherentlyWeak(std::set<int>& scc, map<int, set<int> >
   SetStates empty;
   SetStates ini = this->getInitials();
   SetStates newIni;
+  VecTransG finTrans = this->getFinTrans();
 
   // states without accepting states
   for (auto state : scc){
@@ -45,8 +48,16 @@ bool ElevatorAutomaton::isInherentlyWeak(std::set<int>& scc, map<int, set<int> >
 
   Transitions newTrans;
   for (auto it = this->getTransitions().begin(); it != this->getTransitions().end(); it++){
-    if (st.find(it->first.first) != st.end())
-      newTrans.insert({it->first, it->second});
+    if (st.find(it->first.first) != st.end()){
+      SetStates newStates;
+      // remove accepting transitions
+      for (auto state : it->second){
+        Transition<int, int> tmp = {.from = it->first.first, .to = state, .symbol = it->first.second}; 
+        if (std::find(finTrans.begin(), finTrans.end(), tmp) == finTrans.end())
+          newStates.insert(state);
+      }
+      newTrans.insert({it->first, newStates});
+    }
   }
 
   BuchiAutomaton<int, int> tmp(st, empty, newIni, newTrans, this->getAlphabet(), this->getAPPattern());
@@ -82,14 +93,13 @@ bool ElevatorAutomaton::isElevator(){
     sccClass.push_back(tmp);
   }
 
-  map<int, set<int> > predSyms = this->getPredSymbolMap();
   // scc classification
   for (auto it = sccClass.begin(); it != sccClass.end(); it++){
     // deterministic
     if (isDeterministic(it->states, predSyms))
       it->det = true;
     // nondeterministic
-    else if (isNonDeterministic(it->states))
+    else if (isNonDeterministic(it->states, predSyms))
       it->nonDet = true;
     // inherently weak
     else if (isInherentlyWeak(it->states, predSyms))
@@ -277,7 +287,7 @@ std::map<int, int> ElevatorAutomaton::elevatorRank(bool detBeginning){
     if (isDeterministic(it->states, predSyms))
       it->det = true;
     // nondeterministic
-    if (isNonDeterministic(it->states))
+    if (isNonDeterministic(it->states, predSyms))
       it->nonDet = true;
     // inherently weak
     if (isInherentlyWeak(it->states, predSyms))

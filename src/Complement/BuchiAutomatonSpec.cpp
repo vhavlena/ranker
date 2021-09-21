@@ -606,7 +606,7 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
     set<int> dst = getTransitions()[std::make_pair(st, symbol)];
     for(int d : dst)
     {
-      Transition<int, int> tr = { .from = st, .symbol = symbol, .to = d };
+      Transition<int, int> tr = { .from = st, .to = d, .symbol = symbol};
       if(std::find(accTrans.begin(), accTrans.end(), tr) != accTrans.end() )
         maxRank[d] = std::min(maxRank[d], BuchiAutomatonSpec::evenceil(state.f[st]));
       else
@@ -1402,7 +1402,7 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
           for(int d : dst)
           {
             auto it = tmp->label.stateBound.find(s);
-            Transition<int, int> tr = { .from = s, .symbol = sym, .to = d };
+            Transition<int, int> tr = { .from = s, .to = d, .symbol = sym};
             if(std::find(accTrans.begin(), accTrans.end(), tr) != accTrans.end() )
               tmpMrank[d] = std::min(tmpMrank[d], BuchiAutomatonSpec::evenceil(it->second));
             else
