@@ -1416,6 +1416,17 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
       }
     }
 
+    if(this->opt.flowDirSim)
+    {
+      for(const auto & sim : this->getDirectSim())
+      {
+        if(dest->state.S.find(sim.first) != dest->state.S.end() && dest->state.S.find(sim.second) != dest->state.S.end())
+        {
+          mrank[sim.first] = std::min(mrank[sim.first], mrank[sim.second]);
+        }
+      }
+    }
+
     int tmpm = 0;
     int tmpmax = 0;
     for(const int& i : dest->state.S)

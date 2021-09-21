@@ -37,6 +37,8 @@ struct ComplOptions
   bool sim = true;
   bool sl = true;
   bool reach = true;
+
+  bool flowDirSim = false;
 };
 
 #endif
