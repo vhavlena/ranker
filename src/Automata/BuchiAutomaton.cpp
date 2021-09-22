@@ -1318,7 +1318,7 @@ BuchiAutomaton<State, Symbol> BuchiAutomaton<State, Symbol>::reverseBA()
   VecTrans<State, Symbol> revAccTr;
   for(const auto& tr : this->accTrans)
   {
-    revAccTr.push_back({ .from = tr.to, .symbol = tr.symbol, .to = tr.from });
+    revAccTr.push_back({ .from = tr.to, .to = tr.from, .symbol = tr.symbol });
   }
 
   return BuchiAutomaton(this->getStates(), this->getInitials(), this->getFinals(), rev, revAccTr, this->getAlphabet());
