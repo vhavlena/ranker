@@ -511,7 +511,7 @@ std::map<int, int> ElevatorAutomaton::elevatorRank(bool detBeginning){
   }
 
   // output original automaton with ranks
-  std::cerr << this->toHOA(ranks) << std::endl;
+  //std::cerr << this->toHOA(ranks) << std::endl;
 
   return ranks;
 }
