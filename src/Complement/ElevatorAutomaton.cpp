@@ -354,8 +354,14 @@ std::map<int, int> ElevatorAutomaton::elevatorRank(bool detBeginning){
       // rule #3: N
       if (it->nonDet){
         for (auto scc : succ){
-          if (scc.nonDet and scc.rank > rank)
-            rank = scc.rank;
+          if (scc.nonDet and scc.rank > rank){
+            // accepting transition between components
+            if (std::any_of(this->getFinTrans().begin(), this->getFinTrans().end(), [this, scc, it](auto trans){return it->states.find(trans.from) != it->states.end() and scc.states.find(trans.to) != scc.states.end();}))
+              rank = scc.rank + 2;
+            // no accepting transition between components
+            else
+              rank = scc.rank;
+          }
           else if ((scc.det or scc.inhWeak) and scc.rank+1 > rank)
             rank = scc.rank + 1;
           else if (not (scc.det or scc.inhWeak or scc.nonDet)){
@@ -505,7 +511,7 @@ std::map<int, int> ElevatorAutomaton::elevatorRank(bool detBeginning){
   }
 
   // output original automaton with ranks
-  //std::cerr << this->toHOA(ranks) << std::endl;
+  std::cerr << this->toHOA(ranks) << std::endl;
 
   return ranks;
 }

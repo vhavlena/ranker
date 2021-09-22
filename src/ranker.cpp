@@ -239,7 +239,7 @@ int main(int argc, char *argv[])
 
           renBuchi = orig.renameAut();
           complementAutWrap(&renBuchi, &compBA, &renCompl, &stats, opt);
-          //cout << compBA.toGraphwiz() << endl;
+          // cout << compBA.toGraphwiz() << endl;
 
           // for (auto t : compBA.getRenameStateMap())
           //   cout << t.first << " " << t.second << endl;

@@ -870,8 +870,10 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(std::set<
 
   if (comp.getStates().size() == 1){
     comp.setAPPattern(this->getAPPattern());
+    std::cerr << "Inside" << std::endl;
     return comp;
   }
+  std::cerr << "Outside" << std::endl;
 
   // rank bound
   start = std::chrono::high_resolution_clock::now();
