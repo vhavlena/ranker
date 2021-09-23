@@ -19,10 +19,10 @@ bool ElevatorAutomaton::isDeterministic(std::set<int>& scc, map<int, set<int> >&
 }
 
 
-bool ElevatorAutomaton::isNonDeterministic(std::set<int>& scc, map<int, set<int>>& predSyms){
+bool ElevatorAutomaton::isNonDeterministic(std::set<int>& scc){
   if (std::any_of(scc.begin(), scc.end(), [this](int state){return this->getFinals().find(state) != this->getFinals().end();}))
     return false;
-  else if (std::any_of(this->getFinTrans().begin(), this->getFinTrans().end(), [this, scc](auto trans){return scc.find(trans.from) != scc.end() and scc.find(trans.to) != scc.end();}))
+  else if (std::any_of(this->getFinTrans().begin(), this->getFinTrans().end(), [scc](auto trans){return scc.find(trans.from) != scc.end() and scc.find(trans.to) != scc.end();}))
     return false;
   else
     return true;
@@ -52,7 +52,7 @@ bool ElevatorAutomaton::isInherentlyWeak(std::set<int>& scc, map<int, set<int> >
       SetStates newStates;
       // remove accepting transitions
       for (auto state : it->second){
-        Transition<int, int> tmp = {.from = it->first.first, .to = state, .symbol = it->first.second}; 
+        Transition<int, int> tmp = {.from = it->first.first, .to = state, .symbol = it->first.second};
         if (std::find(finTrans.begin(), finTrans.end(), tmp) == finTrans.end())
           newStates.insert(state);
       }
@@ -99,7 +99,7 @@ bool ElevatorAutomaton::isElevator(){
     if (isDeterministic(it->states, predSyms))
       it->det = true;
     // nondeterministic
-    else if (isNonDeterministic(it->states, predSyms))
+    else if (isNonDeterministic(it->states))
       it->nonDet = true;
     // inherently weak
     else if (isInherentlyWeak(it->states, predSyms))
@@ -287,7 +287,7 @@ std::map<int, int> ElevatorAutomaton::elevatorRank(bool detBeginning){
     if (isDeterministic(it->states, predSyms))
       it->det = true;
     // nondeterministic
-    if (isNonDeterministic(it->states, predSyms))
+    if (isNonDeterministic(it->states))
       it->nonDet = true;
     // inherently weak
     if (isInherentlyWeak(it->states, predSyms))
@@ -356,7 +356,7 @@ std::map<int, int> ElevatorAutomaton::elevatorRank(bool detBeginning){
         for (auto scc : succ){
           if (scc.nonDet and scc.rank > rank){
             // accepting transition between components
-            if (std::any_of(this->getFinTrans().begin(), this->getFinTrans().end(), [this, scc, it](auto trans){return it->states.find(trans.from) != it->states.end() and scc.states.find(trans.to) != scc.states.end();}))
+            if (std::any_of(this->getFinTrans().begin(), this->getFinTrans().end(), [scc, it](auto trans){return it->states.find(trans.from) != it->states.end() and scc.states.find(trans.to) != scc.states.end();}))
               rank = scc.rank + 2;
             // no accepting transition between components
             else
