@@ -228,6 +228,14 @@ int main(int argc, char *argv[])
 
       try
       {
+        // elevator test
+        if (elevatorTest && autType == AUTBA){
+          ElevatorAutomaton sp(renBuchi);
+          std::cout << "Elevator automaton: " << (sp.isElevator() ? "Yes" : "No") << std::endl;
+          os.close();
+          return 0;
+        }
+
         if(autType == AUTBA)
         {
           BuchiAutomaton<int, APSymbol> orig = parseRenameHOABA(parser, opt);
@@ -251,14 +259,6 @@ int main(int argc, char *argv[])
           renGcoBA = orig.renameAut();
           complementGcoBAWrap(&renGcoBA, &compGcoBA, &renCompl, &stats);
           symDict = Aux::reverseMap(orig.getRenameSymbolMap());
-        }
-
-        // elevator test
-        if (elevatorTest && autType == AUTBA){
-          ElevatorAutomaton sp(renBuchi);
-          std::cout << "Elevator automaton: " << (sp.isElevator() ? "Yes" : "No") << std::endl;
-          os.close();
-          return 0;
         }
       }
       catch(const ParserException& e)
