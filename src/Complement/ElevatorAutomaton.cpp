@@ -87,8 +87,8 @@ BuchiAutomaton<int, int> ElevatorAutomaton::copyPreprocessing(const std::functio
 {
   BuchiAutomaton<int, int> aut(*this);
   BuchiAutomaton<int, int> ret(*this);
-  set<int> newfins = ret.getFinals();
-  set<int> tmp;
+  set<int> newfins = set<int>(ret.getFinals().begin(), ret.getFinals().end());
+  set<int> tmpFins;
   // get all sorted sccs
   map<int, set<int> > predSyms = this->getPredSymbolMap();
   std::vector<std::set<int>> sccs = this->topologicalSort(predSyms);
@@ -119,19 +119,26 @@ BuchiAutomaton<int, int> ElevatorAutomaton::copyPreprocessing(const std::functio
 
     if(pred(*it) && !term)
     {
-      tmp.clear();
+      tmpFins.clear();
       std::set_difference(newfins.begin(), newfins.end(), it->states.begin(), it->states.end(),
-          std::inserter(tmp, tmp.begin()));
-      newfins = tmp;
+          std::inserter(tmpFins, tmpFins.begin()));
+      newfins = tmpFins;
       aut = BuchiAutomaton<int, int>(*this);
       aut.restriction(it->states);
+
       BuchiAutomaton tmp = aut.copyStateAcc(start);
+      tmpFins.clear();
+      std::set_union(newfins.begin(), newfins.end(), tmp.getFinals().begin(), tmp.getFinals().end(),
+          std::inserter(tmpFins, tmpFins.begin()));
+      newfins = tmpFins;
       ret = ret.unionBA(tmp);
+
       start += it->states.size();
     }
   }
 
   ret.setFinals(newfins);
+
   return ret;
 }
 
