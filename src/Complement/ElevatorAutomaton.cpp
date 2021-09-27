@@ -87,7 +87,8 @@ BuchiAutomaton<int, int> ElevatorAutomaton::copyPreprocessing(const std::functio
 {
   BuchiAutomaton<int, int> aut(*this);
   BuchiAutomaton<int, int> ret(*this);
-  ret.setFinals(set<int>());
+  set<int> newfins = ret.getFinals();
+  set<int> tmp;
   // get all sorted sccs
   map<int, set<int> > predSyms = this->getPredSymbolMap();
   std::vector<std::set<int>> sccs = this->topologicalSort(predSyms);
@@ -116,8 +117,12 @@ BuchiAutomaton<int, int> ElevatorAutomaton::copyPreprocessing(const std::functio
     auto allsub = this->getAllSuccessors(it->states, predSyms);
     bool term = std::includes(allsub.begin(), allsub.end(), it->states.begin(), it->states.end());
 
-    if(pred(*it) && term)
+    if(pred(*it) && !term)
     {
+      tmp.clear();
+      std::set_difference(newfins.begin(), newfins.end(), it->states.begin(), it->states.end(),
+          std::inserter(tmp, tmp.begin()));
+      newfins = tmp;
       aut = BuchiAutomaton<int, int>(*this);
       aut.restriction(it->states);
       BuchiAutomaton tmp = aut.copyStateAcc(start);
@@ -126,6 +131,7 @@ BuchiAutomaton<int, int> ElevatorAutomaton::copyPreprocessing(const std::functio
     }
   }
 
+  ret.setFinals(newfins);
   return ret;
 }
 
