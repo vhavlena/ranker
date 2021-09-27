@@ -44,12 +44,13 @@ int main(int argc, char *argv[])
   args::Flag elevatorTestFlag(parser, "elevator test", "Test if INPUT is an elevator automaton", {"elevator-test"});
   args::Flag debugFlag(parser, "debug", "Print debug statistics", {"debug"});
   args::Flag lightFlag(parser, "light", "Use lightweight optimizations", {"light"});
+  args::ValueFlag<std::string> preprocessFlag(parser, "preprocess", "Preprocessing [copy]", {"preprocess"});
 
   ComplOptions opt = { .cutPoint = true, .succEmptyCheck = true, .ROMinState = 8,
       .ROMinRank = 6, .CacheMaxState = 6, .CacheMaxRank = 8, .semidetOpt = false,
       .dataFlow = INNER, .delay = false, .delayVersion = oldVersion, .delayW = 0.5,
       .debug = false, .elevator = { .elevatorRank = true, .detBeginning = false },
-      .sim = true, .sl = true, .reach = true, .flowDirSim = false };
+      .sim = true, .sl = true, .reach = true, .flowDirSim = false, .preprocess = false };
 
   try
   {
@@ -92,6 +93,11 @@ int main(int argc, char *argv[])
   if(dataFlowFlag && args::get(dataFlowFlag) == "light")
   {
     opt.dataFlow = LIGHT;
+  }
+
+  if(preprocessFlag && args::get(preprocessFlag) == "copy")
+  {
+    opt.preprocess = true;
   }
 
   // delay version

@@ -39,6 +39,8 @@ struct ComplOptions
   bool reach = true;
 
   bool flowDirSim = false;
+
+  bool preprocess = false;
 };
 
 #endif

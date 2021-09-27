@@ -28,25 +28,28 @@ BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, Comp
   //BuchiAutomataParser parser(os);
   BuchiAutomaton<int, APSymbol> orig = parser.parseHoaBA();
 
-  map<APSymbol, int> apint;
-  map<int, APSymbol> intap;
-  int i = 0;
-  for(const APSymbol& s : orig.getAlphabet())
+  if(opt.preprocess)
   {
-    apint[s] = i;
-    intap[i] = s;
-    i++;
-  }
-  BuchiAutomaton<int, int> tmp = orig.renameAlphabet(apint);
-  ElevatorAutomaton elev(tmp);
+    map<APSymbol, int> apint;
+    map<int, APSymbol> intap;
+    int i = 0;
+    for(const APSymbol& s : orig.getAlphabet())
+    {
+      apint[s] = i;
+      intap[i] = s;
+      i++;
+    }
+    BuchiAutomaton<int, int> tmp = orig.renameAlphabet(apint);
+    ElevatorAutomaton elev(tmp);
 
-  set<int> fins = tmp.getFinals();
-  auto pred = [&fins] (SccClassif c) -> bool
-  {
-    return (c.inhWeak || c.det) && (std::any_of(c.states.begin(), c.states.end(), [&fins](int state){return fins.find(state) != fins.end();}));
-  };
-  tmp = elev.copyPreprocessing(pred);
-  orig = tmp.renameAlphabet(intap);
+    set<int> fins = tmp.getFinals();
+    auto pred = [&fins] (SccClassif c) -> bool
+    {
+      return (std::any_of(c.states.begin(), c.states.end(), [&fins](int state){return fins.find(state) != fins.end();}));
+    };
+    tmp = elev.copyPreprocessing(pred);
+    orig = tmp.renameAlphabet(intap);
+  }
 
   Simulations sim;
   if(!opt.sim || orig.isTBA())

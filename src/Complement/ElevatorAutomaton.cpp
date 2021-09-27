@@ -115,7 +115,7 @@ BuchiAutomaton<int, int> ElevatorAutomaton::copyPreprocessing(const std::functio
   for (auto it = sccClass.begin(); it != sccClass.end(); it++)
   {
     auto allsub = this->getAllSuccessors(it->states, predSyms);
-    bool term = std::includes(allsub.begin(), allsub.end(), it->states.begin(), it->states.end());
+    bool term = std::includes(it->states.begin(), it->states.end(), allsub.begin(), allsub.end());
 
     if(pred(*it) && !term)
     {
