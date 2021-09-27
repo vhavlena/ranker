@@ -45,7 +45,7 @@ BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, Comp
     set<int> fins = tmp.getFinals();
     auto pred = [&fins] (SccClassif c) -> bool
     {
-      return (std::any_of(c.states.begin(), c.states.end(), [&fins](int state){return fins.find(state) != fins.end();}));
+      return (c.inhWeak) && (std::any_of(c.states.begin(), c.states.end(), [&fins](int state){return fins.find(state) != fins.end();}));
     };
     tmp = elev.copyPreprocessing(pred);
     orig = tmp.renameAlphabet(intap);
