@@ -1302,7 +1302,7 @@ BuchiAutomaton<State, Symbol> BuchiAutomaton<State, Symbol>::unionBA(BuchiAutoma
         ntr.insert({it->first, it->second});
   }
 
-  return BuchiAutomaton<State, Symbol>(nstates, nfin, nini, ntr, this->getAlphabet());
+  return BuchiAutomaton<State, Symbol>(nstates, nfin, nini, ntr, this->getAlphabet(), this->apsPattern);
 }
 
 
@@ -1367,6 +1367,46 @@ map<State, set<Symbol> > BuchiAutomaton<State, Symbol>::getPredSymbolMap()
     }
   }
   return ret;
+}
+
+
+template <>
+BuchiAutomaton<int, int> BuchiAutomaton<int, int>::copyStateAcc(int start)
+{
+  auto origTrans = this->getTransitions();
+  Delta<int,int> trans(origTrans.begin(), origTrans.end());
+  map<int,int> stMap;
+  set<int> fins;
+
+  set<int> orig = this->getStates();
+  set<int> states(orig.begin(), orig.end());
+
+  for(const int& s : this->getStates())
+  {
+    stMap[s] = start;
+    states.insert(start);
+    start++;
+  }
+  for(auto &p : this->getTransitions())
+  {
+    set<int> dst = Aux::mapSet(stMap, p.second);
+    trans.insert({std::make_pair(stMap[p.first.first], p.first.second), dst});
+  }
+
+  for(auto &p : this->getTransitions())
+  {
+    set<int> dst = Aux::mapSet(stMap, p.second);
+    if(dst.size() > 0)
+    {
+      trans[p.first].insert(dst.begin(), dst.end());
+    }
+  }
+  for(const auto& f : this->getFinals())
+  {
+    fins.insert(stMap[f]);
+  }
+
+  return BuchiAutomaton(states, fins, this->getInitials(), trans, this->getAlphabet(), this->getAPPattern());
 }
 
 

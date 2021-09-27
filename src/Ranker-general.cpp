@@ -28,6 +28,26 @@ BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, Comp
   //BuchiAutomataParser parser(os);
   BuchiAutomaton<int, APSymbol> orig = parser.parseHoaBA();
 
+  map<APSymbol, int> apint;
+  map<int, APSymbol> intap;
+  int i = 0;
+  for(const APSymbol& s : orig.getAlphabet())
+  {
+    apint[s] = i;
+    intap[i] = s;
+    i++;
+  }
+  BuchiAutomaton<int, int> tmp = orig.renameAlphabet(apint);
+  ElevatorAutomaton elev(tmp);
+
+  set<int> fins = tmp.getFinals();
+  auto pred = [&fins] (SccClassif c) -> bool
+  {
+    return !c.nonDet && (std::any_of(c.states.begin(), c.states.end(), [&fins](int state){return fins.find(state) != fins.end();}));
+  };
+  tmp = elev.copyPreprocessing(pred);
+  orig = tmp.renameAlphabet(intap);
+
   Simulations sim;
   if(!opt.sim || orig.isTBA())
   {
@@ -73,8 +93,13 @@ void complementAutWrap(BuchiAutomaton<int, int>* ren, BuchiAutomaton<StateSch, i
     renptr.removeUseless();
     renptr = renptr.renameAutDict(id);
 
+    // ElevatorAutomaton elev(renptr);
+    // cout << renptr.toGraphwiz() << endl;
+    // renptr = elev.copyPreprocessing();
+    // cout << renptr.toGraphwiz() << endl;
+
     BuchiAutomatonSpec sp(&renptr); //TODO
-    ElevatorAutomaton elev(renptr);
+
 
     // ComplOptions opt = { .cutPoint = true, .succEmptyCheck = true, .ROMinState = 8,
     //     .ROMinRank = 6, .CacheMaxState = 6, .CacheMaxRank = 8, .semidetOpt = false };

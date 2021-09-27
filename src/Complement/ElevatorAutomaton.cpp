@@ -83,6 +83,53 @@ bool ElevatorAutomaton::isInherentlyWeak(std::set<int>& scc, map<int, set<int> >
 }
 
 
+BuchiAutomaton<int, int> ElevatorAutomaton::copyPreprocessing(const std::function<bool(SccClassif)>& pred)
+{
+  BuchiAutomaton<int, int> aut(*this);
+  BuchiAutomaton<int, int> ret(*this);
+  ret.setFinals(set<int>());
+  // get all sorted sccs
+  map<int, set<int> > predSyms = this->getPredSymbolMap();
+  std::vector<std::set<int>> sccs = this->topologicalSort(predSyms);
+  std::vector<SccClassif> sccClass;
+  for (auto scc : sccs){
+    SccClassif tmp = {.states = scc, .det = false, .inhWeak = false, .nonDet = false};
+    sccClass.push_back(tmp);
+  }
+
+  // scc classification
+  for (auto it = sccClass.begin(); it != sccClass.end(); it++){
+    // deterministic
+    if (isDeterministic(it->states, predSyms))
+      it->det = true;
+    // nondeterministic
+    if (isNonDeterministic(it->states))
+      it->nonDet = true;
+    // inherently weak
+    if (isInherentlyWeak(it->states, predSyms))
+      it->inhWeak = true;
+  }
+
+  int start = this->getStates().size();
+  for (auto it = sccClass.begin(); it != sccClass.end(); it++)
+  {
+    auto allsub = this->getAllSuccessors(it->states, predSyms);
+    bool term = std::includes(allsub.begin(), allsub.end(), it->states.begin(), it->states.end());
+
+    if(pred(*it) && term)
+    {
+      aut = BuchiAutomaton<int, int>(*this);
+      aut.restriction(it->states);
+      BuchiAutomaton tmp = aut.copyStateAcc(start);
+      ret = ret.unionBA(tmp);
+      start += it->states.size();
+    }
+  }
+
+  return ret;
+}
+
+
 bool ElevatorAutomaton::isElevator(){
   // get all sorted sccs
   map<int, set<int> > predSyms = this->getPredSymbolMap();

@@ -33,6 +33,8 @@ public:
   unsigned elevatorStates();
   std::map<int, int> elevatorRank(bool detBeginning);
 
+  BuchiAutomaton<int, int> copyPreprocessing(const std::function<bool(SccClassif)>& pred);
+
 protected:
   bool isDeterministic(std::set<int>& scc, map<int, set<int> >& predSyms);
   bool isNonDeterministic(std::set<int>& scc);

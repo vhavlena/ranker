@@ -463,6 +463,8 @@ public:
   {
     return this->accTrans.size() > 0;
   }
+
+  BuchiAutomaton<int, int> copyStateAcc(int start);
 };
 
 #endif
