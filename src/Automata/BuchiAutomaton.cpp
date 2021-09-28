@@ -1369,6 +1369,22 @@ map<State, set<Symbol> > BuchiAutomaton<State, Symbol>::getPredSymbolMap()
   return ret;
 }
 
+template <typename State, typename Symbol>
+map<State, set<Symbol>> BuchiAutomaton<State, Symbol>::getReverseSymbolMap(){
+  auto trans = this->getReverseTransitions();
+  map<State, set<Symbol>> ret;
+  for(const State& s : this->getStates())
+  {
+    ret[s] = set<Symbol>();
+    for(const Symbol& sym : this->getAlphabet())
+    {
+      if(trans[{s, sym}].size() > 0)
+        ret[s].insert(sym);
+    }
+  }
+  return ret;
+}
+
 
 template <>
 BuchiAutomaton<int, int> BuchiAutomaton<int, int>::copyStateAcc(int start)
@@ -1380,7 +1396,7 @@ BuchiAutomaton<int, int> BuchiAutomaton<int, int>::copyStateAcc(int start)
 
   set<int> orig = this->getStates();
   set<int> states(orig.begin(), orig.end());
-
+  
   for(const int& s : this->getStates())
   {
     stMap[s] = start;

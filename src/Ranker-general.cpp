@@ -49,6 +49,11 @@ BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, Comp
     };
     tmp = elev.copyPreprocessing(pred);
     orig = tmp.renameAlphabet(intap);
+    
+    // accepting states propagation
+    ElevatorAutomaton elevator(tmp);
+    tmp = elevator.propagateAccStates();
+    orig = tmp.renameAlphabet(intap);
   }
 
   Simulations sim;

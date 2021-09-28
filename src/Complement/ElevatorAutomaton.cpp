@@ -82,6 +82,40 @@ bool ElevatorAutomaton::isInherentlyWeak(std::set<int>& scc, map<int, set<int> >
   return true;
 }
 
+BuchiAutomaton<int ,int> ElevatorAutomaton::propagateAccStates(){
+  BuchiAutomaton<int, int> ret(*this);
+  set<int> fins = ret.getFinals();
+
+  map<int, set<int>> predSyms = this->getPredSymbolMap();
+  map<int, set<int>> revSyms = this->getReverseSymbolMap();
+  vector<set<int>> sccs = this->getAutGraphSCCs();
+
+  bool change;
+  for (auto scc : sccs){
+    do {
+      change = false;
+      for (auto state : scc){
+        if (fins.find(state) == fins.end()){
+          auto succ = ret.getAllSuccessors(state, predSyms);
+          // all successors/predecessors in given scc are accepting
+          if (std::all_of(succ.begin(), succ.end(), [scc, fins](int succState){return scc.find(succState) == scc.end() or fins.find(succState) != fins.end();})){
+            change = true;
+            fins.insert(state);
+          } else {
+            auto pred = ret.getAllPredecessors(state, revSyms);
+            if (std::all_of(pred.begin(), pred.end(), [scc, fins](int predState){return scc.find(predState) == scc.end() or fins.find(predState) != fins.end();})){
+              change = true;
+              fins.insert(state);
+            }
+          }
+        }
+      }
+    } while (change);
+  }
+
+  ret.setFinals(fins);
+  return ret;
+}
 
 BuchiAutomaton<int, int> ElevatorAutomaton::copyPreprocessing(const std::function<bool(SccClassif)>& pred)
 {

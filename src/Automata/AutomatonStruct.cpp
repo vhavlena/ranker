@@ -165,6 +165,18 @@ std::set<State> AutomatonStruct<State, Symbol> :: getAllSuccessors(set<State>& s
   return ret;
 }
 
+template<typename State, typename Symbol>
+std::set<State> AutomatonStruct<State, Symbol> :: getAllPredecessors(State state, map<State, set<Symbol>>& revMap){
+  std::set<State> predecessors;
+  std::set<State> tmp;
+  auto revTrans = this->getReverseTransitions();
+  for (auto symbol : revMap[state]){
+    tmp = revTrans[std::pair<State, Symbol>(state, symbol)];
+    predecessors.insert(tmp.begin(), tmp.end());
+  }
+  return predecessors;
+}
+
 
 /*
  * Get reachable states wrt given restrictions
