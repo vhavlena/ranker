@@ -10,6 +10,16 @@ enum DataFlowOptions
   INNER
 };
 
+enum PreprocessOptions
+{
+  NONE,
+  CPIWA,
+  CPDET,
+  CPALL,
+  CPTRIVIAL,
+  CPHEUR
+};
+
 struct ComplOptions
 {
   bool cutPoint = false;
@@ -40,7 +50,7 @@ struct ComplOptions
 
   bool flowDirSim = false;
 
-  bool preprocess = false;
+  PreprocessOptions preprocess = NONE;
 };
 
 #endif

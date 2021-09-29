@@ -44,13 +44,13 @@ int main(int argc, char *argv[])
   args::Flag elevatorTestFlag(parser, "elevator test", "Test if INPUT is an elevator automaton", {"elevator-test"});
   args::Flag debugFlag(parser, "debug", "Print debug statistics", {"debug"});
   args::Flag lightFlag(parser, "light", "Use lightweight optimizations", {"light"});
-  args::ValueFlag<std::string> preprocessFlag(parser, "preprocess", "Preprocessing [copy]", {"preprocess"});
+  args::ValueFlag<std::string> preprocessFlag(parser, "preprocess", "Preprocessing [copyiwa/copydet/copyall/copytrivial/copyheur]", {"preprocess"});
 
   ComplOptions opt = { .cutPoint = true, .succEmptyCheck = true, .ROMinState = 8,
       .ROMinRank = 6, .CacheMaxState = 6, .CacheMaxRank = 8, .semidetOpt = false,
       .dataFlow = INNER, .delay = false, .delayVersion = oldVersion, .delayW = 0.5,
       .debug = false, .elevator = { .elevatorRank = true, .detBeginning = false },
-      .sim = true, .sl = true, .reach = true, .flowDirSim = false, .preprocess = false };
+      .sim = true, .sl = true, .reach = true, .flowDirSim = false, .preprocess = NONE };
 
   try
   {
@@ -95,9 +95,22 @@ int main(int argc, char *argv[])
     opt.dataFlow = LIGHT;
   }
 
-  if(preprocessFlag && args::get(preprocessFlag) == "copy")
+  if(preprocessFlag)
   {
-    opt.preprocess = true;
+    if(args::get(preprocessFlag) == "copyiwa")
+      opt.preprocess = CPIWA;
+    else if(args::get(preprocessFlag) == "copydet")
+      opt.preprocess = CPDET;
+    else if(args::get(preprocessFlag) == "copyall")
+      opt.preprocess = CPALL;
+    else if(args::get(preprocessFlag) == "copytrivial")
+      opt.preprocess = CPTRIVIAL;
+    else if(args::get(preprocessFlag) == "copyheur")
+      opt.preprocess = CPHEUR;
+    else {
+      std::cerr << "Wrong copy attribute" << std::endl;
+      return 1;
+    }
   }
 
   // delay version

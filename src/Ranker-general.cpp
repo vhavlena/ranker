@@ -28,7 +28,7 @@ BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, Comp
   //BuchiAutomataParser parser(os);
   BuchiAutomaton<int, APSymbol> orig = parser.parseHoaBA();
 
-  if(opt.preprocess)
+  if(opt.preprocess != NONE)
   {
     map<APSymbol, int> apint;
     map<int, APSymbol> intap;
@@ -43,11 +43,53 @@ BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, Comp
     ElevatorAutomaton elev(tmp);
 
     set<int> fins = tmp.getFinals();
-    auto pred = [&fins] (SccClassif c) -> bool
+    auto prediwa = [&fins] (SccClassif c) -> bool
     {
-      return (c.inhWeak) && (std::any_of(c.states.begin(), c.states.end(), [&fins](int state){return fins.find(state) != fins.end();}));
+      return c.inhWeak && (std::any_of(c.states.begin(), c.states.end(), [&fins](int state){return fins.find(state) != fins.end();}));
     };
-    tmp = elev.copyPreprocessing(pred);
+    auto preddet = [&fins] (SccClassif c) -> bool
+    {
+      return c.det && (std::any_of(c.states.begin(), c.states.end(), [&fins](int state){return fins.find(state) != fins.end();}));
+    };
+    auto predall = [&fins] (SccClassif c) -> bool
+    {
+      return (std::any_of(c.states.begin(), c.states.end(), [&fins](int state){return fins.find(state) != fins.end();}));
+    };
+    auto predtri = [&fins] (SccClassif c) -> bool
+    {
+      return c.states.size() == 1 && (std::any_of(c.states.begin(), c.states.end(), [&fins](int state){return fins.find(state) != fins.end();}));
+    };
+
+    if(opt.preprocess == CPHEUR)
+    {
+      map<int,int> ranks = elev.elevatorRank(false);
+      int m = Aux::maxValue(ranks);
+      bool isElev = elev.isElevator();
+      auto predheur = [&fins, m, isElev] (SccClassif c) -> bool
+      {
+        if(m >= 7 && isElev)
+          return (std::any_of(c.states.begin(), c.states.end(), [&fins](int state){return fins.find(state) != fins.end();}));
+        return false;
+      };
+      tmp = elev.copyPreprocessing(predheur);
+    }
+    else if(opt.preprocess == CPIWA)
+    {
+      tmp = elev.copyPreprocessing(prediwa);
+    }
+    else if(opt.preprocess == CPDET)
+    {
+      tmp = elev.copyPreprocessing(preddet);
+    }
+    else if(opt.preprocess == CPALL)
+    {
+      tmp = elev.copyPreprocessing(predall);
+    }
+    else if(opt.preprocess == CPTRIVIAL)
+    {
+      tmp = elev.copyPreprocessing(predtri);
+    }
+
     orig = tmp.renameAlphabet(intap);
   }
 

@@ -105,6 +105,20 @@ namespace Aux
     return rev;
   }
 
+
+  template<typename K>
+  int maxValue(map<K, int>& mp)
+  {
+    assert(mp.size() > 0);
+
+    auto pr = std::max_element(mp.begin(), mp.end(),
+      [] (const auto & p1, const auto & p2) {
+          return p1.second < p2.second;
+      }
+    );
+    return pr->second;
+  }
+
 }
 
 #endif
