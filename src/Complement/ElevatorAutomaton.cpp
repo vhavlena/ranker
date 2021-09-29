@@ -85,6 +85,7 @@ bool ElevatorAutomaton::isInherentlyWeak(std::set<int>& scc, map<int, set<int> >
 BuchiAutomaton<int ,int> ElevatorAutomaton::propagateAccStates(){
   BuchiAutomaton<int, int> ret(*this);
   set<int> fins = ret.getFinals();
+  auto finTrans = this->getFinTrans();
 
   map<int, set<int>> predSyms = this->getPredSymbolMap();
   map<int, set<int>> revSyms = this->getReverseSymbolMap();
@@ -97,13 +98,17 @@ BuchiAutomaton<int ,int> ElevatorAutomaton::propagateAccStates(){
       for (auto state : scc){
         if (fins.find(state) == fins.end()){
           auto succ = ret.getAllSuccessors(state, predSyms);
+          auto symbols = predSyms[state];
           // all successors/predecessors in given scc are accepting
-          if (std::all_of(succ.begin(), succ.end(), [scc, fins](int succState){return scc.find(succState) == scc.end() or fins.find(succState) != fins.end();})){
+          if (std::all_of(succ.begin(), succ.end(), [scc, fins, symbols, state, finTrans](int succState){return scc.find(succState) == scc.end() or fins.find(succState) != fins.end() 
+            or not std::any_of(symbols.begin(), symbols.end(), [state, succState, finTrans](int symbol){Transition<int, int> tmp = {.from = state, .to = succState, .symbol = symbol}; return std::find(finTrans.begin(), finTrans.end(), tmp) == finTrans.end();});})){
             change = true;
             fins.insert(state);
           } else {
             auto pred = ret.getAllPredecessors(state, revSyms);
-            if (std::all_of(pred.begin(), pred.end(), [scc, fins](int predState){return scc.find(predState) == scc.end() or fins.find(predState) != fins.end();})){
+            auto symbols = revSyms[state];
+            if (std::all_of(pred.begin(), pred.end(), [scc, fins, symbols, state, finTrans](int predState){return scc.find(predState) == scc.end() or fins.find(predState) != fins.end() 
+              or not std::any_of(symbols.begin(), symbols.end(), [state, predState, finTrans](int symbol){Transition<int, int> tmp = {.from = predState, .to = state, .symbol = symbol}; return std::find(finTrans.begin(), finTrans.end(), tmp) == finTrans.end();});})){
               change = true;
               fins.insert(state);
             }
