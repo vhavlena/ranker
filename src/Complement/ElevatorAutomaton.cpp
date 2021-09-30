@@ -395,7 +395,6 @@ std::map<int, int> ElevatorAutomaton::elevatorRank(bool detBeginning){
     if (isDeterministic(it->states, predSyms))
     {
       it->det = true;
-      cout << "det" << endl;
     }
     // nondeterministic
     if (isNonDeterministic(it->states))
