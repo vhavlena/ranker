@@ -45,12 +45,13 @@ int main(int argc, char *argv[])
   args::Flag debugFlag(parser, "debug", "Print debug statistics", {"debug"});
   args::Flag lightFlag(parser, "light", "Use lightweight optimizations", {"light"});
   args::ValueFlag<std::string> preprocessFlag(parser, "preprocess", "Preprocessing [copy]", {"preprocess"});
+  args::Flag accPropagationFlag(parser, "acc-propagation", "Propagate accepting states in each SCC", {"acc-propagation"});
 
   ComplOptions opt = { .cutPoint = true, .succEmptyCheck = true, .ROMinState = 8,
       .ROMinRank = 6, .CacheMaxState = 6, .CacheMaxRank = 8, .semidetOpt = false,
       .dataFlow = INNER, .delay = false, .delayVersion = oldVersion, .delayW = 0.5,
       .debug = false, .elevator = { .elevatorRank = true, .detBeginning = false },
-      .sim = true, .sl = true, .reach = true, .flowDirSim = false, .preprocess = false };
+      .sim = true, .sl = true, .reach = true, .flowDirSim = false, .preprocess = false, .accPropagation = false };
 
   try
   {
@@ -123,6 +124,11 @@ int main(int argc, char *argv[])
   if(debugFlag)
   {
     opt.debug = true;
+  }
+
+  if (accPropagationFlag)
+  {
+    opt.accPropagation = true;
   }
 
   // weight parameters for delay

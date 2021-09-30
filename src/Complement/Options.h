@@ -41,6 +41,7 @@ struct ComplOptions
   bool flowDirSim = false;
 
   bool preprocess = false;
+  bool accPropagation = false;
 };
 
 #endif
