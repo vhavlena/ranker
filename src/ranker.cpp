@@ -176,6 +176,12 @@ int main(int argc, char *argv[])
       std::cerr << "Wrong combination of arguments" << std::endl;
       return 1;
     }
+    opt.sim = false;
+    opt.sl = false;
+    opt.reach = false;
+    opt.succEmptyCheck = false;
+    opt.elevator.elevatorRank = true;
+    opt.dataFlow = LIGHT;
   }
 
   if(lightFlag)
@@ -253,14 +259,6 @@ int main(int argc, char *argv[])
 
       try
       {
-        // elevator test
-        if (elevatorTest && autType == AUTBA){
-          ElevatorAutomaton sp(renBuchi);
-          std::cout << "Elevator automaton: " << (sp.isElevator() ? "Yes" : "No") << std::endl;
-          os.close();
-          return 0;
-        }
-
         if(autType == AUTBA)
         {
           BuchiAutomaton<int, APSymbol> orig = parseRenameHOABA(parser, opt);
@@ -271,6 +269,14 @@ int main(int argc, char *argv[])
           }
 
           renBuchi = orig.renameAut();
+
+          if (elevatorTest){
+            ElevatorAutomaton sp(renBuchi);
+            std::cout << "Elevator automaton: " << (sp.isElevator() ? "Yes" : "No") << std::endl;
+            os.close();
+            return 0;
+          }
+
           complementAutWrap(&renBuchi, &compBA, &renCompl, &stats, opt);
           // cout << compBA.toGraphwiz() << endl;
 
