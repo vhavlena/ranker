@@ -93,6 +93,24 @@ BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, Comp
     orig = tmp.renameAlphabet(intap);
   }
 
+  if (opt.accPropagation)
+  { 
+    map<APSymbol, int> apint;
+    map<int, APSymbol> intap;
+    int i = 0;
+    for(const APSymbol& s : orig.getAlphabet())
+    {
+      apint[s] = i;
+      intap[i] = s;
+      i++;
+    }
+    BuchiAutomaton<int, int> tmp = orig.renameAlphabet(apint);
+    ElevatorAutomaton elev(tmp);
+    tmp = elev.propagateAccStates();
+    orig = tmp.renameAlphabet(intap);
+    //std::cerr << tmp.toGraphwiz() << std::endl;
+  }
+
   Simulations sim;
   if(!opt.sim || orig.isTBA())
   {

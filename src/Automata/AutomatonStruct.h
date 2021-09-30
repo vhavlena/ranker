@@ -252,6 +252,8 @@ public:
   set<State> getAllSuccessors(State state, map<State, set<Symbol>>& predMap);
   set<State> getAllSuccessors(set<State>& state, map<State, set<Symbol>>& predMap);
 
+  set<State> getAllPredecessors(State state, map<State, set<Symbol>>& revMap);
+
   /*
    * Implementation of a simple data flow analysis. The values are iteratively
    * propagated through graph of the automaton.

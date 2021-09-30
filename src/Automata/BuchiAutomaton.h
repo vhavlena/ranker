@@ -458,6 +458,7 @@ public:
   BuchiAutomaton<StateSch, int> getComplStructure(std::map<int, StateSch>& mpst);
 
   map<State, set<Symbol> > getPredSymbolMap();
+  map<State, set<Symbol>> getReverseSymbolMap();
 
   bool isTBA() const
   {
