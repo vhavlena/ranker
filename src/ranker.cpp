@@ -191,7 +191,7 @@ int main(int argc, char *argv[])
     opt.reach = false;
     opt.succEmptyCheck = false;
     opt.elevator.elevatorRank = true;
-    opt.dataFlow = LIGHT;
+    //opt.dataFlow = LIGHT;
   }
 
 
