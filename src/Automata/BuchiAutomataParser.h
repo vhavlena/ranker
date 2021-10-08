@@ -71,10 +71,11 @@ private:
   Transition<string, string> parseGffTransition(pt::ptree& tr);
   BuchiAutomaton<string, string> parseGffTree(pt::ptree& tr);
 
-  Transition<int, APSymbol> parseHoaTransition(int srcstate, int apNum, string& line, bool* acc);
+  vector<Transition<int, APSymbol>> parseHoaTransition(int srcstate, int apNum, string& line, bool* acc);
   Delta<int, APSymbol> parseHoaBodyBA(int apNum, ifstream & os, set<int>& finsBA, VecTrans<int, APSymbol>& accTrans);
   Delta<int, APSymbol> parseHoaBodyGCOBA(int apNum, ifstream & os, map<int, set<int>>& finsGBA);
-  APSymbol parseHoaExpression(string & line, int apNum);
+  set<APSymbol> parseHoaExpression(string & line, int apNum);
+  set<APSymbol> parseHoaExpressionConj(const string & line, int apNum);
 };
 
 #endif

@@ -364,9 +364,9 @@ GeneralizedCoBuchiAutomaton<int, APSymbol> BuchiAutomataParser::parseHoaGCOBA()
  * @param line String with the transition
  * @return Transition
  */
-Transition<int, APSymbol> BuchiAutomataParser::parseHoaTransition(int srcstate, int apNum, string& line, bool* acc)
+vector<Transition<int, APSymbol>> BuchiAutomataParser::parseHoaTransition(int srcstate, int apNum, string& line, bool* acc)
 {
-  boost::regex e("\\s*\\[([!&\\|\\s0-9]+)\\]\\s*([0-9]+)\\s*(\\{\\s*0\\s*\\})?");
+  boost::regex e("\\s*\\[([!&t\\|\\s0-9]+)\\]\\s*([0-9]+)\\s*(\\{\\s*0\\s*\\})?");
   boost::smatch what;
   if(boost::regex_match(line, what, e))
   {
@@ -374,7 +374,12 @@ Transition<int, APSymbol> BuchiAutomataParser::parseHoaTransition(int srcstate, 
     int dest = std::stoi(what[2]);
     if(what[3].length() > 1)
       *acc = true;
-    return {srcstate, dest, parseHoaExpression(tr, apNum)};
+    vector<Transition<int, APSymbol>> trans;
+    for(const APSymbol& apsym : parseHoaExpression(tr, apNum))
+    {
+      trans.push_back({srcstate, dest, apsym});
+    }
+    return trans;
   }
   else
   {
@@ -428,17 +433,20 @@ Delta<int, APSymbol> BuchiAutomataParser::parseHoaBodyBA(int apNum, ifstream & o
     else
     {
       bool acc = false;
-      Transition<int, APSymbol> tr = parseHoaTransition(src, apNum, line, &acc);
-      if(acc)
-        accTrans.push_back(tr);
-      auto pr = std::make_pair(src, tr.symbol);
-      if(trans.find(pr) == trans.end())
+      vector<Transition<int, APSymbol>> trs = parseHoaTransition(src, apNum, line, &acc);
+      for(const auto & tr : trs)
       {
-        trans[pr] = {tr.to};
-      }
-      else
-      {
-        trans[pr].insert(tr.to);
+        if(acc)
+          accTrans.push_back(tr);
+        auto pr = std::make_pair(src, tr.symbol);
+        if(trans.find(pr) == trans.end())
+        {
+          trans[pr] = {tr.to};
+        }
+        else
+        {
+          trans[pr].insert(tr.to);
+        }
       }
     }
   }
@@ -509,15 +517,18 @@ Delta<int, APSymbol> BuchiAutomataParser::parseHoaBodyGCOBA(int apNum, ifstream 
     else
     {
       bool acc = false;
-      Transition<int, APSymbol> tr = parseHoaTransition(src, apNum, line, &acc);
-      auto pr = std::make_pair(src, tr.symbol);
-      if(trans.find(pr) == trans.end())
+      vector<Transition<int, APSymbol>> trs = parseHoaTransition(src, apNum, line, &acc);
+      for(const auto & tr : trs)
       {
-        trans[pr] = {tr.to};
-      }
-      else
-      {
-        trans[pr].insert(tr.to);
+        auto pr = std::make_pair(src, tr.symbol);
+        if(trans.find(pr) == trans.end())
+        {
+          trans[pr] = {tr.to};
+        }
+        else
+        {
+          trans[pr].insert(tr.to);
+        }
       }
     }
   }
@@ -590,31 +601,50 @@ AutomatonType BuchiAutomataParser::parseAutomatonType()
 }
 
 
-
-
 /*
  * Parse HOA expression
  * @param line String with an expression
  * @param apNum Number of APs
  * @return APSymbol corresponding to the model of given expression
  */
-APSymbol BuchiAutomataParser::parseHoaExpression(string& line, int apNum)
+set<APSymbol> BuchiAutomataParser::parseHoaExpression(string& line, int apNum)
 {
   //remove whitespaces
   line.erase(remove_if(line.begin(), line.end(), ::isspace), line.end());
-  if(line.find("|") != string::npos)
+
+  set<APSymbol> result;
+  vector<string> tokens;
+  boost::split(tokens, line, boost::is_any_of("|"));
+
+  for(const string& t : tokens)
   {
-    throw ParserException("Only transitions containing & are allowed", this->line);
+    set<APSymbol> conj = parseHoaExpressionConj(t, apNum);
+    result.insert(conj.begin(), conj.end());
   }
 
-  APSymbol symbol(apNum);
+  return result;
+}
+
+
+/*
+ * Parse HOA expression in the form of conjunction
+ * @param line String with an expression
+ * @param apNum Number of APs
+ * @return APSymbol corresponding to the model of given expression
+ */
+set<APSymbol> BuchiAutomataParser::parseHoaExpressionConj(const string& line, int apNum)
+{
+  set<APSymbol> symbols;
   vector<char> symvar(apNum, 0);
+  set<vector<char>> symvars = { vector<char>() };
   int stateid;
   vector<string> tokens;
   boost::split(tokens, line, boost::is_any_of("&"));
   for(const string& t : tokens)
   {
     if(t.size() == 0)
+      continue;
+    if(t[0] == 't')
       continue;
     if(t[0] == '!')
     {
@@ -632,12 +662,29 @@ APSymbol BuchiAutomataParser::parseHoaExpression(string& line, int apNum)
   for(unsigned int i = 0; i < symvar.size(); i++)
   {
     if(symvar[i] == 0)
-      throw ParserException("Only simple transitions are allowed", this->line);
-    if(symvar[i] == 1)
-      symbol.ap.set(i);
+    {
+      set<vector<char>> tmpSet = { { 1 }, { 2 } };
+      symvars = Aux::cartProduct(symvars, tmpSet);
+    }
+    else
+    {
+      set<vector<char>> tmpSet = { { symvar[i] } };
+      symvars = Aux::cartProduct(symvars, tmpSet);
+    }
   }
 
-  return symbol;
+  for(const auto & sm : symvars)
+  {
+    APSymbol symbol(apNum);
+    for(unsigned int j = 0; j < sm.size(); j++)
+    {
+      if(sm[j] == 1)
+        symbol.ap.set(j);
+    }
+    symbols.insert(symbol);
+  }
+
+  return symbols;
 }
 
 
