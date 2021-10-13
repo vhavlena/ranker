@@ -19,6 +19,7 @@
 #include "../Complement/StateGcoBA.h"
 #include "../Algorithms/AuxFunctions.h"
 #include "APSymbol.h"
+#include "StateSemiDet.h"
 
 class AutGraph;
 

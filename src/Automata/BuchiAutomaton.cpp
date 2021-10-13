@@ -471,6 +471,19 @@ std::string BuchiAutomaton<StateSch, int>::toGraphwiz()
 
 
 /*
+ * Function converting the automaton <StateSemiDet, int> to graphwiz format.
+ * @return Graphwiz representation of the automaton
+ */
+template <>
+std::string BuchiAutomaton<StateSemiDet, int>::toGraphwiz()
+{
+  std::function<std::string(StateSemiDet)> f1 = [&] (StateSemiDet x) {return x.toString();};
+  std::function<std::string(int)> f2 = [=] (int x) {return std::to_string(x);};
+  return toGraphwizWith(f1, f2);
+}
+
+
+/*
  * Function converting the automaton <string, string> to graphwiz format.
  * @return Graphwiz representation of the automaton
  */
@@ -1280,12 +1293,13 @@ BuchiAutomaton<State, Symbol> BuchiAutomaton<State, Symbol>::unionBA(BuchiAutoma
   /*
   TODO: add support for accepting transitions
   */
-  assert(this->accTrans.size() == 0);
+  //assert(this->accTrans.size() == 0);
 
   set<State> nstates;
   set<State> nini;
   Transitions ntr(this->getTransitions());
   set<State> nfin;
+  VecTransG finTrans(this->getFinTrans());
 
   set_union(this->getStates().begin(), this->getStates().end(), other.getStates().begin(),
     other.getStates().end(), std::inserter(nstates, nstates.begin()));
@@ -1293,6 +1307,8 @@ BuchiAutomaton<State, Symbol> BuchiAutomaton<State, Symbol>::unionBA(BuchiAutoma
     other.getInitials().end(), std::inserter(nini, nini.begin()));
   set_union(this->getFinals().begin(), this->getFinals().end(), other.getFinals().begin(),
     other.getFinals().end(), std::inserter(nfin, nfin.begin()));
+  finTrans.insert(finTrans.end(), other.getFinTrans().begin(), other.getFinTrans().end());
+
 
   // merge transitions
   for (auto it = other.getTransitions().begin(); it != other.getTransitions().end(); it++){
@@ -1302,7 +1318,7 @@ BuchiAutomaton<State, Symbol> BuchiAutomaton<State, Symbol>::unionBA(BuchiAutoma
         ntr.insert({it->first, it->second});
   }
 
-  return BuchiAutomaton<State, Symbol>(nstates, nfin, nini, ntr, this->getAlphabet(), this->apsPattern);
+  return BuchiAutomaton<State, Symbol>(nstates, nfin, nini, ntr, finTrans, this->getAlphabet(), this->apsPattern);
 }
 
 
@@ -1396,7 +1412,7 @@ BuchiAutomaton<int, int> BuchiAutomaton<int, int>::copyStateAcc(int start)
 
   set<int> orig = this->getStates();
   set<int> states(orig.begin(), orig.end());
-  
+
   for(const int& s : this->getStates())
   {
     stMap[s] = start;
@@ -1433,3 +1449,4 @@ template class BuchiAutomaton<StateSch, int>;
 template class BuchiAutomaton<int, APSymbol>;
 template class BuchiAutomaton<StateSch, APSymbol>;
 template class BuchiAutomaton<StateGcoBA, int>;
+template class BuchiAutomaton<StateSemiDet, int>;

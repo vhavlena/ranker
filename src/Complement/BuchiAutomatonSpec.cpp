@@ -1172,6 +1172,104 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchNFA(set<int>& sta
 
 
 /*
+ * Get modified structure of the automaton
+ * @return Modified structure with equivalent language
+ */
+BuchiAutomaton<StateSemiDet, int> BuchiAutomatonSpec::semidetermize()
+{
+  /*
+  TODO: add support for accepting transitions
+  */
+  assert(this->getFinTrans().size() == 0);
+
+  std::stack<StateSemiDet> stack;
+  set<StateSemiDet> comst;
+  set<StateSemiDet> initials;
+  set<StateSemiDet> finals;
+  //set<StateSch> succ;
+  set<int> alph = getAlphabet();
+  map<std::pair<StateSemiDet, int>, set<StateSemiDet> > mp;
+  map<std::pair<StateSemiDet, int>, set<StateSemiDet> >::iterator it;
+
+  for(const int& i : this->getInitials())
+  {
+    StateSemiDet init = {i, {set<int>(), set<int>()}, true};
+    stack.push(init);
+    comst.insert(init);
+    initials.insert(init);
+  }
+
+  set<int> fins = this->getFinals();
+
+  while(stack.size() > 0)
+  {
+    StateSemiDet st = stack.top();
+    stack.pop();
+
+    if(!st.isWaiting && st.tight.first == st.tight.second && st.tight.first.size() > 0)
+    {
+      finals.insert(st);
+    }
+
+    for(int sym : alph)
+    {
+      set<StateSemiDet> dst;
+      if(st.isWaiting)
+      {
+        auto pr = std::make_pair(st.waiting, sym);
+        set<int> tmpDst = this->getTransitions()[pr];
+        for(const int& d : tmpDst)
+        {
+          StateSemiDet s1 = { d, {set<int>(), set<int>()}, true };
+          StateSemiDet s2 = { -1, {set<int>({d}), set<int>()}, false };
+          dst.insert(s1);
+          dst.insert(s2);
+        }
+      }
+      else
+      {
+        if(st.tight.first == st.tight.second)
+        {
+          set<int> succ = succSet(st.tight.first, sym);
+          set<int> succ2;
+          std::set_intersection(succ.begin(), succ.end(), fins.begin(), fins.end(),
+            std::inserter(succ2, succ2.begin()));
+          set<int> tmpsucc = succSet(st.tight.second, sym);
+          succ2.insert(tmpsucc.begin(), tmpsucc.end());
+          StateSemiDet s = { -1, {succ, succ2}, false };
+          dst.insert(s);
+        }
+        else
+        {
+          set<int> succ = succSet(st.tight.first, sym);
+          set<int> succ2;
+          std::set_intersection(succ.begin(), succ.end(), fins.begin(), fins.end(),
+            std::inserter(succ2, succ2.begin()));
+          StateSemiDet s = { -1, {succ, succ2}, false };
+          dst.insert(s);
+        }
+      }
+
+      for(const StateSemiDet& d : dst)
+      {
+        if(comst.find(d) == comst.end())
+        {
+          stack.push(d);
+          comst.insert(d);
+        }
+      }
+      auto pr = std::make_pair(st, sym);
+      mp[pr] = dst;
+    }
+  }
+
+  return BuchiAutomaton<StateSemiDet, int>(comst, finals,
+    initials, mp, alph);
+}
+
+
+
+/*
  * Is the self-loop accepting?
  * @param state Macrostate with selfloop
  * @param alp Alphabet

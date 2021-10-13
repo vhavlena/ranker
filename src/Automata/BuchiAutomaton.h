@@ -15,6 +15,7 @@
 
 #include "AutGraph.h"
 #include "../Complement/StateKV.h"
+#include "StateSemiDet.h"
 #include "AutomatonStruct.h"
 #include "../Complement/StateSch.h"
 #include "../Algorithms/AuxFunctions.h"

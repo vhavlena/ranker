@@ -86,4 +86,14 @@ string printVector(vector<int> st)
   return "{" + ret + "}";
 }
 
+std::string printIntSet(std::set<int> st)
+{
+  std::string ret;
+  for (auto s : st)
+    ret += std::to_string(s) + " ";
+  if(ret.back() == ' ')
+    ret.pop_back();
+  return "{" + ret + "}";
+}
+
 }

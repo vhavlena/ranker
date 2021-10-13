@@ -121,6 +121,8 @@ namespace Aux
     return pr->second;
   }
 
+  std::string printIntSet(std::set<int> st);
+
 }
 
 #endif

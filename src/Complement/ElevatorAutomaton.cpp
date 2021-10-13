@@ -402,6 +402,7 @@ std::map<int, int> ElevatorAutomaton::elevatorRank(bool detBeginning){
     // inherently weak
     if (isInherentlyWeak(it->states, predSyms))
       it->inhWeak = true;
+    //cout << it->states.size() << " " << it->det << " " << it->nonDet << " " << it->inhWeak << endl;
   }
 
   // for(auto cl : sccClass)

@@ -20,6 +20,7 @@
 #include "RankFunc.h"
 #include "StateSch.h"
 #include "Options.h"
+#include "../Automata/StateSemiDet.h"
 
 using std::vector;
 using std::set;
@@ -131,6 +132,8 @@ public:
       map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel, set<int> finals);
   vector<StateSch> succSetSchTightReduced(StateSch& state, int symbol, map<int, int> reachCons,
       map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel, set<int> finals);
+
+  BuchiAutomaton<StateSemiDet, int> semidetermize();
 
   static inline int evenceil(int val)
   {

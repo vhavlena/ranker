@@ -43,21 +43,35 @@ BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, Comp
     ElevatorAutomaton elev(tmp);
 
     set<int> fins = tmp.getFinals();
-    auto prediwa = [&fins] (SccClassif c) -> bool
+    VecTrans<int, int> finsTrans = tmp.getFinTrans();
+
+    auto isAcc = [&fins, &finsTrans] (SccClassif c) -> bool
     {
-      return c.inhWeak && (std::any_of(c.states.begin(), c.states.end(), [&fins](int state){return fins.find(state) != fins.end();}));
+      if(std::any_of(c.states.begin(), c.states.end(), [&fins](int state){return fins.find(state) != fins.end();}))
+        return true;
+      for(auto& tr : finsTrans)
+      {
+        if(c.states.find(tr.from) != c.states.end() && c.states.find(tr.to) != c.states.end())
+          return true;
+      }
+      return false;
     };
-    auto preddet = [&fins] (SccClassif c) -> bool
+
+    auto prediwa = [&isAcc] (SccClassif c) -> bool
     {
-      return c.det && (std::any_of(c.states.begin(), c.states.end(), [&fins](int state){return fins.find(state) != fins.end();}));
+      return c.inhWeak && isAcc(c);
     };
-    auto predall = [&fins] (SccClassif c) -> bool
+    auto preddet = [&isAcc] (SccClassif c) -> bool
     {
-      return (std::any_of(c.states.begin(), c.states.end(), [&fins](int state){return fins.find(state) != fins.end();}));
+      return c.det && isAcc(c);
     };
-    auto predtri = [&fins] (SccClassif c) -> bool
+    auto predall = [&isAcc] (SccClassif c) -> bool
     {
-      return c.states.size() == 1 && (std::any_of(c.states.begin(), c.states.end(), [&fins](int state){return fins.find(state) != fins.end();}));
+      return isAcc(c);
+    };
+    auto predtri = [&isAcc] (SccClassif c) -> bool
+    {
+      return c.states.size() == 1 && isAcc(c);
     };
 
     if(opt.preprocess == CPHEUR)
@@ -65,10 +79,10 @@ BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, Comp
       map<int,int> ranks = elev.elevatorRank(false);
       int m = Aux::maxValue(ranks);
       bool isElev = elev.isElevator();
-      auto predheur = [&fins, m, isElev] (SccClassif c) -> bool
+      auto predheur = [&isAcc, m, isElev] (SccClassif c) -> bool
       {
         if(m >= 7 && isElev)
-          return (std::any_of(c.states.begin(), c.states.end(), [&fins](int state){return fins.find(state) != fins.end();}));
+          return isAcc(c);
         return false;
       };
       tmp = elev.copyPreprocessing(predheur);
@@ -94,7 +108,7 @@ BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, Comp
   }
 
   if (opt.accPropagation)
-  { 
+  {
     map<APSymbol, int> apint;
     map<int, APSymbol> intap;
     int i = 0;

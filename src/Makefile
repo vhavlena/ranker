@@ -121,7 +121,7 @@ $(OBJ)/BuchiAutomataParser.o: Automata/BuchiAutomataParser.cpp \
 
 $(OBJ)/BuchiAutomaton.o: Automata/BuchiAutomaton.cpp Automata/BuchiAutomaton.h \
 	Automata/AutomatonStruct.h Complement/StateSch.h Complement/StateKV.h \
-	Complement/RankFunc.h Automata/APSymbol.h $(OBJ)/AutGraph.o \
+	Complement/RankFunc.h Automata/APSymbol.h Automata/StateSemiDet.h $(OBJ)/AutGraph.o \
 	$(OBJ)/AuxFunctions.o $(OBJ)/AutomatonStruct.o
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 
@@ -156,7 +156,7 @@ $(OBJ)/AuxFunctions.o: Algorithms/AuxFunctions.cpp Algorithms/AuxFunctions.h
 $(OBJ)/BuchiAutomatonSpec.o: Complement/BuchiAutomatonSpec.cpp \
 	Automata/BuchiAutomaton.h Automata/AutomatonStruct.h Complement/StateKV.h \
 	Complement/StateSch.h Complement/BuchiAutomatonSpec.h Complement/Options.h \
-	$(OBJ)/RankFunc.o $(OBJ)/AuxFunctions.o $(OBJ)/BuchiDelay.o \
+	Automata/StateSemiDet.h $(OBJ)/RankFunc.o $(OBJ)/AuxFunctions.o $(OBJ)/BuchiDelay.o \
 	$(OBJ)/BuchiAutomaton.o $(OBJ)/AutomatonStruct.o $(OBJ)/ElevatorAutomaton.o
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 

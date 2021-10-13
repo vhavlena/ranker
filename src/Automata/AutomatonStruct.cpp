@@ -365,4 +365,8 @@ template class AutomatonStruct<tuple<string, int>, string>;
 template class AutomatonStruct<StateGcoBA, int>;
 template class AutomatonStruct<tuple<StateGcoBA, int, bool>, int>;
 template class AutomatonStruct<pair<StateGcoBA, int>, int>;
+
+template class AutomatonStruct<StateSemiDet, int>;
+template class AutomatonStruct<pair<StateSemiDet, int>, int>;
+template class AutomatonStruct<tuple<StateSemiDet, int, bool>, int>;
 //
