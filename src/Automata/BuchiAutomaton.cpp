@@ -1442,6 +1442,123 @@ BuchiAutomaton<int, int> BuchiAutomaton<int, int>::copyStateAcc(int start)
 }
 
 
+/*
+ * Set of all successors.
+ * @param states Set of states to get successors
+ * @param symbol Symbol
+ * @return Set of successors over symbol
+ */
+template <typename State, typename Symbol>
+set<State> BuchiAutomaton<State, Symbol>::succSet(const set<State>& states, const Symbol& symbol)
+{
+  set<State> ret;
+  for(const State& st : states)
+  {
+    set<State> dst = this->getTransitions()[std::make_pair(st, symbol)];
+    ret.insert(dst.begin(), dst.end());
+  }
+  return ret;
+}
+
+
+/*
+ * Semideterminize the given automaton
+ * @return Modified structure with equivalent language
+ */
+template <>
+BuchiAutomaton<StateSemiDet, APSymbol> BuchiAutomaton<int, APSymbol>::semideterminize()
+{
+  /*
+  TODO: add support for accepting transitions
+  */
+  assert(this->getFinTrans().size() == 0);
+
+  std::stack<StateSemiDet> stack;
+  set<StateSemiDet> comst;
+  set<StateSemiDet> initials;
+  set<StateSemiDet> finals;
+  //set<StateSch> succ;
+  set<APSymbol> alph = getAlphabet();
+  map<std::pair<StateSemiDet, APSymbol>, set<StateSemiDet> > mp;
+  map<std::pair<StateSemiDet, APSymbol>, set<StateSemiDet> >::iterator it;
+
+  for(const int& i : this->getInitials())
+  {
+    StateSemiDet init = {i, {set<int>(), set<int>()}, true};
+    stack.push(init);
+    comst.insert(init);
+    initials.insert(init);
+  }
+
+  set<int> fins = this->getFinals();
+
+  while(stack.size() > 0)
+  {
+    StateSemiDet st = stack.top();
+    stack.pop();
+
+    if(!st.isWaiting && st.tight.first == st.tight.second && st.tight.first.size() > 0)
+    {
+      finals.insert(st);
+    }
+
+    for(APSymbol const & sym : alph)
+    {
+      set<StateSemiDet> dst;
+      if(st.isWaiting)
+      {
+        auto pr = std::make_pair(st.waiting, sym);
+        set<int> tmpDst = this->getTransitions()[pr];
+        for(const int& d : tmpDst)
+        {
+          StateSemiDet s1 = { d, {set<int>(), set<int>()}, true };
+          StateSemiDet s2 = { -1, {set<int>({d}), set<int>()}, false };
+          dst.insert(s1);
+          dst.insert(s2);
+        }
+      }
+      else
+      {
+        if(st.tight.first == st.tight.second)
+        {
+          set<int> succ = succSet(st.tight.first, sym);
+          set<int> succ2;
+          std::set_intersection(succ.begin(), succ.end(), fins.begin(), fins.end(),
+            std::inserter(succ2, succ2.begin()));
+          set<int> tmpsucc = succSet(st.tight.second, sym);
+          succ2.insert(tmpsucc.begin(), tmpsucc.end());
+          StateSemiDet s = { -1, {succ, succ2}, false };
+          dst.insert(s);
+        }
+        else
+        {
+          set<int> succ = succSet(st.tight.first, sym);
+          set<int> succ2;
+          std::set_intersection(succ.begin(), succ.end(), fins.begin(), fins.end(),
+            std::inserter(succ2, succ2.begin()));
+          StateSemiDet s = { -1, {succ, succ2}, false };
+          dst.insert(s);
+        }
+      }
+
+      for(const StateSemiDet& d : dst)
+      {
+        if(comst.find(d) == comst.end())
+        {
+          stack.push(d);
+          comst.insert(d);
+        }
+      }
+      auto pr = std::make_pair(st, sym);
+      mp[pr] = dst;
+    }
+  }
+
+  return BuchiAutomaton<StateSemiDet, APSymbol>(comst, finals,
+    initials, mp, alph);
+}
+
+
 
 template class BuchiAutomaton<int, int>;
 template class BuchiAutomaton<std::string, std::string>;

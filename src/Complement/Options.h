@@ -52,6 +52,8 @@ struct ComplOptions
 
   PreprocessOptions preprocess = NONE;
   bool accPropagation = false;
+
+  bool semideterminize = false;
 };
 
 #endif

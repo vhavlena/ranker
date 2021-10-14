@@ -66,7 +66,6 @@ private:
 
 protected:
   RankConstr rankConstr(vector<int>& max, set<int>& states);
-  set<int> succSet(const set<int>& state, int symbol);
 
   vector<RankFunc> getKVRanks(vector<int>& max, set<int>& states);
   set<StateKV> succSetKV(StateKV& state, int symbol);

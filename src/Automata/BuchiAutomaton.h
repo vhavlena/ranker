@@ -289,6 +289,67 @@ public:
     return ret;
   }
 
+  /*
+  * Rename states and symbols of the automaton (to consecutive numbers).
+  * @param start Starting number for states
+  * @return Renamed automaton
+  */
+  BuchiAutomaton<int, Symbol> renameStates(int start = 0) {
+    int stcnt = start;
+    std::map<State, int> mpstate;
+    std::set<int> rstate;
+    Delta<int, Symbol> rtrans;
+    std::set<int> rfin;
+    std::set<int> rini;
+    VecTrans<int, Symbol> ftrans;
+
+    this->invRenameMap = std::vector<State>(this->states.size() + start);
+
+    for(auto st : this->states)
+    {
+      auto it = mpstate.find(st);
+      this->invRenameMap[stcnt] = st;
+      if(it == mpstate.end())
+      {
+        mpstate[st] = stcnt++;
+      }
+    }
+
+    rstate = Aux::mapSet(mpstate, this->states);
+    rini = Aux::mapSet(mpstate, this->initials);
+    rfin = Aux::mapSet(mpstate, this->finals);
+    for(auto& p : this->trans)
+    {
+      Symbol val = p.first.second;
+      std::set<int> to = Aux::mapSet(mpstate, p.second);
+      rtrans.insert({std::make_pair(mpstate[p.first.first], val), to});
+    }
+
+    for(unsigned i = 0; i < this->accTrans.size(); i++)
+    {
+      ftrans.push_back({ .from = mpstate[this->accTrans[i].from],
+          .to = mpstate[this->accTrans[i].to],
+          .symbol = this->accTrans[i].symbol });
+    }
+
+    BuchiAutomaton<int, Symbol> ret = BuchiAutomaton<int, Symbol>(rstate, rfin, rini, rtrans, ftrans);
+    this->renameStateMap = mpstate;
+
+    std::set<std::pair<int, int> > rdirSim, roddSim;
+    for(auto item : this->directSim)
+    {
+      rdirSim.insert({mpstate[item.first], mpstate[item.second]});
+    }
+    for(auto item : this->oddRankSim)
+    {
+      roddSim.insert({mpstate[item.first], mpstate[item.second]});
+    }
+    ret.setDirectSim(rdirSim);
+    ret.setOddRankSim(roddSim);
+    ret.setAPPattern(this->apsPattern);
+    return ret;
+  }
+
   BuchiAutomaton<int, int> renameAutDict(map<Symbol, int>& mpsymbol, int start = 0);
 
   //bool isElevator();
@@ -467,6 +528,8 @@ public:
   }
 
   BuchiAutomaton<int, int> copyStateAcc(int start);
+  BuchiAutomaton<StateSemiDet, Symbol> semideterminize();
+  set<State> succSet(const set<State>& state, const Symbol& symbol);
 };
 
 #endif

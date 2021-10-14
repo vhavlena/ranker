@@ -46,12 +46,14 @@ int main(int argc, char *argv[])
   args::Flag lightFlag(parser, "light", "Use lightweight optimizations", {"light"});
   args::ValueFlag<std::string> preprocessFlag(parser, "preprocess", "Preprocessing [copyiwa/copydet/copyall/copytrivial/copyheur]", {"preprocess"});
   args::Flag accPropagationFlag(parser, "acc-propagation", "Propagate accepting states in each SCC", {"acc-propagation"});
+  args::Flag sdFlag(parser, "sd", "Use semideterminization", {"sd"});
 
   ComplOptions opt = { .cutPoint = true, .succEmptyCheck = true, .ROMinState = 8,
       .ROMinRank = 6, .CacheMaxState = 6, .CacheMaxRank = 8, .semidetOpt = false,
       .dataFlow = INNER, .delay = false, .delayVersion = oldVersion, .delayW = 0.5,
       .debug = false, .elevator = { .elevatorRank = true, .detBeginning = false },
-      .sim = true, .sl = true, .reach = true, .flowDirSim = false, .preprocess = NONE, .accPropagation = false };
+      .sim = true, .sl = true, .reach = true, .flowDirSim = false, .preprocess = NONE, .accPropagation = false,
+      .semideterminize = false };
 
   try
   {
@@ -112,6 +114,11 @@ int main(int argc, char *argv[])
       std::cerr << "Wrong copy attribute" << std::endl;
       return 1;
     }
+  }
+
+  if(sdFlag)
+  {
+    opt.semideterminize = true;
   }
 
   // delay version
@@ -273,6 +280,16 @@ int main(int argc, char *argv[])
           if (elevatorTest){
             ElevatorAutomaton sp(renBuchi);
             std::cout << "Elevator automaton: " << (sp.isElevator() ? "Yes" : "No") << std::endl;
+            os.close();
+            return 0;
+          }
+
+          if(opt.semideterminize)
+          {
+            auto sd = orig.semideterminize();
+            auto rn = sd.renameStates();
+            cout << rn.toHOA() << endl;
+
             os.close();
             return 0;
           }
