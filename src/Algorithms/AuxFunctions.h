@@ -15,6 +15,7 @@ namespace Aux
 {
   int countEqClasses(int n, set<int>& st, set<pair<int, int>>& rel);
   vector< vector<int> > getAllSubsets(vector<int> set);
+  vector< vector<int> > getAllSubsets(vector<int> set, unsigned max);
   string printVector(vector<int> st);
 
   /*

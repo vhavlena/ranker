@@ -1504,6 +1504,9 @@ BuchiAutomaton<StateSemiDet, APSymbol> BuchiAutomaton<int, APSymbol>::semideterm
 
   set<int> fins = this->getFinals();
 
+  set<int> ignore;
+  set<int> closingStates = this->getCycleClosingStates(ignore);
+
   while(stack.size() > 0)
   {
     StateSemiDet st = stack.top();
@@ -1524,9 +1527,13 @@ BuchiAutomaton<StateSemiDet, APSymbol> BuchiAutomaton<int, APSymbol>::semideterm
         for(const int& d : tmpDst)
         {
           StateSemiDet s1 = { d, {set<int>(), set<int>()}, true };
-          StateSemiDet s2 = { -1, {set<int>({d}), set<int>()}, false };
           dst.insert(s1);
-          dst.insert(s2);
+
+          //if(closingStates.find(st.waiting) != closingStates.end())
+          {
+            StateSemiDet s2 = { -1, {set<int>({d}), set<int>()}, false };
+            dst.insert(s2);
+          }
         }
       }
       else

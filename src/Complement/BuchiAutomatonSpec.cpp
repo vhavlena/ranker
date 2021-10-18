@@ -583,6 +583,15 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
   this->setFinals(finals);
   auto fin = getFinals();
 
+  if(this->opt.semideterminize)
+  {
+    for(const auto& p : state.f)
+    {
+      if(p.second == 0)
+        return vector<StateSch>();
+    }
+  }
+
   for(int st : state.S)
   {
     set<int> dst = getTransitions()[std::make_pair(st, symbol)];
@@ -749,7 +758,21 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchStartReduced(set<int>& state, int
   vector<RankFunc> maxRanks1;
   vector<RankFunc> maxRanks2;
 
-  if(state.size() >= this->opt.ROMinState && m >= this->opt.ROMinRank)
+  RankFunc ubound(this->rankBound[sprime].stateBound, false);
+  if(this->opt.semideterminize)
+  {
+    maxRanks = RankFunc::getRORanksSD(m, state, fin, this->opt.cutPoint);
+    for(const RankFunc& f : maxRanks)
+    {
+      if(!f.isAllLeq(ubound))
+      {
+        continue;
+      }
+      maxRanks1.push_back(f);
+    }
+    maxPtr = &maxRanks1;
+  }
+  else if(state.size() >= this->opt.ROMinState && m >= this->opt.ROMinRank)
   {
     maxRanks = RankFunc::getRORanks(rankBound, state, fin, this->opt.cutPoint);
     maxPtr = &maxRanks;
@@ -760,7 +783,6 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchStartReduced(set<int>& state, int
     RankConstr constr = rankConstr(maxRank, sprime);
     auto tmp = RankFunc::tightFromRankConstr(constr, dirRel, oddRel, reachCons, reachMaxAct, this->opt.cutPoint);
 
-    RankFunc ubound(this->rankBound[sprime].stateBound, false);
     set<RankFunc> tmpSet2(tmp.begin(), tmp.end());
     set<RankFunc> tmpSet1; //(tmp.begin(), tmp.end());
     for(const RankFunc& f : tmp)

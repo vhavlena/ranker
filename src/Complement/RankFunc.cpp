@@ -578,6 +578,51 @@ std::string RankFunc::toStringVer() const
   return ret;
 }
 
+/*
+ * Get Schewe reduced outdegree ranking functions
+ * @param ranks Maximum rank
+ * @param states Macrostate
+ * @param fin Final states
+ * @param useInverse Use inverse ranking function
+ * @return Ranking functions (RO)
+ */
+vector<RankFunc> RankFunc::getRORanksSD(int ranks, std::set<int>& states, std::set<int>& fin, bool useInverse)
+{
+  vector<RankFunc> ret;
+  set<int> nofin;
+  std::set_difference(states.begin(), states.end(), fin.begin(),
+    fin.end(), std::inserter(nofin, nofin.begin()));
+
+  vector<int> nfvec(nofin.begin(), nofin.end());
+  vector<vector<int>> subsets = Aux::getAllSubsets(nfvec, (ranks+1)/2);
+  for(auto& sb : subsets)
+  {
+    if(sb.size() == 0)
+      continue;
+    vector<int> perm(sb.begin(), sb.end());
+    do {
+      int i = 1;
+      std::map<int, int> rnk;
+      for(const int st : states)
+      {
+        if(fin.find(st) == fin.end())
+          rnk[st] = 2*sb.size() - 1;
+        else
+          rnk[st] = 2*(sb.size() - 1);
+      }
+      for(const int p : perm)
+      {
+        rnk[p] = i;
+        i += 2;
+      }
+      RankFunc fnc(rnk, useInverse);
+      ret.push_back(fnc);
+
+    } while(std::next_permutation(perm.begin(), perm.end()));
+  }
+  return ret;
+}
+
 
 /*
  * Get Schewe reduced outdegree ranking functions

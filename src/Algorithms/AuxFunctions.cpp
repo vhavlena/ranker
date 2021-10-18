@@ -72,6 +72,35 @@ vector< vector<int> > getAllSubsets(vector<int> set)
 
 
 /*
+ * Get all subsets of a given vector (of maximum size max)
+ * @param set Set represented as a vector
+ * @return All subsets
+ */
+vector< vector<int> > getAllSubsets(vector<int> set, unsigned max)
+{
+  vector< vector<int> > subset;
+  vector<int> empty;
+  subset.push_back( empty );
+
+  for (unsigned i = 0; i < set.size(); i++)
+  {
+    vector< vector<int> > subsetTemp = subset;
+    for (unsigned j = 0; j < subsetTemp.size(); j++)
+    {
+      subsetTemp[j].push_back( set[i] );
+    }
+
+    for (unsigned j = 0; j < subsetTemp.size(); j++)
+    {
+      if(subsetTemp[j].size() <= max)
+        subset.push_back( subsetTemp[j] );
+    }
+  }
+  return subset;
+}
+
+
+/*
  * Convert to string the contents of a given vector
  * @param st Vector to be converted to string
  * @return String representation
