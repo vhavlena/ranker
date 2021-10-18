@@ -28,17 +28,29 @@ BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, Comp
   //BuchiAutomataParser parser(os);
   BuchiAutomaton<int, APSymbol> orig = parser.parseHoaBA();
 
+  map<APSymbol, int> apint;
+  map<int, APSymbol> intap;
+  int i = 0;
+  for(const APSymbol& s : orig.getAlphabet())
+  {
+    apint[s] = i;
+    intap[i] = s;
+    i++;
+  }
+
+  if(opt.semideterminize)
+  {
+    auto sd = orig.semideterminize();
+    //cout << sd.toGraphwiz() << endl;
+    auto rn = sd.renameStates();
+    BuchiAutomaton<int, int> tmp = rn.renameAlphabet(apint);
+    //tmp.removeUseless();
+    orig = tmp.renameAlphabet(intap);
+  }
+
   if(opt.preprocess != NONE)
   {
-    map<APSymbol, int> apint;
-    map<int, APSymbol> intap;
-    int i = 0;
-    for(const APSymbol& s : orig.getAlphabet())
-    {
-      apint[s] = i;
-      intap[i] = s;
-      i++;
-    }
+
     BuchiAutomaton<int, int> tmp = orig.renameAlphabet(apint);
     ElevatorAutomaton elev(tmp);
 

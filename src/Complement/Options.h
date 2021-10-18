@@ -23,7 +23,7 @@ enum PreprocessOptions
 struct ComplOptions
 {
   bool cutPoint = false;
-  bool succEmptyCheck = true;
+  bool succEmptyCheck = false;
 
   unsigned ROMinState = 9;
   int ROMinRank = 7;

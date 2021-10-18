@@ -48,8 +48,8 @@ int main(int argc, char *argv[])
   args::Flag accPropagationFlag(parser, "acc-propagation", "Propagate accepting states in each SCC", {"acc-propagation"});
   args::Flag sdFlag(parser, "sd", "Use semideterminization", {"sd"});
 
-  ComplOptions opt = { .cutPoint = true, .succEmptyCheck = true, .ROMinState = 8,
-      .ROMinRank = 6, .CacheMaxState = 6, .CacheMaxRank = 8, .semidetOpt = false,
+  ComplOptions opt = { .cutPoint = true, .succEmptyCheck = false, .ROMinState = 7,
+      .ROMinRank = 7, .CacheMaxState = 6, .CacheMaxRank = 8, .semidetOpt = false,
       .dataFlow = INNER, .delay = false, .delayVersion = oldVersion, .delayW = 0.5,
       .debug = false, .elevator = { .elevatorRank = true, .detBeginning = false },
       .sim = true, .sl = true, .reach = true, .flowDirSim = false, .preprocess = NONE, .accPropagation = false,
@@ -284,16 +284,16 @@ int main(int argc, char *argv[])
             return 0;
           }
 
-          if(opt.semideterminize)
-          {
-            auto sd = orig.semideterminize();
-            //cout << sd.toGraphwiz() << endl;
-            auto rn = sd.renameStates();
-            cout << rn.toHOA() << endl;
-
-            os.close();
-            return 0;
-          }
+          // if(opt.semideterminize)
+          // {
+          //   auto sd = orig.semideterminize();
+          //   //cout << sd.toGraphwiz() << endl;
+          //   auto rn = sd.renameStates();
+          //   cout << rn.toHOA() << endl;
+          //
+          //   os.close();
+          //   return 0;
+          // }
 
           complementAutWrap(&renBuchi, &compBA, &renCompl, &stats, opt);
           // cout << compBA.toGraphwiz() << endl;
