@@ -287,6 +287,7 @@ int main(int argc, char *argv[])
           if(opt.semideterminize)
           {
             auto sd = orig.semideterminize();
+            //cout << sd.toGraphwiz() << endl;
             auto rn = sd.renameStates();
             cout << rn.toHOA() << endl;
 

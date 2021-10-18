@@ -482,6 +482,18 @@ std::string BuchiAutomaton<StateSemiDet, int>::toGraphwiz()
   return toGraphwizWith(f1, f2);
 }
 
+/*
+ * Function converting the automaton <StateSemiDet, APSymbol> to graphwiz format.
+ * @return Graphwiz representation of the automaton
+ */
+template <>
+std::string BuchiAutomaton<StateSemiDet, APSymbol>::toGraphwiz()
+{
+  std::function<std::string(StateSemiDet)> f1 = [&] (StateSemiDet x) {return x.toString();};
+  std::function<std::string(APSymbol)> f2 = [&] (APSymbol x) {return x.toString();};
+  return toGraphwizWith(f1, f2);
+}
+
 
 /*
  * Function converting the automaton <string, string> to graphwiz format.
@@ -1519,7 +1531,7 @@ BuchiAutomaton<StateSemiDet, APSymbol> BuchiAutomaton<int, APSymbol>::semideterm
       }
       else
       {
-        if(st.tight.first == st.tight.second)
+        if(st.tight.first != st.tight.second)
         {
           set<int> succ = succSet(st.tight.first, sym);
           set<int> succ2;
