@@ -483,8 +483,6 @@ std::map<int, int> ElevatorAutomaton::elevatorRank(bool detBeginning){
           }
         }
         it->rank = rank;
-        it->inhWeak = false;
-        it->det = false;
       }
 
       // rule #4 : IW
@@ -505,18 +503,18 @@ std::map<int, int> ElevatorAutomaton::elevatorRank(bool detBeginning){
         if (it->rank == -1 or rank < it->rank){
           it->rank = rank;
           it->nonDet = false;
+        } else {
+          it->inhWeak = false;
         }
-
-        it->nonDet = false;
-        it->det = false;
       }
 
       // rule #5: D
       rank = -1;
       if (it->det){
         for (auto scc : succ){
-          if (scc.nonDet and scc.rank+1 > rank)
+          if (scc.nonDet and scc.rank+1 > rank){
             rank = scc.rank + 1;
+          }
           else if ((scc.det or scc.inhWeak) and scc.rank+2 > rank){
             // deterministic transitions -> scc.rank, otherwise scc.rank+2
             bool det = true;
@@ -555,10 +553,9 @@ std::map<int, int> ElevatorAutomaton::elevatorRank(bool detBeginning){
           it->rank = rank;
           it->nonDet = false;
           it->inhWeak = false;
+        } else {
+          it->det = false;
         }
-
-        it->nonDet = false;
-        it->inhWeak = false;
       }
 
       // non-elevator scc
