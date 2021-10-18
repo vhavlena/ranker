@@ -1555,7 +1555,7 @@ BuchiAutomaton<StateSemiDet, APSymbol> BuchiAutomaton<int, APSymbol>::semideterm
   }
 
   return BuchiAutomaton<StateSemiDet, APSymbol>(comst, finals,
-    initials, mp, alph);
+    initials, mp, alph, this->getAPPattern());
 }
 
 
@@ -1567,3 +1567,4 @@ template class BuchiAutomaton<int, APSymbol>;
 template class BuchiAutomaton<StateSch, APSymbol>;
 template class BuchiAutomaton<StateGcoBA, int>;
 template class BuchiAutomaton<StateSemiDet, int>;
+template class BuchiAutomaton<StateSemiDet, APSymbol>;
