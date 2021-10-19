@@ -165,6 +165,12 @@ $(OBJ)/GenCoBuchiAutomatonCompl.o: Complement/GenCoBuchiAutomatonCompl.cpp Compl
 	$(OBJ)/AuxFunctions.o $(OBJ)/BuchiAutomaton.o $(OBJ)/AutomatonStruct.o
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 
+$(OBJ)/CoBuchiCompl.o: Complement/CoBuchiCompl.cpp Complement/CoBuchiCompl.h \
+	Automata/BuchiAutomaton.h Automata/AutomatonStruct.h Complement/StateGcoBA.h \
+	Automata/GenCoBuchiAutomaton.h $(OBJ)/AuxFunctions.o $(OBJ)/BuchiAutomaton.o \
+	$(OBJ)/AutomatonStruct.o $(OBJ)/GenCoBuchiAutomaton.o
+	$(GCC) $(CPPFLAGS) -c -o $@ $<
+
 $(OBJ)/BuchiDelay.o: Complement/BuchiDelay.cpp \
 	Automata/BuchiAutomaton.h Automata/AutomatonStruct.h Complement/StateSch.h \
 	Complement/BuchiDelay.h $(OBJ)/RankFunc.o \

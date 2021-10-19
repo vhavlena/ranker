@@ -623,3 +623,18 @@ std::map<int, int> ElevatorAutomaton::elevatorRank(bool detBeginning){
 
   return ranks;
 }
+
+bool ElevatorAutomaton::isInherentlyWeakBA()
+{
+  return false;
+}
+
+
+BuchiAutomaton<int, int> ElevatorAutomaton::convertToWeak()
+{
+  assert(this->isInherentlyWeakBA());
+
+  assert(false && "convertToWeak is not implemented");
+
+  return BuchiAutomaton<int, int>();
+}

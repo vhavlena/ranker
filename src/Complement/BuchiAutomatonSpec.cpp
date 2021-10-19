@@ -583,14 +583,14 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
   this->setFinals(finals);
   auto fin = getFinals();
 
-  if(this->opt.semideterminize)
-  {
-    for(const auto& p : state.f)
-    {
-      if(p.second == 0)
-        return vector<StateSch>();
-    }
-  }
+  // if(this->opt.semideterminize)
+  // {
+  //   for(const auto& p : state.f)
+  //   {
+  //     if(p.second == 0)
+  //       return vector<StateSch>();
+  //   }
+  // }
 
   for(int st : state.S)
   {

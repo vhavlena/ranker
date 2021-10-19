@@ -36,6 +36,9 @@ public:
   BuchiAutomaton<int, int> copyPreprocessing(const std::function<bool(SccClassif)>& pred);
   BuchiAutomaton<int, int> propagateAccStates();
 
+  bool isInherentlyWeakBA();
+  BuchiAutomaton<int, int> convertToWeak();
+
 protected:
   bool isDeterministic(std::set<int>& scc, map<int, set<int> >& predSyms);
   bool isNonDeterministic(std::set<int>& scc);

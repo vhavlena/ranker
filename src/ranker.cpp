@@ -277,11 +277,16 @@ int main(int argc, char *argv[])
 
           renBuchi = orig.renameAut();
 
+          ElevatorAutomaton sp(renBuchi);
           if (elevatorTest){
-            ElevatorAutomaton sp(renBuchi);
             std::cout << "Elevator automaton: " << (sp.isElevator() ? "Yes" : "No") << std::endl;
             os.close();
             return 0;
+          }
+
+          if(sp.isInherentlyWeakBA())
+          {
+            //TODO: inherently weak complementation
           }
 
           // if(opt.semideterminize)
