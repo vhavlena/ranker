@@ -1578,6 +1578,18 @@ BuchiAutomaton<StateSemiDet, APSymbol> BuchiAutomaton<int, APSymbol>::semideterm
 }
 
 
+template <>
+BuchiAutomaton<int, int> BuchiAutomaton<int, int>::removeUselessRename()
+{
+  map<int, int> id;
+  for(auto al : this->getAlphabet())
+    id[al] = al;
+  BuchiAutomaton<int, int> renptr = this->renameAutDict(id);
+  renptr.removeUseless();
+  return renptr.renameAutDict(id);
+}
+
+
 
 template class BuchiAutomaton<int, int>;
 template class BuchiAutomaton<std::string, std::string>;

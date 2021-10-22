@@ -2049,4 +2049,9 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchOpt(bool delay, s
     initials, mp, alph, getAPPattern());
 }
 
+bool BuchiAutomatonSpec::meetsBackOff()
+{
+  return false;
+}
+
 //template class LabelState<StateSch, RankBound>;

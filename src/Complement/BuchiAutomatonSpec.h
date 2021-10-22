@@ -143,6 +143,8 @@ public:
 
   BuchiAutomaton<StateSemiDet, int> semidetermize();
 
+  bool meetsBackOff();
+
   static inline int evenceil(int val)
   {
     if(val % 2 == 0)

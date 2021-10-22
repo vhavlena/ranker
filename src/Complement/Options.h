@@ -54,6 +54,8 @@ struct ComplOptions
   bool accPropagation = false;
 
   bool semideterminize = false;
+
+  bool backoff = false;
 };
 
 #endif

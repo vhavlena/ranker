@@ -171,28 +171,17 @@ BuchiAutomaton<int, int> parseRenameBA(ifstream& os, BuchiAutomaton<string, stri
   return orig->renameAut();
 }
 
-void complementAutWrap(BuchiAutomaton<int, int>* ren, BuchiAutomaton<StateSch, int>* complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats, ComplOptions &opt)
+void complementAutWrap(BuchiAutomatonSpec& sp, BuchiAutomaton<int, int>* ren,
+    BuchiAutomaton<StateSch, int>* complOrig, BuchiAutomaton<int, int>* complRes,
+    Stat* stats, bool boundUpdate)
 {
-    //TODO
-    // rename automaton
     map<int, int> id;
     for(auto al : ren->getAlphabet())
       id[al] = al;
-    BuchiAutomaton<int, int> renptr = ren->renameAutDict(id);
-    renptr.removeUseless();
-    renptr = renptr.renameAutDict(id);
 
-    // ElevatorAutomaton elev(renptr);
-    // cout << renptr.toGraphwiz() << endl;
-    // renptr = elev.copyPreprocessing();
-    // cout << renptr.toGraphwiz() << endl;
-
-    BuchiAutomatonSpec sp(&renptr); //TODO
-
-    sp.setComplOptions(opt);
     BuchiAutomaton<StateSch, int> comp;
 
-    comp = sp.complementSchReduced(stats);
+    comp = sp.complementSchReduced(stats, boundUpdate);
 
     BuchiAutomatonDelay<int> compDelay(comp);
     *complOrig = comp;

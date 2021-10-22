@@ -530,6 +530,8 @@ public:
   BuchiAutomaton<int, int> copyStateAcc(int start);
   BuchiAutomaton<StateSemiDet, Symbol> semideterminize();
   set<State> succSet(const set<State>& state, const Symbol& symbol);
+
+  BuchiAutomaton<int, int> removeUselessRename();
 };
 
 #endif

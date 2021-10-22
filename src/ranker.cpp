@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
       .dataFlow = INNER, .delay = false, .delayVersion = oldVersion, .delayW = 0.5,
       .debug = false, .elevator = { .elevatorRank = true, .detBeginning = false },
       .sim = true, .sl = true, .reach = true, .flowDirSim = false, .preprocess = NONE, .accPropagation = false,
-      .semideterminize = false };
+      .semideterminize = false, .backoff = false };
 
   try
   {
@@ -221,17 +221,21 @@ int main(int argc, char *argv[])
       BuchiAutomaton<int, int> renCompl;
       BuchiAutomaton<StateSch, int> comp;
 
+      renBA = renBA.removeUselessRename();
+      BuchiAutomatonSpec sp(&renBA);
+      sp.setComplOptions(opt);
+
       // elevator test
       if (elevatorTest){
-        ElevatorAutomaton sp(renBA);
-        std::cout << "Elevator automaton: " << (sp.isElevator() ? "Yes" : "No") << std::endl;
+        ElevatorAutomaton el(renBA);
+        std::cout << "Elevator automaton: " << (el.isElevator() ? "Yes" : "No") << std::endl;
         os.close();
         return 0;
       }
 
       try
       {
-        complementAutWrap(&renBA, &comp, &renCompl, &stats, opt);
+        complementAutWrap(sp, &renBA, &comp, &renCompl, &stats, true);
       }
       catch (const std::bad_alloc&)
       {
@@ -276,15 +280,25 @@ int main(int argc, char *argv[])
           }
 
           renBuchi = orig.renameAut();
+          renBuchi = renBuchi.removeUselessRename();
 
-          ElevatorAutomaton sp(renBuchi);
+          ElevatorAutomaton el(renBuchi);
           if (elevatorTest){
-            std::cout << "Elevator automaton: " << (sp.isElevator() ? "Yes" : "No") << std::endl;
+            std::cout << "Elevator automaton: " << (el.isElevator() ? "Yes" : "No") << std::endl;
             os.close();
             return 0;
           }
 
-          if(sp.isInherentlyWeakBA())
+          BuchiAutomatonSpec sp(&renBuchi);
+          sp.setComplOptions(opt);
+
+          if(opt.backoff && sp.meetsBackOff())
+          {
+            BuchiAutomaton<StateSch, int> comp = sp.complementSchNFA(sp.getInitials());
+            sp.computeRankBound(comp, &stats);
+          }
+
+          if(el.isInherentlyWeakBA())
           {
             //TODO: inherently weak complementation
           }
@@ -300,11 +314,7 @@ int main(int argc, char *argv[])
           //   return 0;
           // }
 
-          complementAutWrap(&renBuchi, &compBA, &renCompl, &stats, opt);
-          // cout << compBA.toGraphwiz() << endl;
-
-          // for (auto t : compBA.getRenameStateMap())
-          //   cout << t.first << " " << t.second << endl;
+          complementAutWrap(sp, &renBuchi, &compBA, &renCompl, &stats, !opt.backoff);
           symDict = Aux::reverseMap(orig.getRenameSymbolMap());
         }
         if(autType == AUTGCOBA)
@@ -345,6 +355,8 @@ int main(int argc, char *argv[])
         os.close();
         return 0;
       }
+
+      //./ranker ../../ba-compl-eval/automata/from_ltl/random_nd_red/179.hoa --light --sd
 
       BuchiAutomaton<int, APSymbol> outOrig = renCompl.renameAlphabet<APSymbol>(symDict);
       outOrig.completeAPComplement();
