@@ -189,13 +189,10 @@ void complementAutWrap(BuchiAutomaton<int, int>* ren, BuchiAutomaton<StateSch, i
 
     BuchiAutomatonSpec sp(&renptr); //TODO
 
-
-    // ComplOptions opt = { .cutPoint = true, .succEmptyCheck = true, .ROMinState = 8,
-    //     .ROMinRank = 6, .CacheMaxState = 6, .CacheMaxRank = 8, .semidetOpt = false };
     sp.setComplOptions(opt);
     BuchiAutomaton<StateSch, int> comp;
 
-    comp = sp.complementSchReduced(ren->getFinals(), stats);
+    comp = sp.complementSchReduced(stats);
 
     BuchiAutomatonDelay<int> compDelay(comp);
     *complOrig = comp;

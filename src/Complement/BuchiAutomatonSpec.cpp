@@ -850,32 +850,22 @@ vector<RankFunc> BuchiAutomatonSpec::getFuncAntichain(set<RankFunc>& tmp)
 
 
 /*
- * Optimized Schewe complementation procedure
- * @return Complemented automaton
+ * Copute rank bounds and other restrictions, such as reachability constraints,
+ * ignored self-loops, maximum reachability constraints, starting macrostates to
+ * tight.
+ *
+ * @param comp: Waiting part of the automaton
+ * @param originalFinals: Final states of the original automaton
+ * @param stats: Statistical information
  */
-
-BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(std::set<int> originalFinals, Stat *stats)
+void BuchiAutomatonSpec::computeRankBound(BuchiAutomaton<StateSch, int>& comp, Stat *stats)
 {
-  std::stack<StateSch> stack;
-  set<StateSch> comst;
-  set<StateSch> initials;
-  set<StateSch> finals;
-  vector<StateSch> succ;
-  set<int> alph = getAlphabet();
-  map<std::pair<StateSch, int>, set<StateSch> > mp;
-  map<std::pair<StateSch, int>, vector<StateSch> > mpVect;
-  map<std::pair<StateSch, int>, set<StateSch> >::iterator it;
-
+  set<int> originalFinals = this->getFinals();
   // NFA part of the Schewe construction
   auto start = std::chrono::high_resolution_clock::now();
-  BuchiAutomaton<StateSch, int> comp = this->complementSchNFA(this->getInitials());
+  //BuchiAutomaton<StateSch, int> comp = this->complementSchNFA(this->getInitials());
   auto end = std::chrono::high_resolution_clock::now();
   stats->waitingPart = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
-
-  if (comp.getStates().size() == 1){
-    comp.setAPPattern(this->getAPPattern());
-    return comp;
-  }
 
   // rank bound
   start = std::chrono::high_resolution_clock::now();
@@ -889,59 +879,38 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(std::set<
   }
 
   set<StateSch> slIgnore;
-  set<pair<DFAState,int>> slNonEmpty;
+  this->slNonEmpty = set<pair<DFAState,int>>();
   set<StateSch> ignoreAll;
 
   if(this->opt.sl)
   {
     slIgnore = this->nfaSlAccept(comp);
-    slNonEmpty = this->nfaSingleSlNoAccept(comp);
+    this->slNonEmpty = this->nfaSingleSlNoAccept(comp);
 
-    for(const auto& t : slNonEmpty)
+    for(const auto& t : this->slNonEmpty)
       ignoreAll.insert({t.first, set<int>(), RankFunc(), 0, false});
     ignoreAll.insert(slIgnore.begin(), slIgnore.end());
   }
 
-
-  set<StateSch> nfaStates = comp.getStates();
-  comst.insert(nfaStates.begin(), nfaStates.end());
-
-  map<int, int> reachCons;
-  map<DFAState, int> maxReach;
+  this->reachCons = map<int, int>();
+  // this->maxReach = map<DFAState, int>();
   if(this->opt.reach)
   {
     // Compute reachability restrictions
-    reachCons = this->getMinReachSize();
-    maxReach = this->getMaxReachSize(comp, slIgnore);
+    this->reachCons = this->getMinReachSize();
+    this->maxReach = this->getMaxReachSize(comp, slIgnore);
   }
   else
   {
     for(const auto& t : comp.getStates())
-      maxReach[t.S] = this->getStates().size();
+      this->maxReach[t.S] = this->getStates().size();
     for(const auto& t : this->getStates())
-      reachCons[t] = 0;
-  }
-
-  mp.insert(comp.getTransitions().begin(), comp.getTransitions().end());
-  finals = set<StateSch>(comp.getFinals());
-
-  int newState = this->getStates().size(); //Assumes numbered states: from 0, no gaps
-  map<pair<DFAState,int>, StateSch> slTrans;
-  for(const auto& pr : slNonEmpty)
-  {
-    StateSch ns = { set<int>({newState}), set<int>(), RankFunc(), 0, false };
-    StateSch src = { pr.first, set<int>(), RankFunc(), 0, false };
-    slTrans[pr] = ns;
-    mp[{ns,pr.second}] = set<StateSch>({ns});
-    mp[{src, pr.second}].insert(ns);
-    finals.insert(ns);
-    comst.insert(ns);
-    newState++;
+      this->reachCons[t] = 0;
   }
 
   // Compute rank upper bound on the macrostates
   auto invComp = comp.reverseBA(); //inverse automaton
-  this->rankBound = this->getRankBound(invComp, ignoreAll, maxReach, reachCons);
+  this->rankBound = this->getRankBound(invComp, ignoreAll, this->maxReach, this->reachCons);
 
   if(this->opt.debug)
   {
@@ -957,13 +926,6 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(std::set<
   end = std::chrono::high_resolution_clock::now();
   stats->rankBound = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
 
-  // update rank upper bound of each macrostate based on elevator automaton structure
-  // if (elevatorRank.elevatorRank){
-  //   start = std::chrono::high_resolution_clock::now();
-  //   this->elevatorRank(elevatorRank.detBeginning);
-  //   end = std::chrono::high_resolution_clock::now();;
-  //   stats->elevatorRank = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
-  // }
   stats->ranks = this->rankBound;
 
   start = std::chrono::high_resolution_clock::now();
@@ -983,10 +945,10 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(std::set<
 
   // Compute states necessary to generate in the tight part
   set<StateSch> tightStart;
-  map<StateSch, set<int>> tightStartDelay;
+  this->tightStartDelay = map<StateSch, set<int>>();
   if (this->opt.delay){
     BuchiAutomatonDelay<int> delayB(comp);
-    tightStartDelay = delayB.getCycleClosingStates(ignoreAll, delayMp, this->opt.delayW, this->opt.delayVersion, stats);
+    this->tightStartDelay = delayB.getCycleClosingStates(ignoreAll, delayMp, this->opt.delayW, this->opt.delayVersion, stats);
   }
   else {
     tightStart = comp.getCycleClosingStates(ignoreAll);
@@ -996,10 +958,60 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(std::set<
 
   std::set<StateSch> tmpSet;
   if (this->opt.delay){
-    for(auto item : tightStartDelay)
+    for(auto item : this->tightStartDelay)
       tmpSet.insert(item.first);
   }
-  for(const StateSch& tmp : (this->opt.delay ? tmpSet : tightStart))
+
+  this->tightStartStates = this->opt.delay ? tmpSet : tightStart;
+}
+
+
+/*
+ * Optimized Schewe complementation procedure
+ * @return Complemented automaton
+ */
+
+BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(Stat *stats, bool updateBounds)
+{
+  std::stack<StateSch> stack;
+  set<StateSch> comst;
+  set<StateSch> initials;
+  set<StateSch> finals;
+  vector<StateSch> succ;
+  set<int> alph = getAlphabet();
+  map<std::pair<StateSch, int>, set<StateSch> > mp;
+  map<std::pair<StateSch, int>, vector<StateSch> > mpVect;
+  map<std::pair<StateSch, int>, set<StateSch> >::iterator it;
+
+  BuchiAutomaton<StateSch, int> comp = this->complementSchNFA(this->getInitials());
+  map<std::pair<StateSch, int>, set<StateSch>> prev = comp.getReverseTransitions();
+
+  if (comp.getStates().size() == 1){
+    comp.setAPPattern(this->getAPPattern());
+    return comp;
+  }
+
+  set<StateSch> nfaStates = comp.getStates();
+  comst.insert(nfaStates.begin(), nfaStates.end());
+  mp.insert(comp.getTransitions().begin(), comp.getTransitions().end());
+  finals = set<StateSch>(comp.getFinals());
+
+  int newState = this->getStates().size(); //Assumes numbered states: from 0, no gaps
+  map<pair<DFAState,int>, StateSch> slTrans;
+  for(const auto& pr : this->slNonEmpty)
+  {
+    StateSch ns = { set<int>({newState}), set<int>(), RankFunc(), 0, false };
+    StateSch src = { pr.first, set<int>(), RankFunc(), 0, false };
+    slTrans[pr] = ns;
+    mp[{ns,pr.second}] = set<StateSch>({ns});
+    mp[{src, pr.second}].insert(ns);
+    finals.insert(ns);
+    comst.insert(ns);
+    newState++;
+  }
+
+  if(updateBounds) this->computeRankBound(comp, stats);
+  for(const StateSch& tmp : this->tightStartStates)
   {
     if(tmp.S.size() > 0)
     {
@@ -1007,13 +1019,11 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(std::set<
     }
   }
 
-  //cout << " : " << stack.size() << endl;
-
   StateSch init = {getInitials(), set<int>(), RankFunc(), 0, false};
   initials.insert(init);
 
   // simulations
-  start = std::chrono::high_resolution_clock::now();
+  auto start = std::chrono::high_resolution_clock::now();
   set<int> cl;
   if(this->opt.sim)
   {
@@ -1022,7 +1032,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(std::set<
 
   BackRel dirRel = createBackRel(this->getDirectSim());
   BackRel oddRel = createBackRel(this->getOddRankSim());
-  end = std::chrono::high_resolution_clock::now();
+  auto end = std::chrono::high_resolution_clock::now();
   stats->simulations = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
 
   bool cnt = true;
@@ -1062,11 +1072,11 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(std::set<
       set<StateSch> dst;
       if(st.tight)
       {
-        succ = succSetSchTightReduced(st, sym, reachCons, maxReach, dirRel, oddRel, this->getFinals());
+        succ = succSetSchTightReduced(st, sym, this->reachCons, this->maxReach, dirRel, oddRel, this->getFinals());
       }
       else
       {
-        succ = succSetSchStartReduced(st.S, rankBound[st.S].bound, reachCons, maxReach, dirRel, oddRel, this->getFinals());
+        succ = succSetSchStartReduced(st.S, rankBound[st.S].bound, this->reachCons, this->maxReach, dirRel, oddRel, this->getFinals());
         cnt = false;
       }
       for (const StateSch& s : succ)
@@ -1091,7 +1101,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(std::set<
             for(const auto& a : this->getAlphabet())
             {
               for(const auto& d : prev[{st, a}]) {
-                if ((!this->opt.delay) or tightStartDelay[d].find(a) != tightStartDelay[d].end()){
+                if ((!this->opt.delay) or this->tightStartDelay[d].find(a) != this->tightStartDelay[d].end()){
                   mp[{d,a}].insert(dst.begin(), dst.end());
                   transitionsToTight += dst.size();
                 }
@@ -1103,7 +1113,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(std::set<
           if (!this->opt.delay)
             mp[pr].insert(dst.begin(), dst.end());
           else {
-            if (tightStartDelay[st].find(sym) != tightStartDelay[st].end()){
+            if (this->tightStartDelay[st].find(sym) != this->tightStartDelay[st].end()){
                 mp[pr].insert(dst.begin(), dst.end());
             }
           }
@@ -1173,105 +1183,6 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchNFA(set<int>& sta
   return BuchiAutomaton<StateSch, int>(comst, finals,
     initials, mp, alph);
 }
-
-
-// /*
-//  * Get modified structure of the automaton
-//  * @return Modified structure with equivalent language
-//  */
-// BuchiAutomaton<StateSemiDet, int> BuchiAutomatonSpec::semidetermize()
-// {
-//   /*
-//   TODO: add support for accepting transitions
-//   */
-//   assert(this->getFinTrans().size() == 0);
-//
-//   std::stack<StateSemiDet> stack;
-//   set<StateSemiDet> comst;
-//   set<StateSemiDet> initials;
-//   set<StateSemiDet> finals;
-//   //set<StateSch> succ;
-//   set<int> alph = getAlphabet();
-//   map<std::pair<StateSemiDet, int>, set<StateSemiDet> > mp;
-//   map<std::pair<StateSemiDet, int>, set<StateSemiDet> >::iterator it;
-//
-//   for(const int& i : this->getInitials())
-//   {
-//     StateSemiDet init = {i, {set<int>(), set<int>()}, true};
-//     stack.push(init);
-//     comst.insert(init);
-//     initials.insert(init);
-//   }
-//
-//   set<int> fins = this->getFinals();
-//
-//   while(stack.size() > 0)
-//   {
-//     StateSemiDet st = stack.top();
-//     stack.pop();
-//
-//     if(!st.isWaiting && st.tight.first == st.tight.second && st.tight.first.size() > 0)
-//     {
-//       finals.insert(st);
-//     }
-//
-//     for(int sym : alph)
-//     {
-//       set<StateSemiDet> dst;
-//       if(st.isWaiting)
-//       {
-//         auto pr = std::make_pair(st.waiting, sym);
-//         set<int> tmpDst = this->getTransitions()[pr];
-//         for(const int& d : tmpDst)
-//         {
-//           StateSemiDet s1 = { d, {set<int>(), set<int>()}, true };
-//           StateSemiDet s2 = { -1, {set<int>({d}), set<int>()}, false };
-//           dst.insert(s1);
-//           dst.insert(s2);
-//         }
-//       }
-//       else
-//       {
-//         if(st.tight.first == st.tight.second)
-//         {
-//           set<int> succ = succSet(st.tight.first, sym);
-//           set<int> succ2;
-//           std::set_intersection(succ.begin(), succ.end(), fins.begin(), fins.end(),
-//             std::inserter(succ2, succ2.begin()));
-//           set<int> tmpsucc = succSet(st.tight.second, sym);
-//           succ2.insert(tmpsucc.begin(), tmpsucc.end());
-//           StateSemiDet s = { -1, {succ, succ2}, false };
-//           dst.insert(s);
-//         }
-//         else
-//         {
-//           set<int> succ = succSet(st.tight.first, sym);
-//           set<int> succ2;
-//           std::set_intersection(succ.begin(), succ.end(), fins.begin(), fins.end(),
-//             std::inserter(succ2, succ2.begin()));
-//           StateSemiDet s = { -1, {succ, succ2}, false };
-//           dst.insert(s);
-//         }
-//       }
-//
-//       for(const StateSemiDet& d : dst)
-//       {
-//         if(comst.find(d) == comst.end())
-//         {
-//           stack.push(d);
-//           comst.insert(d);
-//         }
-//       }
-//       auto pr = std::make_pair(st, sym);
-//       mp[pr] = dst;
-//     }
-//   }
-//
-//   return BuchiAutomaton<StateSemiDet, int>(comst, finals,
-//     initials, mp, alph);
-// }
-
-
 
 /*
  * Is the self-loop accepting?

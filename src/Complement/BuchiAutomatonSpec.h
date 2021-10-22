@@ -61,6 +61,12 @@ private:
   map<DFAState, RankBound> rankBound;
   SuccRankCache rankCache;
 
+  map<DFAState, int> maxReach;
+  map<int, int> reachCons;
+  set<pair<DFAState,int>> slNonEmpty;
+  map<StateSch, set<int>> tightStartDelay;
+  set<StateSch> tightStartStates;
+
   ComplOptions opt;
   ElevatorAutomaton elev;
 
@@ -96,7 +102,8 @@ protected:
   vector<RankFunc> getFuncAntichain(set<RankFunc>& tmp);
 
 public:
-  BuchiAutomatonSpec(BuchiAutomaton<int, int> *t) : BuchiAutomaton<int, int>(*t), rankBound(), rankCache(), elev(*t)
+  BuchiAutomatonSpec(BuchiAutomaton<int, int> *t) : BuchiAutomaton<int, int>(*t), rankBound(),
+    rankCache(), maxReach(), reachCons(), slNonEmpty(), tightStartDelay(), tightStartStates(), elev(*t)
   {
     opt = { .cutPoint = false};
   }
@@ -105,7 +112,7 @@ public:
 
   BuchiAutomaton<StateKV, int> complementKV();
   BuchiAutomaton<StateSch, int> complementSch();
-  BuchiAutomaton<StateSch, int> complementSchReduced(std::set<int> originalFinals, Stat *stats);
+  BuchiAutomaton<StateSch, int> complementSchReduced(Stat *stats, bool updateBounds = true);
   BuchiAutomaton<StateSch, int> complementSchNFA(set<int>& start);
   //BuchiAutomaton<StateSch, int> complementSchOpt(bool delay);
   BuchiAutomaton<StateSch, int> complementSchOpt(bool delay, std::set<int> originalFinals, double w, Stat *stats);
@@ -116,6 +123,8 @@ public:
   map<DFAState, int> getMaxReachSize(BuchiAutomaton<StateSch, int>& nfaSchewe, set<StateSch>& slIgnore);
   map<int, int> getMaxReachSizeInd();
   map<int, int> getMinReachSize();
+
+  void computeRankBound(BuchiAutomaton<StateSch, int>& comp, Stat *stats);
 
   void setRankBound(map<DFAState, RankBound> rankbound){
     this->rankBound = rankbound;
