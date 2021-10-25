@@ -1590,6 +1590,43 @@ BuchiAutomaton<int, int> BuchiAutomaton<int, int>::removeUselessRename()
 }
 
 
+template<typename State, typename Symbol>
+BuchiAutomaton<int, Symbol> BuchiAutomaton<State,Symbol>::reduce()
+{
+  assert(!this->isTBA() && "Reduce not supported for TBAs");
+  assert(this->directSim.size() > 0 && "Simulation is not computed");
+
+  map<State, int> stmap;
+  set<set<State>> eqcl = Aux::getEqClasses(this->directSim, this->getStates());
+
+  set<int> nst;
+  set<int> nini;
+  set<int> nfin;
+  Delta<int, Symbol> ntr;
+
+  int i = 0;
+  for(const auto& cl : eqcl)
+  {
+    nst.insert(i);
+    for(const State& st : cl)
+      stmap[st] = i;
+    i++;
+  }
+
+  nini = Aux::mapSet(stmap, this->initials);
+  nfin = Aux::mapSet(stmap, this->finals);
+
+  for(auto& p : this->trans)
+  {
+    Symbol val = p.first.second;
+    std::set<int> to = Aux::mapSet(stmap, p.second);
+    ntr[{ stmap[p.first.first], val} ].insert(to.begin(), to.end());
+  }
+
+  return BuchiAutomaton<int, Symbol>(nst, nini, nfin, ntr, this->getAlphabet());
+}
+
+
 
 template class BuchiAutomaton<int, int>;
 template class BuchiAutomaton<std::string, std::string>;

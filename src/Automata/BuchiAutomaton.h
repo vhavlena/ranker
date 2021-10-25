@@ -20,6 +20,7 @@
 #include "../Complement/StateSch.h"
 #include "../Algorithms/AuxFunctions.h"
 #include "APSymbol.h"
+//#include "../Algorithms/Simulations.h"
 
 using std::tuple;
 
@@ -532,6 +533,8 @@ public:
   set<State> succSet(const set<State>& state, const Symbol& symbol);
 
   BuchiAutomaton<int, int> removeUselessRename();
+
+  BuchiAutomaton<int, Symbol> reduce();
 };
 
 #endif
