@@ -2051,6 +2051,14 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchOpt(bool delay, s
 
 bool BuchiAutomatonSpec::meetsBackOff()
 {
+  for(const StateSch& st : this->tightStartStates)
+  {
+    for(const auto& p : this->opt.BOBound)
+    {
+      if(st.S.size() >= p.first && this->rankBound[st.S].bound >= p.second)
+        return true;
+    }
+  }
   return false;
 }
 

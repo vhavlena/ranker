@@ -47,13 +47,14 @@ int main(int argc, char *argv[])
   args::ValueFlag<std::string> preprocessFlag(parser, "preprocess", "Preprocessing [copyiwa/copydet/copyall/copytrivial/copyheur]", {"preprocess"});
   args::Flag accPropagationFlag(parser, "acc-propagation", "Propagate accepting states in each SCC", {"acc-propagation"});
   args::Flag sdFlag(parser, "sd", "Use semideterminization", {"sd"});
+  args::Flag backoffFlag(parser, "backoff", "Use backoff", {"backoff"});
 
   ComplOptions opt = { .cutPoint = true, .succEmptyCheck = false, .ROMinState = 8,
       .ROMinRank = 6, .CacheMaxState = 6, .CacheMaxRank = 8, .semidetOpt = false,
       .dataFlow = INNER, .delay = false, .delayVersion = oldVersion, .delayW = 0.5,
       .debug = false, .elevator = { .elevatorRank = true, .detBeginning = false },
       .sim = true, .sl = true, .reach = true, .flowDirSim = false, .preprocess = NONE, .accPropagation = false,
-      .semideterminize = false, .backoff = false };
+      .semideterminize = false, .backoff = false, .BOBound = { {12,15} } };
 
   try
   {
@@ -96,6 +97,11 @@ int main(int argc, char *argv[])
   if(dataFlowFlag && args::get(dataFlowFlag) == "light")
   {
     opt.dataFlow = LIGHT;
+  }
+
+  if(backoffFlag)
+  {
+    opt.backoff = true;
   }
 
   if(preprocessFlag)
@@ -292,10 +298,32 @@ int main(int argc, char *argv[])
           BuchiAutomatonSpec sp(&renBuchi);
           sp.setComplOptions(opt);
 
-          if(opt.backoff && sp.meetsBackOff())
+          if(opt.backoff)
           {
             BuchiAutomaton<StateSch, int> comp = sp.complementSchNFA(sp.getInitials());
             sp.computeRankBound(comp, &stats);
+
+            if(sp.meetsBackOff())
+            {
+              const string spotpath_cstr = string(std::getenv("SPOTEXE"));
+              string cmd = spotpath_cstr + " --complement --ba " + filename;
+              string ret = Simulations::execCmd(cmd);
+
+              stringstream strm(ret);
+              BuchiAutomataParser spotpar(strm);
+              BuchiAutomaton<int, APSymbol> spotaut = spotpar.parseHoaBA();
+
+              stats.engine = "SPOT";
+              stats.duration = NAN;
+              stats.generatedStates = NAN;
+              stats.generatedTrans = NAN;
+              stats.reachStates = spotaut.getStates().size();
+              stats.reachTrans = spotaut.getTransCount();
+              if(params.stats)
+                printStat(stats);
+
+              cout << spotaut.toHOA() << endl;
+            }
           }
 
           if(el.isInherentlyWeakBA())
