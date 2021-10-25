@@ -996,6 +996,8 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(Stat *sta
   mp.insert(comp.getTransitions().begin(), comp.getTransitions().end());
   finals = set<StateSch>(comp.getFinals());
 
+  if(updateBounds) this->computeRankBound(comp, stats);
+
   int newState = this->getStates().size(); //Assumes numbered states: from 0, no gaps
   map<pair<DFAState,int>, StateSch> slTrans;
   for(const auto& pr : this->slNonEmpty)
@@ -1010,7 +1012,6 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(Stat *sta
     newState++;
   }
 
-  if(updateBounds) this->computeRankBound(comp, stats);
   for(const StateSch& tmp : this->tightStartStates)
   {
     if(tmp.S.size() > 0)

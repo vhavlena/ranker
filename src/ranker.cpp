@@ -314,9 +314,9 @@ int main(int argc, char *argv[])
               BuchiAutomaton<int, APSymbol> spotaut = spotpar.parseHoaBA();
 
               stats.engine = "SPOT";
-              stats.duration = NAN;
-              stats.generatedStates = NAN;
-              stats.generatedTrans = NAN;
+              stats.duration = 0;
+              stats.generatedStates = 0;
+              stats.generatedTrans = 0;
               stats.reachStates = spotaut.getStates().size();
               stats.reachTrans = spotaut.getTransCount();
               if(params.stats)
