@@ -986,10 +986,10 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(Stat *sta
   BuchiAutomaton<StateSch, int> comp = this->complementSchNFA(this->getInitials());
   map<std::pair<StateSch, int>, set<StateSch>> prev = comp.getReverseTransitions();
 
-  if (comp.getStates().size() == 1){
+  /*if (comp.getStates().size() == 1){
     comp.setAPPattern(this->getAPPattern());
     return comp;
-  }
+  }*/
 
   set<StateSch> nfaStates = comp.getStates();
   comst.insert(nfaStates.begin(), nfaStates.end());

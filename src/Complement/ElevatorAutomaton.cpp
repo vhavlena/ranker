@@ -445,6 +445,11 @@ std::map<int, int> ElevatorAutomaton::elevatorRank(bool detBeginning){
       it->nonDet = false;
     }
 
+    else if (succ.size() == 0 and it->nonDet){
+      it->rank = 1;
+      it->det = false;
+    }
+
     // rule #2: D -|
     else if (succ.size() == 0 and it->det){
       it->rank = 2;
@@ -619,7 +624,7 @@ std::map<int, int> ElevatorAutomaton::elevatorRank(bool detBeginning){
   }
 
   // output original automaton with ranks
-  //std::cerr << this->toHOA(ranks) << std::endl;
+  std::cerr << this->toHOA(ranks) << std::endl;
 
   return ranks;
 }
