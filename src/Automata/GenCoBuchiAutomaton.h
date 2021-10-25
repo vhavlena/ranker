@@ -183,6 +183,11 @@ public:
     return this->finals;
   }
 
+  void setFinals(SetFins finals)
+  {
+    this->finals = finals;
+  }
+
   void removeUseless();
   bool isEmpty();
 

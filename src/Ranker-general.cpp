@@ -234,6 +234,31 @@ void complementGcoBAWrap(GeneralizedCoBuchiAutomaton<int, int> *ren, BuchiAutoma
   *complRes = renCompl;
 }
 
+void complementCoBAWrap(CoBuchiAutomatonCompl *ren, BuchiAutomaton<StateGcoBA, int> *complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats){
+  //ren->removeUseless();
+  //std::cerr << ren->toGraphwiz() << std::endl;
+
+  *complOrig = ren->complementCoBA();
+
+  stats->generatedStates = complOrig->getStates().size();
+  stats->generatedTrans = complOrig->getTransCount();
+
+  map<int, int> id;
+  for(auto al : complOrig->getAlphabet())
+    id[al] = al;
+  //std::cerr << complOrig->toString() << std::endl;
+  BuchiAutomaton<int, int> renCompl = complOrig->renameAutDict(id);
+  renCompl.removeUseless();
+  renCompl = renCompl.renameAutDict(id);
+
+  stats->reachStates = renCompl.getStates().size();
+  stats->reachTrans = renCompl.getTransCount();
+  stats->engine = "Ranker";
+  stats->transitionsToTight = -1;
+  stats->originalStates = ren->getStates().size();
+  *complRes = renCompl;
+}
+
 void complementScheweAutWrap(BuchiAutomaton<int, int>* ren, BuchiAutomaton<int, int>* complRes, Stat* stats, bool delay, double w)
 {
     BuchiAutomatonSpec sp(ren);

@@ -624,14 +624,22 @@ std::map<int, int> ElevatorAutomaton::elevatorRank(bool detBeginning){
   }
 
   // output original automaton with ranks
-  std::cerr << this->toHOA(ranks) << std::endl;
+  //std::cerr << this->toHOA(ranks) << std::endl;
 
   return ranks;
 }
 
 bool ElevatorAutomaton::isInherentlyWeakBA()
 {
-  return false;
+  map<int, set<int>> predSyms = this->getPredSymbolMap();
+  auto sccs = this->getAutGraphSCCs();
+  auto finals = this->getFinals();
+  for (auto scc : sccs){
+    if (not isInherentlyWeak(scc, predSyms) and std::any_of(scc.begin(), scc.end(), [finals](int state){return finals.find(state) != finals.end();}))
+      return false;
+  }
+  
+  return true;
 }
 
 

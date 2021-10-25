@@ -18,6 +18,7 @@
 #include "Algorithms/Simulations.h"
 #include "Automata/GenCoBuchiAutomaton.h"
 #include "Complement/GenCoBuchiAutomatonCompl.h"
+#include "Complement/CoBuchiCompl.h"
 
 using namespace std;
 
@@ -300,7 +301,10 @@ int main(int argc, char *argv[])
 
           if(el.isInherentlyWeakBA())
           {
-            //TODO: inherently weak complementation
+            // inherently weak complementation
+            CoBuchiAutomatonCompl iw(el);
+            complementCoBAWrap(&iw, &compGcoBA, &renCompl, &stats);
+            //cerr << renCompl.toGraphwiz() << std::endl;
           }
 
           // if(opt.semideterminize)
@@ -314,7 +318,9 @@ int main(int argc, char *argv[])
           //   return 0;
           // }
 
-          complementAutWrap(sp, &renBuchi, &compBA, &renCompl, &stats, !opt.backoff);
+          else
+            complementAutWrap(sp, &renBuchi, &compBA, &renCompl, &stats, !opt.backoff);
+
           symDict = Aux::reverseMap(orig.getRenameSymbolMap());
         }
         if(autType == AUTGCOBA)

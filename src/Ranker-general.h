@@ -22,6 +22,7 @@
 #include "Automata/GenBuchiAutomaton.h"
 #include "Automata/GenCoBuchiAutomaton.h"
 #include "Complement/GenCoBuchiAutomatonCompl.h"
+#include "Complement/CoBuchiCompl.h"
 
 using namespace std;
 
@@ -52,6 +53,7 @@ void printStat(Stat& st);
 BuchiAutomaton<int, int> createBA(vector<int>& loop);
 
 void complementGcoBAWrap(GeneralizedCoBuchiAutomaton<int, int> *ren, BuchiAutomaton<StateGcoBA, int> *complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats);
+void complementCoBAWrap(CoBuchiAutomatonCompl *ren, BuchiAutomaton<StateGcoBA, int> *complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats);
 
 GeneralizedCoBuchiAutomaton<int, APSymbol> parseRenameHOAGCOBA(BuchiAutomataParser& parser);
 BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, ComplOptions opt);
