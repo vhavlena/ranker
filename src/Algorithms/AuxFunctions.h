@@ -124,6 +124,56 @@ namespace Aux
 
   std::string printIntSet(std::set<int> st);
 
+
+  template<typename State>
+  set<pair<State,State>> inverseRelation(set<pair<State,State>>& rel)
+  {
+    set<pair<State,State>> rt;
+    for(const auto& item : rel)
+    {
+      rt.insert({item.second, item.first});
+    }
+    return rt;
+  }
+
+
+  template<typename State>
+  set<set<State>> getEqClasses(set<pair<State,State>>& rel, set<State>& univ)
+  {
+    map<State, int> clId;
+    map<State, int*> cl;
+    int i = 0;
+    for(const State& st : univ)
+    {
+      clId[st] = i++;
+      cl[st] = &(clId[st]);
+    }
+
+    set<pair<State,State>> inv = Aux::inverseRelation(rel);
+    set<pair<State,State>> intersect;
+    set_intersection(inv.begin(), inv.end(), rel.begin(), rel.end(),
+      std::inserter(intersect, intersect.begin()));
+    for(const auto& pr : intersect)
+    {
+      cl[pr.first] = cl[pr.second];
+      clId[pr.second] = clId[pr.first];
+    }
+
+    vector<set<State>> vc(univ.size());
+    set<set<State>> ret;
+    for(const auto& c : cl)
+    {
+      vc[*(c.second)].insert(c.first);
+    }
+    for(const set<State>& sts : vc)
+    {
+      if(sts.size() > 0)
+        ret.insert(sts);
+    }
+
+    return ret;
+  }
+
 }
 
 #endif
