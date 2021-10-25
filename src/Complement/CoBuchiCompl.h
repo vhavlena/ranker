@@ -30,7 +30,7 @@ public:
 
   CoBuchiAutomatonCompl(BuchiAutomaton<int,int>& inhWeakBA)
   {
-    //TODO: convert inherently weak to co-BA
+    // convert inherently weak to co-BA
     auto sccs = inhWeakBA.getAutGraphSCCs();
     auto finals = inhWeakBA.getFinals();
     std::set<int> fins;
