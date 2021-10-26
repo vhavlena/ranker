@@ -55,3 +55,5 @@ BuchiAutomaton<pair<State,int>, Symbol> BuchiAutomatonDebug<State, Symbol>::getS
 
 template class BuchiAutomatonDebug<StateSch, int>;
 template class BuchiAutomatonDebug<StateSch, APSymbol>;
+template class BuchiAutomatonDebug<StateGcoBA, int>;
+template class BuchiAutomatonDebug<StateGcoBA, APSymbol>;

@@ -496,6 +496,22 @@ std::string BuchiAutomaton<StateSemiDet, APSymbol>::toGraphwiz()
 
 
 /*
+ * Function converting the automaton <pair<StateGcoBA, int>, APSymbol> to graphwiz format.
+ * @return Graphwiz representation of the automaton
+ */
+template <>
+std::string BuchiAutomaton<pair<StateGcoBA, int>, APSymbol>::toGraphwiz()
+{
+  std::function<std::string(pair<StateGcoBA, int>)> f1 = [&] (pair<StateGcoBA, int> x)
+  {
+    return "(" + x.first.toString() + " " + std::to_string(x.second) + ")";
+  };
+  std::function<std::string(APSymbol)> f2 = [=] (APSymbol x) {return x.toString();};
+  return toGraphwizWith(f1, f2);
+}
+
+
+/*
  * Function converting the automaton <string, string> to graphwiz format.
  * @return Graphwiz representation of the automaton
  */
@@ -1634,5 +1650,6 @@ template class BuchiAutomaton<StateSch, int>;
 template class BuchiAutomaton<int, APSymbol>;
 template class BuchiAutomaton<StateSch, APSymbol>;
 template class BuchiAutomaton<StateGcoBA, int>;
+template class BuchiAutomaton<StateGcoBA, APSymbol>;
 template class BuchiAutomaton<StateSemiDet, int>;
 template class BuchiAutomaton<StateSemiDet, APSymbol>;

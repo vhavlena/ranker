@@ -332,22 +332,11 @@ int main(int argc, char *argv[])
             // inherently weak complementation
             CoBuchiAutomatonCompl iw(el);
             complementCoBAWrap(&iw, &compGcoBA, &renCompl, &stats);
-            //cerr << renCompl.toGraphwiz() << std::endl;
           }
-
-          // if(opt.semideterminize)
-          // {
-          //   auto sd = orig.semideterminize();
-          //   //cout << sd.toGraphwiz() << endl;
-          //   auto rn = sd.renameStates();
-          //   cout << rn.toHOA() << endl;
-          //
-          //   os.close();
-          //   return 0;
-          // }
-
           else
+          {
             complementAutWrap(sp, &renBuchi, &compBA, &renCompl, &stats, !opt.backoff);
+          }
 
           symDict = Aux::reverseMap(orig.getRenameSymbolMap());
         }
@@ -374,17 +363,28 @@ int main(int argc, char *argv[])
       }
 
       //Product with a word
-      if(params.checkWord.size() > 0 && autType == AUTBA)
+      if(params.checkWord.size() > 0)
       {
         cout << "Product in Graphwiz:" << endl;
-        auto appattern = compBA.getAPPattern();
+        auto appattern = renBuchi.getAPPattern();
         pair<APWord, APWord> inf = BuchiAutomataParser::parseHoaInfWord(params.checkWord, appattern);
         auto prefv = inf.first.getVector();
         auto loopv = inf.second.getVector();
-        auto debugRename = compBA.renameAlphabet<APSymbol>(symDict);
-        BuchiAutomatonDebug<StateSch, APSymbol> compDebug(debugRename);
-        auto ret = compDebug.getSubAutomatonWord(prefv, loopv);
-        cout << ret.toGraphwiz() << endl;
+
+        if(compBA.getStates().size() > 0)
+        {
+          auto debugRename = compBA.renameAlphabet<APSymbol>(symDict);
+          BuchiAutomatonDebug<StateSch, APSymbol> compDebug(debugRename);
+          auto ret = compDebug.getSubAutomatonWord(prefv, loopv);
+          cout << ret.toGraphwiz() << endl;
+        }
+        if(compGcoBA.getStates().size() > 0)
+        {
+          auto debugRename = compGcoBA.renameAlphabet<APSymbol>(symDict);
+          BuchiAutomatonDebug<StateGcoBA, APSymbol> compDebug(debugRename);
+          auto ret = compDebug.getSubAutomatonWord(prefv, loopv);
+          cout << ret.toGraphwiz() << endl;
+        }
 
         os.close();
         return 0;
