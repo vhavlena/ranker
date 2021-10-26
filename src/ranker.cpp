@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
       .dataFlow = INNER, .delay = false, .delayVersion = oldVersion, .delayW = 0.5,
       .debug = false, .elevator = { .elevatorRank = true, .detBeginning = false },
       .sim = true, .sl = true, .reach = true, .flowDirSim = false, .preprocess = NONE, .accPropagation = false,
-      .semideterminize = false, .backoff = false, .BOBound = { {12,15} } };
+      .semideterminize = false, .backoff = false, .BOBound = { {11,15} } };
 
   try
   {
@@ -324,6 +324,8 @@ int main(int argc, char *argv[])
                 printStat(stats);
 
               cout << spotaut.toHOA() << endl;
+              os.close();
+              return 0;
             }
           }
 
