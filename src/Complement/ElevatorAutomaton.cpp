@@ -445,6 +445,11 @@ std::map<int, int> ElevatorAutomaton::elevatorRank(bool detBeginning){
       it->nonDet = false;
     }
 
+    else if (succ.size() == 0 and it->nonDet){
+      it->rank = 1;
+      it->det = false;
+    }
+
     // rule #2: D -|
     else if (succ.size() == 0 and it->det){
       it->rank = 2;
@@ -626,7 +631,15 @@ std::map<int, int> ElevatorAutomaton::elevatorRank(bool detBeginning){
 
 bool ElevatorAutomaton::isInherentlyWeakBA()
 {
-  return false;
+  map<int, set<int>> predSyms = this->getPredSymbolMap();
+  auto sccs = this->getAutGraphSCCs();
+  auto finals = this->getFinals();
+  for (auto scc : sccs){
+    if (not isInherentlyWeak(scc, predSyms) and std::any_of(scc.begin(), scc.end(), [finals](int state){return finals.find(state) != finals.end();}))
+      return false;
+  }
+  
+  return true;
 }
 
 

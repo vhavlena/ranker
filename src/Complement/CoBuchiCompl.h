@@ -30,10 +30,27 @@ public:
 
   CoBuchiAutomatonCompl(BuchiAutomaton<int,int>& inhWeakBA)
   {
-    //TODO: convert inherently weak to co-BA
+    // convert inherently weak to co-BA
+    auto sccs = inhWeakBA.getAutGraphSCCs();
+    auto finals = inhWeakBA.getFinals();
+    std::set<int> fins;
+    for (auto scc : sccs){
+      if (not std::any_of(scc.begin(), scc.end(), [finals](int state){return finals.find(state) != finals.end();}))
+        fins.insert(scc.begin(), scc.end());
+    }
+    std::map<int, std::set<int>> mp;
+    mp.insert({0, fins});
+    this->setFinals(mp);
+
+    this->states = inhWeakBA.getStates();
+    this->trans = inhWeakBA.getTransitions();
+    this->initials = inhWeakBA.getInitials();
+    this->alph = inhWeakBA.getAlphabet();
+    this->apsPattern = inhWeakBA.getAPPattern();
   }
 
   BuchiAutomaton<StateGcoBA, int> complementCoBA();
+  set<int> succSet(set<int>& states, int symbol);
 };
 
 #endif
