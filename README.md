@@ -13,7 +13,11 @@ Prerequisites:
 - boost library
 ```
 
-Install using `make ranker` in `src` folder.
+Install using `make ranker` in `src` folder. You also need to specify a correct
+path to `autfilt` (used for the `--backoff` option) via
+```
+export SPOTEXE=<path to autfilt>
+```
 
 ### Input Automata Format
 
@@ -50,6 +54,8 @@ where `OPTIONS` are from the following:
     --preprocess=[preprocess]         Preprocessing
                                       [copyiwa/copydet/copyall/copytrivial/copyheur]
     --acc-propagation                 Propagate accepting states in each SCC
+    --sd                              Use semideterminization
+    --backoff                         Use backoff
 ```
 
 ### Citing
