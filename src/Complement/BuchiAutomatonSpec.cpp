@@ -756,6 +756,7 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchStartReduced(set<int>& state, int
   vector<RankFunc> maxRanks;
   vector<RankFunc>* maxPtr;
   vector<RankFunc> maxRanks1;
+  set<RankFunc> maxRankLeq;
   vector<RankFunc> maxRanks2;
 
   RankFunc ubound(this->rankBound[sprime].stateBound, false);
@@ -791,10 +792,10 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchStartReduced(set<int>& state, int
       {
         continue;
       }
-      maxRanks1.push_back(f);
+      maxRankLeq.insert(f);
     }
 
-    //maxRanks1 = getFuncAntichain(tmpSet1);
+    maxRanks1 = getFuncAntichain(maxRankLeq);
     maxRanks2= getFuncAntichain(tmpSet2);
     maxPtr = maxRanks1.size() > maxRanks2.size() ? &maxRanks2 : &maxRanks1;
 
