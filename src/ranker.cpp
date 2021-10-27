@@ -288,7 +288,6 @@ int main(int argc, char *argv[])
           }
 
           renBuchi = orig.renameAut();
-          renBuchi = renBuchi.removeUselessRename();
 
           ElevatorAutomaton el(renBuchi);
           if (elevatorTest){
@@ -337,7 +336,7 @@ int main(int argc, char *argv[])
           }
           else if(renBuchi.isSemiDeterministic())
           {
-            opt.semideterministic = true;
+            //opt.semideterministic = true;
           }
 
           if(renBuchi.isComplete())
@@ -345,6 +344,7 @@ int main(int argc, char *argv[])
             opt.complete = true;
           }
 
+          sp.setComplOptions(opt);
           if(el.isInherentlyWeakBA())
           {
             // inherently weak complementation

@@ -41,7 +41,7 @@ BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, Comp
   if(orig.isSemiDeterministic())
   {
     //assume states numbered from 0 (no gaps)
-    orig.complete(orig.getStates().size());
+  //  orig.complete(orig.getStates().size());
   }
 
   if(opt.semideterminize)
