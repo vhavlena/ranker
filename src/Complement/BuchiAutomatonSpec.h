@@ -99,7 +99,7 @@ protected:
   vector<StateSch> succSetSchTightOpt(StateSch& state, int symbol, map<int, int> reachCons,
       map<DFAState, int> maxReach, BackRel& dirRel, BackRel& oddRel);
 
-  vector<RankFunc> getFuncAntichain(set<RankFunc>& tmp) const;
+  vector<RankFunc> getFuncAntichain(set<RankFunc>& tmp, bool oddCheck=false) const;
 
 public:
   BuchiAutomatonSpec(BuchiAutomaton<int, int> *t) : BuchiAutomaton<int, int>(*t), rankBound(),
