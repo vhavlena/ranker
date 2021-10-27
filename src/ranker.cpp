@@ -336,7 +336,7 @@ int main(int argc, char *argv[])
           }
           else if(renBuchi.isSemiDeterministic())
           {
-            //opt.semideterministic = true;
+            opt.semideterministic = true;
           }
 
           if(renBuchi.isComplete())
