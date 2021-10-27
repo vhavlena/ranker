@@ -74,7 +74,7 @@ public:
     this->oddStates.insert(states.begin(), states.end());
   }
 
-  inline set<int>& getOddStates()
+  inline const set<int>& getOddStates() const
   {
     return this->oddStates;
   }

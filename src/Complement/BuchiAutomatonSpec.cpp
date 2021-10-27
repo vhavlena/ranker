@@ -758,6 +758,7 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchStartReduced(set<int>& state, int
   vector<RankFunc> maxRanks1;
   set<RankFunc> maxRankLeq;
   vector<RankFunc> maxRanks2;
+  vector<RankFunc> maxRanks3;
 
   RankFunc ubound(this->rankBound[sprime].stateBound, false);
   if(this->opt.semideterministic)
@@ -792,11 +793,23 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchStartReduced(set<int>& state, int
       {
         continue;
       }
-      maxRankLeq.insert(f);
+      maxRanks1.push_back(f);
+      //maxRankLeq.insert(f);
     }
 
-    maxRanks1 = getFuncAntichain(maxRankLeq);
-    maxRanks2= getFuncAntichain(tmpSet2);
+    //maxRanks1 = getFuncAntichain(maxRankLeq, true);
+    maxRanks3 = getFuncAntichain(tmpSet2);
+
+
+    for(const RankFunc& f : maxRanks3)
+    {
+      if(!f.isAllLeq(ubound))
+      {
+        continue;
+      }
+      maxRanks2.push_back(f);
+    }
+
     maxPtr = maxRanks1.size() > maxRanks2.size() ? &maxRanks2 : &maxRanks1;
 
 
@@ -827,7 +840,7 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchStartReduced(set<int>& state, int
 }
 
 
-vector<RankFunc> BuchiAutomatonSpec::getFuncAntichain(set<RankFunc>& tmp)
+vector<RankFunc> BuchiAutomatonSpec::getFuncAntichain(set<RankFunc>& tmp) const
 {
   vector<RankFunc> maxRanks;
   bool cnt = true;
@@ -1079,6 +1092,11 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(Stat *sta
       else
       {
         succ = succSetSchStartReduced(st.S, rankBound[st.S].bound, this->reachCons, this->maxReach, dirRel, oddRel, this->getFinals());
+        // for(const auto& t : succ)
+        // {
+        //   cout << t.f.toString() << endl;
+        // }
+        // cout << endl;
         cnt = false;
       }
       for (const StateSch& s : succ)
