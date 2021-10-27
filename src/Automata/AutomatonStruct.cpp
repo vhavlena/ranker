@@ -334,6 +334,21 @@ bool AutomatonStruct<State, Symbol>::isReachDeterministic(set<State>& start)
 }
 
 
+template <typename State, typename Symbol>
+bool AutomatonStruct<State, Symbol>::isComplete()
+{
+  for(const State& s : this->getStates())
+  {
+    for(const Symbol& a : this->getAlphabet())
+    {
+      if(this->trans[{s,a}].size() == 0)
+        return false;
+    }
+  }
+  return true;
+}
+
+
 template class AutomatonStruct<int, int>;
 template class AutomatonStruct<int, string>;
 template class AutomatonStruct<tuple<int, int, bool>, int>;

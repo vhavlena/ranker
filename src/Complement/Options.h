@@ -58,6 +58,9 @@ struct ComplOptions
   bool backoff = false;
 
   vector<pair<unsigned, int>> BOBound = {{11,15}};
+
+  bool semideterministic = false;
+  bool complete = false;
 };
 
 #endif

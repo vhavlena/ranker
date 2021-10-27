@@ -324,6 +324,8 @@ public:
   Delta<State, Symbol> getReverseTransitions();
   vector<set<State>> getRunTree(vector<Symbol>& word);
 
+  bool isComplete();
+
 };
 
 #endif
