@@ -25,6 +25,11 @@ src/units/all.ba
 
 benchmarks
 results
+evaluation
+examples
+experimental
 
 src/img
 src/obj
+
+gitversion.cpp

@@ -20,6 +20,8 @@
 #include "Complement/GenCoBuchiAutomatonCompl.h"
 #include "Complement/CoBuchiCompl.h"
 
+extern const char *gitversion;
+
 using namespace std;
 
 int main(int argc, char *argv[])
@@ -49,6 +51,7 @@ int main(int argc, char *argv[])
   args::Flag accPropagationFlag(parser, "acc-propagation", "Propagate accepting states in each SCC", {"acc-propagation"});
   args::Flag sdFlag(parser, "sd", "Use semideterminization", {"sd"});
   args::Flag backoffFlag(parser, "backoff", "Use backoff", {"backoff"});
+  args::Flag versionFlag(parser, "version", "Git commit version", {"version"});
 
   ComplOptions opt = { .cutPoint = true, .succEmptyCheck = false, .ROMinState = 8,
       .ROMinRank = 6, .CacheMaxState = 6, .CacheMaxRank = 8, .semidetOpt = false,
@@ -83,6 +86,12 @@ int main(int argc, char *argv[])
   // input file
   if (inputFile){
     params.input = args::get(inputFile);
+  }
+
+  if(versionFlag)
+  {
+    cout << gitversion << endl;
+    return 0;
   }
 
   // print statistics
