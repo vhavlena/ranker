@@ -45,8 +45,6 @@ struct RankBound
   }
 };
 
-
-typedef set<int> DFAState;
 /*
  * Successor cache data type
  */

@@ -41,7 +41,7 @@ BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, Comp
   if(orig.isSemiDeterministic())
   {
     //assume states numbered from 0 (no gaps)
-  //  orig.complete(orig.getStates().size());
+    //orig.complete(orig.getStates().size());
   }
 
   if(opt.semideterminize)
@@ -97,13 +97,19 @@ BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, Comp
       map<int,int> ranks = elev.elevatorRank(false);
       int m = Aux::maxValue(ranks);
       bool isElev = elev.isElevator();
+
       auto predheur = [&isAcc, m, isElev] (SccClassif c) -> bool
       {
-        if(m >= 7 && isElev)
+        if(m >= 5 && isElev)
           return isAcc(c);
         return false;
       };
       tmp = elev.copyPreprocessing(predheur);
+
+      // if(isElev)
+      // {
+      //
+      // }
     }
     else if(opt.preprocess == CPIWA)
     {
@@ -122,7 +128,30 @@ BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, Comp
       tmp = elev.copyPreprocessing(predtri);
     }
 
+    // cout << tmp.toGraphwiz() << endl << endl;
+
+    ElevatorAutomaton elevPost(tmp);
+    tmp = elevPost.nondetInitDeterminize();
+
+    Simulations sim;
+    auto ranksim = sim.directSimulation<int, int>(tmp, -1);
+
+    // cout << tmp.toGraphwiz() << endl;
+    // set<set<int>> eqcl = Aux::getEqClasses(ranksim, tmp.getStates());
+    // for(const auto& cl : eqcl)
+    // {
+    //   cout << Aux::printIntSet(cl) << endl;
+    // }
+
+    tmp.setDirectSim(ranksim);
+    tmp = tmp.reduce();
+
+    //cout << tmp.toGraphwiz() << endl;
+
+
     orig = tmp.renameAlphabet(intap);
+
+    //cout << orig.toHOA() << endl;
   }
 
   if (opt.accPropagation)

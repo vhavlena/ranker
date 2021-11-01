@@ -638,7 +638,7 @@ bool ElevatorAutomaton::isInherentlyWeakBA()
     if (not isInherentlyWeak(scc, predSyms) and std::any_of(scc.begin(), scc.end(), [finals](int state){return finals.find(state) != finals.end();}))
       return false;
   }
-  
+
   return true;
 }
 
@@ -650,4 +650,142 @@ BuchiAutomaton<int, int> ElevatorAutomaton::convertToWeak()
   assert(false && "convertToWeak is not implemented");
 
   return BuchiAutomaton<int, int>();
+}
+
+
+map<int, bool> ElevatorAutomaton::nondetStates()
+{
+  map<int, set<int> > predSyms = this->getPredSymbolMap();
+  std::vector<std::set<int>> sccs = this->topologicalSort(predSyms);
+  std::vector<SccClassif> sccClass;
+  for (const auto& scc : sccs)
+  {
+    SccClassif tmp = {.states = scc, .det = false, .inhWeak = false, .nonDet = false};
+    sccClass.push_back(tmp);
+  }
+
+  // scc classification
+  for (auto it = sccClass.begin(); it != sccClass.end(); it++)
+  {
+    // deterministic
+    if (isDeterministic(it->states, predSyms))
+    {
+      it->det = true;
+    }
+    // nondeterministic
+    if (isNonDeterministic(it->states))
+    {
+      it->nonDet = true;
+    }
+    // inherently weak
+    if (isInherentlyWeak(it->states, predSyms))
+    {
+      it->inhWeak = true;
+    }
+  }
+
+  map<int, bool> types;
+  for (const auto& scc : sccClass)
+  {
+    for(int st : scc.states)
+    {
+      if(scc.nonDet)
+        types[st] = true;
+      else
+        types[st] = false;
+    }
+  }
+
+  return types;
+}
+
+
+BuchiAutomaton<int, int> ElevatorAutomaton::nondetInitDeterminize()
+{
+  map<int, bool> nondetSt = this->nondetStates();
+
+  map<DFAState, int> stInt;
+  int cnt = this->getStates().size();
+  std::stack<DFAState> stack;
+  set<DFAState> comst;
+
+  set<int> states(this->getStates().begin(), this->getStates().end());
+
+  //set<StateSch> initials;
+  //set<StateSch> finals;
+  //set<StateSch> succ;
+  set<int> alph = getAlphabet();
+
+  Delta<int, int> origTrans = this->getTransitions();
+  Delta<int, int> mp(origTrans.begin(), origTrans.end());
+  //map<std::pair<StateSch, int>, set<StateSch> >::iterator it;
+
+  DFAState init = this->getInitials();
+  stack.push(init);
+  comst.insert(init);
+  //initials.insert(init);
+
+  states.insert(cnt);
+  stInt[init] = cnt++;
+
+  while(stack.size() > 0)
+  {
+    DFAState st = stack.top();
+    stack.pop();
+
+    if(st.size() == 0)
+      continue;
+
+    for(int sym : alph)
+    {
+      set<int> dst;
+
+      DFAState nt = succSet(st, sym);
+
+
+      DFAState target;
+      for(int s : nt)
+      {
+        if(nondetSt[s])
+        {
+          target.insert(s);
+        }
+        else
+        {
+          dst.insert(s);
+        }
+      }
+
+      if(target.size() == 0)
+      {
+        mp[{stInt[st], sym}] = dst;
+        continue;
+      }
+
+      auto it = stInt.find(target);
+      if(it != stInt.end())
+      {
+        dst.insert(it->second);
+      }
+      else
+      {
+        states.insert(cnt);
+        dst.insert(cnt);
+        stInt[target] = cnt++;
+      }
+
+      if(comst.find(target) == comst.end())
+      {
+        stack.push(target);
+        comst.insert(target);
+      }
+
+      mp[{stInt[st], sym}] = dst;
+    }
+  }
+
+  set<int> fn(this->getFinals().begin(), this->getFinals().end());
+  set<int> ini = {stInt[init]};
+  BuchiAutomaton<int, int> tmp(states, fn, ini, mp, alph, this->getAPPattern());
+  return tmp.renameStates();
 }

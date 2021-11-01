@@ -1639,7 +1639,7 @@ BuchiAutomaton<int, Symbol> BuchiAutomaton<State,Symbol>::reduce()
     ntr[{ stmap[p.first.first], val} ].insert(to.begin(), to.end());
   }
 
-  return BuchiAutomaton<int, Symbol>(nst, nini, nfin, ntr, this->getAlphabet());
+  return BuchiAutomaton<int, Symbol>(nst, nini, nfin, ntr, this->getAlphabet(), this->getAPPattern());
 }
 
 
