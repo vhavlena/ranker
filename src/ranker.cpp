@@ -291,6 +291,10 @@ int main(int argc, char *argv[])
         {
           BuchiAutomaton<int, APSymbol> orig = parseRenameHOABA(parser, opt);
 
+          cout << orig.toHOA() << endl;
+          os.close();
+          return 0;
+
           if(orig.isTBA())
           {
             opt.sim = false;

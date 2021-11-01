@@ -133,18 +133,18 @@ BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, Comp
     ElevatorAutomaton elevPost(tmp);
     tmp = elevPost.nondetInitDeterminize();
 
-    Simulations sim;
-    auto ranksim = sim.directSimulation<int, int>(tmp, -1);
-
-    // cout << tmp.toGraphwiz() << endl;
-    // set<set<int>> eqcl = Aux::getEqClasses(ranksim, tmp.getStates());
-    // for(const auto& cl : eqcl)
-    // {
-    //   cout << Aux::printIntSet(cl) << endl;
-    // }
-
-    tmp.setDirectSim(ranksim);
-    tmp = tmp.reduce();
+    // Simulations sim;
+    // auto ranksim = sim.directSimulation<int, int>(tmp, -1);
+    //
+    // // cout << tmp.toGraphwiz() << endl;
+    // // set<set<int>> eqcl = Aux::getEqClasses(ranksim, tmp.getStates());
+    // // for(const auto& cl : eqcl)
+    // // {
+    // //   cout << Aux::printIntSet(cl) << endl;
+    // // }
+    //
+    // tmp.setDirectSim(ranksim);
+    // tmp = tmp.reduce();
 
     //cout << tmp.toGraphwiz() << endl;
 
