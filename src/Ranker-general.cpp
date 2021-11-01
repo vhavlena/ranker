@@ -100,16 +100,30 @@ BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, Comp
 
       auto predheur = [&isAcc, m, isElev] (SccClassif c) -> bool
       {
-        if(m >= 5 && isElev)
+        if(m >= 4 && isElev)
           return isAcc(c);
         return false;
       };
       tmp = elev.copyPreprocessing(predheur);
 
-      // if(isElev)
-      // {
-      //
-      // }
+      if(isElev)
+      {
+        ElevatorAutomaton elevPost(tmp);
+        tmp = elevPost.nondetInitDeterminize();
+
+        Simulations sim;
+        auto ranksim = sim.directSimulation<int, int>(tmp, -1);
+
+        //cout << tmp.toGraphwiz() << endl;
+        // set<set<int>> eqcl = Aux::getEqClasses(ranksim, tmp.getStates());
+        // for(const auto& cl : eqcl)
+        // {
+        //   cout << Aux::printIntSet(cl) << endl;
+        // }
+
+        tmp.setDirectSim(ranksim);
+        tmp = tmp.reduce();
+      }
     }
     else if(opt.preprocess == CPIWA)
     {
@@ -130,21 +144,7 @@ BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, Comp
 
     // cout << tmp.toGraphwiz() << endl << endl;
 
-    ElevatorAutomaton elevPost(tmp);
-    tmp = elevPost.nondetInitDeterminize();
 
-    Simulations sim;
-    auto ranksim = sim.directSimulation<int, int>(tmp, -1);
-
-    //cout << tmp.toGraphwiz() << endl;
-    // set<set<int>> eqcl = Aux::getEqClasses(ranksim, tmp.getStates());
-    // for(const auto& cl : eqcl)
-    // {
-    //   cout << Aux::printIntSet(cl) << endl;
-    // }
-
-    tmp.setDirectSim(ranksim);
-    tmp = tmp.reduce();
 
     //cout << tmp.getStates().size() << endl;
 
@@ -172,22 +172,6 @@ BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, Comp
     tmp = elev.propagateAccStates();
     orig = tmp.renameAlphabet(intap);
     //std::cerr << tmp.toGraphwiz() << std::endl;
-  }
-
-  Simulations sim;
-  if(!opt.sim || orig.isTBA())
-  {
-    auto ranksim = sim.identity(orig);
-    orig.setDirectSim(ranksim);
-    orig.setOddRankSim(ranksim);
-  }
-  else
-  {
-    auto ranksim = sim.directSimulation<int, APSymbol>(orig, -1);
-    orig.setDirectSim(ranksim);
-
-    auto cl = set<int>();
-    orig.computeRankSim(cl);
   }
 
   return orig;

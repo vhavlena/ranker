@@ -290,7 +290,7 @@ int main(int argc, char *argv[])
         if(autType == AUTBA)
         {
           BuchiAutomaton<int, APSymbol> orig = parseRenameHOABA(parser, opt);
-          // 
+          //
           // cout << orig.toHOA() << endl;
           // os.close();
           // return 0;
@@ -298,6 +298,29 @@ int main(int argc, char *argv[])
           if(orig.isTBA())
           {
             opt.sim = false;
+          }
+
+          if(orig.getStates().size() >= 20)
+          {
+            opt.reach = false;
+            opt.sim = false;
+            opt.sl = false;
+          }
+
+          Simulations sim;
+          if(!opt.sim || orig.isTBA())
+          {
+            auto ranksim = sim.identity(orig);
+            orig.setDirectSim(ranksim);
+            orig.setOddRankSim(ranksim);
+          }
+          else
+          {
+            auto ranksim = sim.directSimulation<int, APSymbol>(orig, -1);
+            orig.setDirectSim(ranksim);
+
+            auto cl = set<int>();
+            orig.computeRankSim(cl);
           }
 
           renBuchi = orig.renameAut();
