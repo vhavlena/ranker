@@ -61,6 +61,8 @@ struct ComplOptions
 
   bool semideterministic = false;
   bool complete = false;
+
+  bool lowrankopt = false;
 };
 
 #endif

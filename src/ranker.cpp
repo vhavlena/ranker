@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
       .debug = false, .elevator = { .elevatorRank = true, .detBeginning = false },
       .sim = true, .sl = true, .reach = true, .flowDirSim = false, .preprocess = NONE, .accPropagation = false,
       .semideterminize = false, .backoff = false, .BOBound = { {11,15} },
-      .semideterministic = false, .complete = false };
+      .semideterministic = false, .complete = false, .lowrankopt = false };
 
   try
   {
@@ -361,14 +361,16 @@ int main(int argc, char *argv[])
             }
           }
 
+          map<int,int> ranks = el.elevatorRank(false);
+
           if(renBuchi.isDeterministic())
           {
             opt.reach = false;
             opt.sl = false;
           }
-          else if(renBuchi.isSemiDeterministic())
+          else if(Aux::maxValue(ranks) <= 4)
           {
-            opt.semideterministic = true;
+            opt.lowrankopt = true;
           }
 
           if(renBuchi.isComplete())
@@ -440,8 +442,6 @@ int main(int argc, char *argv[])
         os.close();
         return 0;
       }
-
-      //./ranker ../../ba-compl-eval/automata/from_ltl/random_nd_red/179.hoa --light --sd
 
       BuchiAutomaton<int, APSymbol> outOrig = renCompl.renameAlphabet<APSymbol>(symDict);
       outOrig.completeAPComplement();
