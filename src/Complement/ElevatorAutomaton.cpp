@@ -664,6 +664,9 @@ map<int, bool> ElevatorAutomaton::nondetStates()
     sccClass.push_back(tmp);
   }
 
+  map<int,int> ranks = this->elevatorRank(false);
+  int m = Aux::maxValue(ranks);
+
   // scc classification
   for (auto it = sccClass.begin(); it != sccClass.end(); it++)
   {
@@ -689,8 +692,10 @@ map<int, bool> ElevatorAutomaton::nondetStates()
   {
     for(int st : scc.states)
     {
-      if(scc.nonDet)
+      if(scc.nonDet && ranks[st] == m)
+      {
         types[st] = true;
+      }
       else
         types[st] = false;
     }
@@ -721,6 +726,13 @@ BuchiAutomaton<int, int> ElevatorAutomaton::nondetInitDeterminize()
   //map<std::pair<StateSch, int>, set<StateSch> >::iterator it;
 
   DFAState init = this->getInitials();
+
+  for(int st : init)
+  {
+    if(!nondetSt[st])
+      return *this;
+  }
+
   stack.push(init);
   comst.insert(init);
   //initials.insert(init);

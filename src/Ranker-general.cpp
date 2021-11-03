@@ -96,11 +96,11 @@ BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, Comp
     {
       map<int,int> ranks = elev.elevatorRank(false);
       int m = Aux::maxValue(ranks);
-      bool isElev = elev.isElevator();
+      bool isElev = elev.isElevator() && !elev.isInherentlyWeakBA();
 
       auto predheur = [&isAcc, m, isElev] (SccClassif c) -> bool
       {
-        if(m >= 4 && isElev)
+        if(m >= 5 && isElev)
           return isAcc(c);
         return false;
       };

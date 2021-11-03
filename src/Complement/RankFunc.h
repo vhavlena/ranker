@@ -8,6 +8,7 @@
 #include <string>
 #include <iostream>
 #include <string>
+#include <algorithm>
 #include "../Algorithms/AuxFunctions.h"
 
 #include <boost/dynamic_bitset.hpp>
@@ -128,8 +129,8 @@ public:
   static vector<RankFunc> tightFromRankConstrPure(RankConstr constr, BackRel& rel, BackRel& oddRel, map<int, int>& reachRes, int reachMax, bool useInverse);
   static vector<RankFunc> tightSuccFromRankConstrPure(RankConstr constr, BackRel& rel, BackRel& oddRel, int max, map<int, int>& reachRes, int reachMax, bool useInverse);
 
-  static vector<RankFunc> getRORanks(int ranks, std::set<int>& states, std::set<int>& fin, bool useInverse);
-  static vector<RankFunc> getRORanksSD(int ranks, std::set<int>& states, std::set<int>& fin, bool useInverse);
+  static vector<RankFunc> getRORanks(int ranks, std::set<int>& states, std::set<int>& fin, bool useInverse, map<int, int>& rankBound);
+  static vector<RankFunc> getRORanksSD(int ranks, std::set<int>& states, std::set<int>& fin, bool useInverse, map<int, int>& rankBound);
 };
 
 #endif

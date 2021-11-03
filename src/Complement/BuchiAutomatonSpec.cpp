@@ -763,7 +763,7 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchStartReduced(set<int>& state, int
   RankFunc ubound(this->rankBound[sprime].stateBound, false);
   if(this->opt.semideterministic)
   {
-    maxRanks = RankFunc::getRORanksSD(m, state, fin, this->opt.cutPoint);
+    maxRanks = RankFunc::getRORanksSD(m, state, fin, this->opt.cutPoint, this->rankBound[sprime].stateBound);
     for(const RankFunc& f : maxRanks)
     {
       if(!f.isAllLeq(ubound))
@@ -776,7 +776,7 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchStartReduced(set<int>& state, int
   }
   else if(state.size() >= this->opt.ROMinState && m >= this->opt.ROMinRank)
   {
-    maxRanks = RankFunc::getRORanks(rankBound, state, fin, this->opt.cutPoint);
+    maxRanks = RankFunc::getRORanks(rankBound, state, fin, this->opt.cutPoint, this->rankBound[sprime].stateBound);
     maxPtr = &maxRanks;
   }
   else
@@ -785,18 +785,19 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchStartReduced(set<int>& state, int
     RankConstr constr = rankConstr(maxRank, sprime);
     auto tmp = RankFunc::tightFromRankConstr(constr, dirRel, oddRel, reachCons, reachMaxAct, this->opt.cutPoint);
 
+    maxRanks = RankFunc::getRORanks(rankBound, state, fin, this->opt.cutPoint, this->rankBound[sprime].stateBound);
     set<RankFunc> tmpSet2(tmp.begin(), tmp.end());
     set<RankFunc> tmpSet1; //(tmp.begin(), tmp.end());
-    for(const RankFunc& f : tmp)
+    for(const RankFunc& f : maxRanks)
     {
       if(!f.isAllLeq(ubound))
       {
         continue;
       }
-      //maxRanks1.push_back(f);
-      maxRankLeq.insert(f);
+      maxRanks1.push_back(f);
+      //maxRankLeq.insert(f);
     }
-    maxRanks1 = getFuncAntichain(maxRankLeq, true);
+    //maxRanks1 = maxRankLeq; //getFuncAntichain(maxRankLeq, true);
     maxRanks2 = getFuncAntichain(tmpSet2);
 
     // bool cnt = false;
