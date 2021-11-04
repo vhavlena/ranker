@@ -609,12 +609,12 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
 
   }
 
-  if(this->opt.lowrankopt)
-  {
-    RankFunc ubound(this->rankBound[state.S].stateBound, false);
-    if(!state.f.isAllLeq(ubound))
-      return ret;
-  }
+  // if(this->opt.lowrankopt)
+  // {
+  //   RankFunc ubound(this->rankBound[state.S].stateBound, false);
+  //   if(!state.f.isAllLeq(ubound))
+  //     return ret;
+  // }
 
   if(this->rankBound[state.S].bound < state.f.getMaxRank() || this->rankBound[sprime].bound < state.f.getMaxRank())
   {
