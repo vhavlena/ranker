@@ -362,15 +362,20 @@ int main(int argc, char *argv[])
           }
 
           map<int,int> ranks = el.elevatorRank(false);
+          int m = Aux::maxValue(ranks);
 
           if(renBuchi.isDeterministic())
           {
             opt.reach = false;
             opt.sl = false;
           }
-          else if(Aux::maxValue(ranks) <= 4)
+          else if(m <= 1)
           {
-            opt.lowrankopt = true;
+            opt.sl = false;
+          }
+          else if(m <= 4)
+          {
+            opt.lowrankopt = false;
           }
 
           if(renBuchi.isComplete())
