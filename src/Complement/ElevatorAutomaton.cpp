@@ -546,7 +546,7 @@ std::map<int, int> ElevatorAutomaton::elevatorRank(bool detBeginning){
           }
           else if (not (scc.det or scc.inhWeak or scc.nonDet)){
             if (scc.rank%2==0 and scc.rank > rank)
-              rank = scc.rank;
+              rank = scc.rank + 2;
             else if (scc.rank%2==1 and scc.rank+1 > rank)
               rank = scc.rank + 1;
           }
