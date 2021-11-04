@@ -548,6 +548,15 @@ void BuchiAutomatonSpec::getSchRanksTightReduced(vector<RankFunc>& out, vector<i
     }
   }
 
+  if(this->opt.lowrankopt)
+  {
+    auto stateBound = this->rankBound[states].stateBound;
+    for(const auto & s : states)
+    {
+      sngmap[s] = std::min(sngmap[s], stateBound[s]);
+    }
+  }
+
   RankFunc sng(sngmap, this->opt.cutPoint);
   if(sng.isTightRank() && sng.getMaxRank() == macrostate.f.getMaxRank() && rankSetSize > 0)
     out = vector<RankFunc>({sng});
@@ -702,7 +711,7 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
         for(int o : st.O)
         {
           if(rnkMap[o] > 0 && fin.find(o) == fin.end())
-            rnkMap[o]--;
+            rnkMap[o]--; // = std::min(rnkMap[o] - 1, stateBound[o]);
           else
             no.insert(o);
         }

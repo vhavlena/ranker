@@ -375,7 +375,7 @@ int main(int argc, char *argv[])
           }
           else if(m <= 4)
           {
-            opt.lowrankopt = false;
+            opt.lowrankopt = true;
           }
 
           if(renBuchi.isComplete())
@@ -447,6 +447,11 @@ int main(int argc, char *argv[])
         os.close();
         return 0;
       }
+
+      // Simulations sim;
+      // auto ranksim = sim.directSimulation<int, int>(renCompl, -1);
+      // renCompl.setDirectSim(ranksim);
+      // renCompl = renCompl.reduce();
 
       BuchiAutomaton<int, APSymbol> outOrig = renCompl.renameAlphabet<APSymbol>(symDict);
       outOrig.completeAPComplement();
