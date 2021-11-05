@@ -369,7 +369,7 @@ int main(int argc, char *argv[])
             opt.reach = false;
             opt.sl = false;
           }
-          else if(m <= 1)
+          else if(m <= 2)
           {
             opt.sl = false;
           }
