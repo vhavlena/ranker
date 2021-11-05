@@ -328,10 +328,32 @@ int main(int argc, char *argv[])
             return 0;
           }
 
+          map<int,int> ranks = el.elevatorRank(false);
+          int m = Aux::maxValue(ranks);
+
+          if(renBuchi.isDeterministic())
+          {
+            opt.reach = false;
+            opt.sl = false;
+          }
+          else if(m <= 2)
+          {
+            opt.sl = false;
+          }
+          else if(m <= 4)
+          {
+            opt.lowrankopt = true;
+          }
+
+          if(renBuchi.isComplete())
+          {
+            opt.complete = true;
+          }
+
           BuchiAutomatonSpec sp(&renBuchi);
           sp.setComplOptions(opt);
 
-          if(opt.backoff)
+          if(opt.backoff && !el.isInherentlyWeakBA())
           {
             BuchiAutomaton<StateSch, int> comp = sp.complementSchNFA(sp.getInitials());
             sp.computeRankBound(comp, &stats);
@@ -359,28 +381,6 @@ int main(int argc, char *argv[])
               os.close();
               return 0;
             }
-          }
-
-          map<int,int> ranks = el.elevatorRank(false);
-          int m = Aux::maxValue(ranks);
-
-          if(renBuchi.isDeterministic())
-          {
-            opt.reach = false;
-            opt.sl = false;
-          }
-          else if(m <= 2)
-          {
-            opt.sl = false;
-          }
-          else if(m <= 4)
-          {
-            opt.lowrankopt = true;
-          }
-
-          if(renBuchi.isComplete())
-          {
-            opt.complete = true;
           }
 
           sp.setComplOptions(opt);
