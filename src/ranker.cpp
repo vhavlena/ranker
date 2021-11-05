@@ -360,6 +360,7 @@ int main(int argc, char *argv[])
 
             if(sp.meetsBackOff())
             {
+              os.close();
               const string spotpath_cstr = string(std::getenv("SPOTEXE"));
               string cmd = spotpath_cstr + " --complement --ba " + filename;
               string ret = Simulations::execCmd(cmd);
@@ -378,7 +379,6 @@ int main(int argc, char *argv[])
                 printStat(stats);
 
               cout << spotaut.toHOA() << endl;
-              os.close();
               return 0;
             }
           }
