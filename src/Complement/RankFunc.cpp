@@ -87,6 +87,7 @@ void RankFunc::addPair(const std::pair<int, int>& val, bool useInverse)
 vector<RankFunc> RankFunc::cartTightProductMap(vector<RankFunc>& s1, vector<std::pair<int, int> >& s2,
     int rem, BackRel& rel, BackRel& oddRel, int max, map<int, int>& reachRes, int reachMax, bool useInverse)
 {
+  (void)rel;
   vector<RankFunc> ret;
   int maxRank;
   for(const auto& v1 : s1)

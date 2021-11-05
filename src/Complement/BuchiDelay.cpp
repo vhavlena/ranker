@@ -127,6 +127,7 @@ unsigned BuchiAutomatonDelay<Symbol> :: getAllPossibleRankings(unsigned maxRank,
 template <typename Symbol>
 std::map<StateSch, std::set<Symbol>> BuchiAutomatonDelay<Symbol> :: getCycleClosingStates(set<StateSch>& slignore, DelayMap<StateSch>& dmap, double w, DelayVersion version, Stat *stats) {
 
+  (void)slignore;
   std::map<StateSch, std::set<Symbol>> statesToGenerate;
   std::vector<std::vector<StateSch>> allCycles;
   std::map<StateSch, double> mapping;
