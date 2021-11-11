@@ -55,7 +55,12 @@ where `OPTIONS` are from the following:
                                       [copyiwa/copydet/copyall/copytrivial/copyheur]
     --acc-propagation                 Propagate accepting states in each SCC
     --sd                              Use semideterminization
-    --backoff                         Use backoff
+    --backoff                         Use backoff with SPOT
+```
+
+If you wish to use the `--backoff` option, you need to set a correct path to SPOT's `autfilt`:
+```
+export SPOTEXE=<path_to_autfilt>/autfilt
 ```
 
 ### Citing
