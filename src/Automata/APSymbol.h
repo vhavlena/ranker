@@ -12,11 +12,14 @@ using std::string;
  */
 struct APSymbol
 {
-  //Bitarray representing a set of APs
-  boost::dynamic_bitset<> ap;
+  // //Bitarray representing a set of APs
+  // boost::dynamic_bitset<> ap;
+
+  std::vector<char> ap;
 
   APSymbol() : ap() {};
-  APSymbol(int cnt) : ap(cnt) {};
+  APSymbol(int cnt) : ap(cnt, 0) {};
+  APSymbol(int cnt, char val) : ap(cnt, val) {};
 
   bool operator==(const APSymbol other) const
   {
@@ -33,13 +36,23 @@ struct APSymbol
     string ret;
     for(unsigned int i = 0; i < ap.size(); i++)
     {
-      if(ap[i])
+      if(ap[i] == 1)
+      {
         ret += std::to_string(i);
-      else
-        ret += "!" + std::to_string(i);
-      if(i + 1 < ap.size())
         ret += "&";
+      }
+      else if(ap[i] == 0)
+      {
+        ret += "!" + std::to_string(i);
+        ret += "&";
+      }
+
+      // if(i + 1 < ap.size())
+      //   ret += "&";
     }
+    if(ret.back() == '&')
+      ret.pop_back();
+
     return ret;
   }
 };

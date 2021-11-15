@@ -804,20 +804,74 @@ void BuchiAutomaton<int, APSymbol>::completeAPComplement()
 {
   this->complete(this->getStates().size(), false);
   set<APSymbol> allsyms;
-  if(this->getAPPattern().size() > 0)
+
+  APSymbol tmp;
+  bool first = true;
+  set<int> diff;
+  for(const APSymbol& s : this->getAlphabet())
   {
-    vector<int> cnum(this->getAPPattern().size());
-    std::iota(cnum.begin(), cnum.end(), 0);
-    for(const auto& s : Aux::getAllSubsets(cnum))
+    if(first)
     {
-      APSymbol sym(this->getAPPattern().size());
-      for(const int& t : s)
-        sym.ap.set(t);
+      tmp = s;
+      first = false;
+    }
+    else
+    {
+      for(unsigned i = 0; i < this->getAPPattern().size(); i++)
+      {
+        if(tmp.ap[i] != s.ap[i])
+        {
+          diff.insert(i);
+          tmp.ap[i] = 2;
+        }
+      }
+    }
+  }
+
+  for(unsigned i = 0; i < this->getAPPattern().size(); i++)
+  {
+    if(tmp.ap[i] != 2)
+    {
+      APSymbol sym(this->getAPPattern().size(), 2);
+      sym.ap[i] = !tmp.ap[i];
       allsyms.insert(sym);
     }
   }
+
+  if(diff.size() > 0)
+  {
+    vector<int> cnum;
+    for(const int & t : diff)
+      cnum.push_back(t);
+
+    for(const auto& s : Aux::getAllSubsets(cnum))
+    {
+      APSymbol sym = tmp;
+      for(const int& t : cnum)
+        sym.ap[t] = 0;
+      for(const int& t : s)
+        sym.ap[t] = 1;
+      allsyms.insert(sym);
+    }
+  }
+
   this->setAlphabet(allsyms);
   this->complete(this->getStates().size(), true);
+
+  // if(this->getAPPattern().size() > 0)
+  // {
+  //   vector<int> cnum(this->getAPPattern().size());
+  //   std::iota(cnum.begin(), cnum.end(), 0);
+  //   for(const auto& s : Aux::getAllSubsets(cnum))
+  //   {
+  //     APSymbol sym(this->getAPPattern().size());
+  //     for(const int& t : s)
+  //       sym.ap[t] = 1;
+  //     allsyms.insert(sym);
+  //   }
+  // }
+  // this->setAlphabet(allsyms);
+  // this->complete(this->getStates().size(), true);
 }
 
 /*
