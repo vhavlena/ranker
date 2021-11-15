@@ -838,6 +838,11 @@ void BuchiAutomaton<int, APSymbol>::completeAPComplement()
     }
   }
 
+  if(this->getAlphabet().size() == 1)
+  {
+    allsyms.insert(tmp);
+  }
+
   if(diff.size() > 0)
   {
     vector<int> cnum;
