@@ -99,6 +99,7 @@ string Simulations::execCmd(string& cmd)
 {
   array<char, 128> buffer;
   string result = "";
+  cmd += " 2>&1";
   auto pipe = popen(cmd.c_str(), "r");
   if (!pipe)
   {
@@ -108,6 +109,10 @@ string Simulations::execCmd(string& cmd)
   {
     result += buffer.data();
   }
-  pclose(pipe);
+  auto rc = pclose(pipe);
+  if(rc != 0)
+  {
+    throw "Nonzero return code";
+  }
   return result;
 }

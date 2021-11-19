@@ -344,7 +344,7 @@ int main(int argc, char *argv[])
           {
             opt.lowrankopt = true;
             opt.cutPoint = false;
-            //opt.sl = false;
+            opt.sl = false;
           }
 
           if(renBuchi.isComplete())
@@ -363,9 +363,28 @@ int main(int argc, char *argv[])
             if(sp.meetsBackOff())
             {
               os.close();
-              const string spotpath_cstr = string(std::getenv("SPOTEXE"));
+              const char* env = std::getenv("SPOTEXE");
+              if(env == NULL)
+              {
+                cerr << "Error: $SPOTEXE not found" << endl;
+                return 1;
+              }
+              const string spotpath_cstr = string(env);
+              cout << spotpath_cstr << endl;
               string cmd = spotpath_cstr + " --complement --ba " + filename;
-              string ret = Simulations::execCmd(cmd);
+              string ret = "";
+
+              try
+              {
+                ret = Simulations::execCmd(cmd);
+              }
+              catch(const char* c)
+              {
+                cerr << "Error occurred: " << c << endl;
+                if(ret.size() > 0)
+                  cerr << ret << endl;
+                return 1;
+              }
 
               stringstream strm(ret);
               BuchiAutomataParser spotpar(strm);
