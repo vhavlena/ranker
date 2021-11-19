@@ -343,6 +343,8 @@ int main(int argc, char *argv[])
           else if(m <= 4)
           {
             opt.lowrankopt = true;
+            opt.cutPoint = false;
+            //opt.sl = false;
           }
 
           if(renBuchi.isComplete())
