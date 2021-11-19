@@ -370,7 +370,6 @@ int main(int argc, char *argv[])
                 return 1;
               }
               const string spotpath_cstr = string(env);
-              cout << spotpath_cstr << endl;
               string cmd = spotpath_cstr + " --complement --ba " + filename;
               string ret = "";
 
