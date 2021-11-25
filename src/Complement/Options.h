@@ -56,6 +56,9 @@ struct ComplOptions
   bool semideterminize = false;
 
   bool backoff = false;
+
+  bool iwSim = false;
+  bool iwSat = false;
 };
 
 #endif

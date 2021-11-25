@@ -234,11 +234,14 @@ void complementGcoBAWrap(GeneralizedCoBuchiAutomaton<int, int> *ren, BuchiAutoma
   *complRes = renCompl;
 }
 
-void complementCoBAWrap(CoBuchiAutomatonCompl *ren, BuchiAutomaton<StateGcoBA, int> *complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats){
+void complementCoBAWrap(CoBuchiAutomatonCompl *ren, BuchiAutomaton<StateGcoBA, int> *complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats, ComplOptions opt){
   //ren->removeUseless();
   //std::cerr << ren->toGraphwiz() << std::endl;
 
-  *complOrig = ren->complementCoBA();
+  if (opt.iwSim or opt.iwSat)
+    *complOrig = ren->complementCoBASim(opt);
+  else
+    *complOrig = ren->complementCoBA();
 
   stats->generatedStates = complOrig->getStates().size();
   stats->generatedTrans = complOrig->getTransCount();
