@@ -48,10 +48,10 @@ class BuchiAutomataParser {
 private:
   // Current line in a file
   int line;
-  ifstream& os;
+  istream& os;
 
 public:
-  BuchiAutomataParser(ifstream & sos) : os(sos) { };
+  BuchiAutomataParser(istream & sos) : os(sos) { };
 
   BuchiAutomaton<string, string> parseBaFormat(ifstream & os);
   BuchiAutomaton<string, string> parseGffFormat(string& str);
@@ -72,8 +72,8 @@ private:
   BuchiAutomaton<string, string> parseGffTree(pt::ptree& tr);
 
   vector<Transition<int, APSymbol>> parseHoaTransition(int srcstate, int apNum, string& line, bool* acc);
-  Delta<int, APSymbol> parseHoaBodyBA(int apNum, ifstream & os, set<int>& finsBA, VecTrans<int, APSymbol>& accTrans);
-  Delta<int, APSymbol> parseHoaBodyGCOBA(int apNum, ifstream & os, map<int, set<int>>& finsGBA);
+  Delta<int, APSymbol> parseHoaBodyBA(int apNum, istream & os, set<int>& finsBA, VecTrans<int, APSymbol>& accTrans);
+  Delta<int, APSymbol> parseHoaBodyGCOBA(int apNum, istream & os, map<int, set<int>>& finsGBA);
   set<APSymbol> parseHoaExpression(string & line, int apNum);
   set<APSymbol> parseHoaExpressionConj(const string & line, int apNum);
 };

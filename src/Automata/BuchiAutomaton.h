@@ -81,6 +81,9 @@ struct SccClassif {
   bool detBeginning = false;
 };
 
+
+typedef set<int> DFAState;
+
 /*
  * State labels for the case of the DELAY optimization
  */

@@ -496,6 +496,22 @@ std::string BuchiAutomaton<StateSemiDet, APSymbol>::toGraphwiz()
 
 
 /*
+ * Function converting the automaton <pair<StateGcoBA, int>, APSymbol> to graphwiz format.
+ * @return Graphwiz representation of the automaton
+ */
+template <>
+std::string BuchiAutomaton<pair<StateGcoBA, int>, APSymbol>::toGraphwiz()
+{
+  std::function<std::string(pair<StateGcoBA, int>)> f1 = [&] (pair<StateGcoBA, int> x)
+  {
+    return "(" + x.first.toString() + " " + std::to_string(x.second) + ")";
+  };
+  std::function<std::string(APSymbol)> f2 = [=] (APSymbol x) {return x.toString();};
+  return toGraphwizWith(f1, f2);
+}
+
+
+/*
  * Function converting the automaton <string, string> to graphwiz format.
  * @return Graphwiz representation of the automaton
  */
@@ -788,20 +804,79 @@ void BuchiAutomaton<int, APSymbol>::completeAPComplement()
 {
   this->complete(this->getStates().size(), false);
   set<APSymbol> allsyms;
-  if(this->getAPPattern().size() > 0)
+
+  APSymbol tmp;
+  bool first = true;
+  set<int> diff;
+  for(const APSymbol& s : this->getAlphabet())
   {
-    vector<int> cnum(this->getAPPattern().size());
-    std::iota(cnum.begin(), cnum.end(), 0);
-    for(const auto& s : Aux::getAllSubsets(cnum))
+    if(first)
     {
-      APSymbol sym(this->getAPPattern().size());
-      for(const int& t : s)
-        sym.ap.set(t);
+      tmp = s;
+      first = false;
+    }
+    else
+    {
+      for(unsigned i = 0; i < this->getAPPattern().size(); i++)
+      {
+        if(tmp.ap[i] != s.ap[i])
+        {
+          diff.insert(i);
+          tmp.ap[i] = 2;
+        }
+      }
+    }
+  }
+
+  for(unsigned i = 0; i < this->getAPPattern().size(); i++)
+  {
+    if(tmp.ap[i] != 2)
+    {
+      APSymbol sym(this->getAPPattern().size(), 2);
+      sym.ap[i] = !tmp.ap[i];
       allsyms.insert(sym);
     }
   }
+
+  if(this->getAlphabet().size() == 1)
+  {
+    allsyms.insert(tmp);
+  }
+
+  if(diff.size() > 0)
+  {
+    vector<int> cnum;
+    for(const int & t : diff)
+      cnum.push_back(t);
+
+    for(const auto& s : Aux::getAllSubsets(cnum))
+    {
+      APSymbol sym = tmp;
+      for(const int& t : cnum)
+        sym.ap[t] = 0;
+      for(const int& t : s)
+        sym.ap[t] = 1;
+      allsyms.insert(sym);
+    }
+  }
+
   this->setAlphabet(allsyms);
   this->complete(this->getStates().size(), true);
+
+  // if(this->getAPPattern().size() > 0)
+  // {
+  //   vector<int> cnum(this->getAPPattern().size());
+  //   std::iota(cnum.begin(), cnum.end(), 0);
+  //   for(const auto& s : Aux::getAllSubsets(cnum))
+  //   {
+  //     APSymbol sym(this->getAPPattern().size());
+  //     for(const int& t : s)
+  //       sym.ap[t] = 1;
+  //     allsyms.insert(sym);
+  //   }
+  // }
+  // this->setAlphabet(allsyms);
+  // this->complete(this->getStates().size(), true);
 }
 
 /*
@@ -1623,7 +1698,7 @@ BuchiAutomaton<int, Symbol> BuchiAutomaton<State,Symbol>::reduce()
     ntr[{ stmap[p.first.first], val} ].insert(to.begin(), to.end());
   }
 
-  return BuchiAutomaton<int, Symbol>(nst, nini, nfin, ntr, this->getAlphabet());
+  return BuchiAutomaton<int, Symbol>(nst, nfin, nini, ntr, this->getAlphabet(), this->getAPPattern());
 }
 
 
@@ -1634,5 +1709,6 @@ template class BuchiAutomaton<StateSch, int>;
 template class BuchiAutomaton<int, APSymbol>;
 template class BuchiAutomaton<StateSch, APSymbol>;
 template class BuchiAutomaton<StateGcoBA, int>;
+template class BuchiAutomaton<StateGcoBA, APSymbol>;
 template class BuchiAutomaton<StateSemiDet, int>;
 template class BuchiAutomaton<StateSemiDet, APSymbol>;

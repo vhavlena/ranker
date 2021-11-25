@@ -548,6 +548,15 @@ void BuchiAutomatonSpec::getSchRanksTightReduced(vector<RankFunc>& out, vector<i
     }
   }
 
+  if(this->opt.lowrankopt)
+  {
+    auto stateBound = this->rankBound[states].stateBound;
+    for(const auto & s : states)
+    {
+      sngmap[s] = std::min(sngmap[s], stateBound[s]);
+    }
+  }
+
   RankFunc sng(sngmap, this->opt.cutPoint);
   if(sng.isTightRank() && sng.getMaxRank() == macrostate.f.getMaxRank() && rankSetSize > 0)
     out = vector<RankFunc>({sng});
@@ -583,14 +592,14 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
   this->setFinals(finals);
   auto fin = getFinals();
 
-  // if(this->opt.semideterminize)
-  // {
-  //   for(const auto& p : state.f)
-  //   {
-  //     if(p.second == 0)
-  //       return vector<StateSch>();
-  //   }
-  // }
+  if(this->opt.complete)
+  {
+    for(const auto& p : state.f)
+    {
+      if(p.second == 0)
+        return vector<StateSch>();
+    }
+  }
 
   for(int st : state.S)
   {
@@ -608,6 +617,13 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
       succ[st] = dst;
 
   }
+
+  // if(this->opt.lowrankopt)
+  // {
+  //   RankFunc ubound(this->rankBound[state.S].stateBound, false);
+  //   if(!state.f.isAllLeq(ubound))
+  //     return ret;
+  // }
 
   if(this->rankBound[state.S].bound < state.f.getMaxRank() || this->rankBound[sprime].bound < state.f.getMaxRank())
   {
@@ -695,7 +711,7 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchTightReduced(StateSch& state, int
         for(int o : st.O)
         {
           if(rnkMap[o] > 0 && fin.find(o) == fin.end())
-            rnkMap[o]--;
+            rnkMap[o]--; // = std::min(rnkMap[o] - 1, stateBound[o]);
           else
             no.insert(o);
         }
@@ -756,25 +772,29 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchStartReduced(set<int>& state, int
   vector<RankFunc> maxRanks;
   vector<RankFunc>* maxPtr;
   vector<RankFunc> maxRanks1;
+  set<RankFunc> maxRankLeq;
   vector<RankFunc> maxRanks2;
+  vector<RankFunc> maxRanks3;
 
   RankFunc ubound(this->rankBound[sprime].stateBound, false);
-  if(this->opt.semideterminize)
+  if(this->opt.lowrankopt)
   {
-    maxRanks = RankFunc::getRORanksSD(m, state, fin, this->opt.cutPoint);
+    maxRanks = RankFunc::getRORanksSD(m, state, fin, this->opt.cutPoint, this->rankBound[sprime].stateBound);
+    set<RankFunc> tmpSet1;
     for(const RankFunc& f : maxRanks)
     {
       if(!f.isAllLeq(ubound))
       {
         continue;
       }
-      maxRanks1.push_back(f);
+      tmpSet1.insert(f);
     }
+    maxRanks1 = vector<RankFunc>(tmpSet1.begin(), tmpSet1.end());
     maxPtr = &maxRanks1;
   }
   else if(state.size() >= this->opt.ROMinState && m >= this->opt.ROMinRank)
   {
-    maxRanks = RankFunc::getRORanks(rankBound, state, fin, this->opt.cutPoint);
+    maxRanks = RankFunc::getRORanks(rankBound, state, fin, this->opt.cutPoint, this->rankBound[sprime].stateBound);
     maxPtr = &maxRanks;
   }
   else
@@ -783,21 +803,42 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchStartReduced(set<int>& state, int
     RankConstr constr = rankConstr(maxRank, sprime);
     auto tmp = RankFunc::tightFromRankConstr(constr, dirRel, oddRel, reachCons, reachMaxAct, this->opt.cutPoint);
 
+    maxRanks = RankFunc::getRORanks(rankBound, state, fin, this->opt.cutPoint, this->rankBound[sprime].stateBound);
     set<RankFunc> tmpSet2(tmp.begin(), tmp.end());
-    set<RankFunc> tmpSet1; //(tmp.begin(), tmp.end());
-    for(const RankFunc& f : tmp)
+    set<RankFunc> tmpSet1;//(tmp.begin(), tmp.end());
+    for(const RankFunc& f : maxRanks)
     {
       if(!f.isAllLeq(ubound))
       {
         continue;
       }
-      maxRanks1.push_back(f);
+      tmpSet1.insert(f);
+      //maxRankLeq.insert(f);
     }
+    maxRanks1 = vector<RankFunc>(tmpSet1.begin(), tmpSet1.end());
+    //maxRanks1 = getFuncAntichain(maxRankLeq, true);
+    maxRanks2 = getFuncAntichain(tmpSet2);
 
-    //maxRanks1 = getFuncAntichain(tmpSet1);
-    maxRanks2= getFuncAntichain(tmpSet2);
+    // bool cnt = false;
+    // for(const RankFunc& f : maxRanks3)
+    // {
+    //   cnt = true;
+    //   for(const auto & s: f.getOddStates())
+    //   {
+    //     if(f.getRanks()[s] > ubound[s])
+    //     {
+    //       cnt = false;
+    //       break;
+    //     }
+    //   }
+    //   if(!cnt)
+    //   {
+    //     continue;
+    //   }
+    //   maxRanks2.push_back(f);
+    // }
+
     maxPtr = maxRanks1.size() > maxRanks2.size() ? &maxRanks2 : &maxRanks1;
-
 
 
     // bool cnt = true;
@@ -826,7 +867,7 @@ vector<StateSch> BuchiAutomatonSpec::succSetSchStartReduced(set<int>& state, int
 }
 
 
-vector<RankFunc> BuchiAutomatonSpec::getFuncAntichain(set<RankFunc>& tmp)
+vector<RankFunc> BuchiAutomatonSpec::getFuncAntichain(set<RankFunc>& tmp, bool oddCheck) const
 {
   vector<RankFunc> maxRanks;
   bool cnt = true;
@@ -838,8 +879,19 @@ vector<RankFunc> BuchiAutomatonSpec::getFuncAntichain(set<RankFunc>& tmp)
     {
       if(r != (*it) && r.getMaxRank() == it->getMaxRank() && r.isAllLeq(*it))
       {
-        cnt = false;
-        break;
+        if(oddCheck)
+        {
+          if(r.getOddStates() == it->getOddStates())
+          {
+            cnt = false;
+            break;
+          }
+        }
+        else
+        {
+          cnt = false;
+          break;
+        }
       }
       it = std::next(it, 1);
     }
@@ -951,7 +1003,15 @@ void BuchiAutomatonSpec::computeRankBound(BuchiAutomaton<StateSch, int>& comp, S
     this->tightStartDelay = delayB.getCycleClosingStates(ignoreAll, delayMp, this->opt.delayW, this->opt.delayVersion, stats);
   }
   else {
-    tightStart = comp.getCycleClosingStates(ignoreAll);
+    if(this->isDeterministic() && this->getAlphabet().size() >= 256)
+    {
+      tightStart = comp.getStates();
+    }
+    else
+    {
+      tightStart = comp.getCycleClosingStates(ignoreAll);
+    }
+
   }
   end = std::chrono::high_resolution_clock::now();
   stats->cycleClosingStates = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
@@ -996,6 +1056,8 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(Stat *sta
   mp.insert(comp.getTransitions().begin(), comp.getTransitions().end());
   finals = set<StateSch>(comp.getFinals());
 
+  if(updateBounds) this->computeRankBound(comp, stats);
+
   int newState = this->getStates().size(); //Assumes numbered states: from 0, no gaps
   map<pair<DFAState,int>, StateSch> slTrans;
   for(const auto& pr : this->slNonEmpty)
@@ -1010,7 +1072,6 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(Stat *sta
     newState++;
   }
 
-  if(updateBounds) this->computeRankBound(comp, stats);
   for(const StateSch& tmp : this->tightStartStates)
   {
     if(tmp.S.size() > 0)
@@ -1077,6 +1138,11 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(Stat *sta
       else
       {
         succ = succSetSchStartReduced(st.S, rankBound[st.S].bound, this->reachCons, this->maxReach, dirRel, oddRel, this->getFinals());
+        // for(const auto& t : succ)
+        // {
+        //   cout << t.f.toString() << endl;
+        // }
+        // cout << endl;
         cnt = false;
       }
       for (const StateSch& s : succ)
@@ -2051,6 +2117,14 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchOpt(bool delay, s
 
 bool BuchiAutomatonSpec::meetsBackOff()
 {
+  for(const StateSch& st : this->tightStartStates)
+  {
+    for(const auto& p : this->opt.BOBound)
+    {
+      if(st.S.size() >= p.first && this->rankBound[st.S].bound >= p.second)
+        return true;
+    }
+  }
   return false;
 }
 

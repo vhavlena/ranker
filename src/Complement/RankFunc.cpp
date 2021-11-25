@@ -87,6 +87,7 @@ void RankFunc::addPair(const std::pair<int, int>& val, bool useInverse)
 vector<RankFunc> RankFunc::cartTightProductMap(vector<RankFunc>& s1, vector<std::pair<int, int> >& s2,
     int rem, BackRel& rel, BackRel& oddRel, int max, map<int, int>& reachRes, int reachMax, bool useInverse)
 {
+  (void)rel;
   vector<RankFunc> ret;
   int maxRank;
   for(const auto& v1 : s1)
@@ -586,7 +587,7 @@ std::string RankFunc::toStringVer() const
  * @param useInverse Use inverse ranking function
  * @return Ranking functions (RO)
  */
-vector<RankFunc> RankFunc::getRORanksSD(int ranks, std::set<int>& states, std::set<int>& fin, bool useInverse)
+vector<RankFunc> RankFunc::getRORanksSD(int ranks, std::set<int>& states, std::set<int>& fin, bool useInverse, map<int, int>& rankBound)
 {
   vector<RankFunc> ret;
   set<int> nofin;
@@ -606,9 +607,9 @@ vector<RankFunc> RankFunc::getRORanksSD(int ranks, std::set<int>& states, std::s
       for(const int st : states)
       {
         if(fin.find(st) == fin.end())
-          rnk[st] = 2*sb.size() - 1;
+          rnk[st] = std::min(rankBound[st],  (int)(2*sb.size() - 1));
         else
-          rnk[st] = 2*(sb.size() - 1);
+          rnk[st] = std::min(rankBound[st],  (int)(2*(sb.size() - 1)));
       }
       for(const int p : perm)
       {
@@ -632,7 +633,7 @@ vector<RankFunc> RankFunc::getRORanksSD(int ranks, std::set<int>& states, std::s
  * @param useInverse Use inverse ranking function
  * @return Ranking functions (RO)
  */
-vector<RankFunc> RankFunc::getRORanks(int ranks, std::set<int>& states, std::set<int>& fin, bool useInverse)
+vector<RankFunc> RankFunc::getRORanks(int ranks, std::set<int>& states, std::set<int>& fin, bool useInverse, map<int, int>& rankBound)
 {
   vector<RankFunc> ret;
   set<int> nofin;
@@ -640,7 +641,7 @@ vector<RankFunc> RankFunc::getRORanks(int ranks, std::set<int>& states, std::set
     fin.end(), std::inserter(nofin, nofin.begin()));
 
   vector<int> nfvec(nofin.begin(), nofin.end());
-  vector<vector<int>> subsets = Aux::getAllSubsets(nfvec);
+  vector<vector<int>> subsets = Aux::getAllSubsets(nfvec, (ranks+1)/2);
   for(auto& sb : subsets)
   {
     if(2*((int)sb.size()) - 1 > ranks || sb.size() == 0)
@@ -652,10 +653,10 @@ vector<RankFunc> RankFunc::getRORanks(int ranks, std::set<int>& states, std::set
       int i = 1;
       for(int st : states)
       {
-        if(fin.find(st) != fin.end())
-          rnk.insert({st, 2*(sb.size()-1)});
+        if(fin.find(st) == fin.end())
+          rnk[st] = std::min(rankBound[st],  (int)(2*sb.size() - 1));
         else
-          rnk.insert({st, 2*sb.size()-1});
+          rnk[st] = std::min(rankBound[st],  (int)(2*(sb.size() - 1)));
       }
       for(int item : perm)
       {

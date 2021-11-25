@@ -394,7 +394,7 @@ vector<Transition<int, APSymbol>> BuchiAutomataParser::parseHoaTransition(int sr
  * @param finsBA Accepting states of the BA
  * @return Transition function
  */
-Delta<int, APSymbol> BuchiAutomataParser::parseHoaBodyBA(int apNum, ifstream & os, set<int>& finsBA, VecTrans<int, APSymbol>& accTrans)
+Delta<int, APSymbol> BuchiAutomataParser::parseHoaBodyBA(int apNum, istream & os, set<int>& finsBA, VecTrans<int, APSymbol>& accTrans)
 {
   Delta<int, APSymbol> trans;
   int src;
@@ -460,7 +460,7 @@ Delta<int, APSymbol> BuchiAutomataParser::parseHoaBodyBA(int apNum, ifstream & o
  * @param generalizedFins Accepting states of the Gco-BA
  * @return Transition function
  */
-Delta<int, APSymbol> BuchiAutomataParser::parseHoaBodyGCOBA(int apNum, ifstream & os, map<int, set<int>>& generalizedFins)
+Delta<int, APSymbol> BuchiAutomataParser::parseHoaBodyGCOBA(int apNum, istream & os, map<int, set<int>>& generalizedFins)
 {
   Delta<int, APSymbol> trans;
   int src;
@@ -679,7 +679,7 @@ set<APSymbol> BuchiAutomataParser::parseHoaExpressionConj(const string& line, in
     for(unsigned int j = 0; j < sm.size(); j++)
     {
       if(sm[j] == 1)
-        symbol.ap.set(j);
+        symbol.ap[j] = 1;
     }
     symbols.insert(symbol);
   }
@@ -725,7 +725,7 @@ APSymbol BuchiAutomataParser::parseHoaSymbol(string& line, map<string, int>& apI
     if(symvar[i] == 0)
       throw ParserException("Only simple symbols are allowed");
     if(symvar[i] == 1)
-      symbol.ap.set(i);
+      symbol.ap[i] = 1;
   }
   return symbol;
 }

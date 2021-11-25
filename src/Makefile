@@ -3,7 +3,7 @@ OBJ=obj
 GCC=g++
 SUFF=-lboost_regex
 
-complement: ranker ranker-composition
+complement: ranker
 
 test: test-parser test-kv-compl test-sch-compl test-process test-nfa-prop \
 	test-sch-red-compl test-sch-hard test-simulation
@@ -79,23 +79,8 @@ ranker: ranker.cpp $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/RankFunc.o $(OBJ)/AutGraph.o $(OBJ)/Simulations.o $(OBJ)/AuxFunctions.o \
 	$(OBJ)/ranker-general.o $(OBJ)/BuchiAutomatonDebug.o $(OBJ)/BuchiDelay.o \
 	$(OBJ)/GenCoBuchiAutomaton.o $(OBJ)/GenCoBuchiAutomatonCompl.o \
-	$(OBJ)/ElevatorAutomaton.o $(OBJ)/CoBuchiCompl.o 
+	$(OBJ)/ElevatorAutomaton.o $(OBJ)/CoBuchiCompl.o gitversion.cpp
 	$(GCC) $(CPPFLAGS) -o $@ $^ $(SUFF)
-
-ranker-sim: ranker-sim.cpp $(OBJ)/BuchiAutomataParser.o \
-	$(OBJ)/BuchiAutomaton.o  $(OBJ)/Simulations.o $(OBJ)/BuchiAutomatonSpec.o \
-	$(OBJ)/RankFunc.o $(OBJ)/AutGraph.o $(OBJ)/AuxFunctions.o \
-	$(OBJ)/BuchiAutomatonDebug.o \
-	$(OBJ)/GenCoBuchiAutomaton.o $(OBJ)/GenCoBuchiAutomatonCompl.o
-	$(GCC) $(CPPFLAGS) -o $@ $^ $(SUFF)
-
-ranker-composition: ranker-composition.cpp $(OBJ)/ranker-general.o $(OBJ)/AuxFunctions.o \
-	$(OBJ)/RankFunc.o $(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomataParser.o \
-	$(OBJ)/Simulations.o   $(OBJ)/AutGraph.o  $(OBJ)/BuchiAutomatonSpec.o \
-	$(OBJ)/BuchiAutomatonDebug.o $(OBJ)/BuchiDelay.o $(OBJ)/AutomatonStruct.o \
-	$(OBJ)/GenCoBuchiAutomaton.o $(OBJ)/GenCoBuchiAutomatonCompl.o \
-	$(OBJ)/ElevatorAutomaton.o
-	$(GCC) $(CPPFLAGS) -o ranker-composition $^ $(SUFF)
 
 ranker-tight: ranker-tight.cpp $(OBJ)/AuxFunctions.o $(OBJ)/ranker-general.o \
 	$(OBJ)/RankFunc.o $(OBJ)/BuchiAutomaton.o $(OBJ)/BuchiAutomataParser.o \
@@ -165,6 +150,9 @@ $(OBJ)/GenCoBuchiAutomatonCompl.o: Complement/GenCoBuchiAutomatonCompl.cpp Compl
 	$(OBJ)/AuxFunctions.o $(OBJ)/BuchiAutomaton.o $(OBJ)/AutomatonStruct.o
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 
+gitversion.cpp: ../.git/HEAD ../.git/index
+	echo "const char *gitversion = \"$(shell git rev-parse HEAD)\";" > $@
+
 $(OBJ)/CoBuchiCompl.o: Complement/CoBuchiCompl.cpp Complement/CoBuchiCompl.h \
 	Automata/BuchiAutomaton.h Automata/AutomatonStruct.h Complement/StateGcoBA.h \
 	Automata/GenCoBuchiAutomaton.h $(OBJ)/AuxFunctions.o $(OBJ)/BuchiAutomaton.o \
@@ -181,5 +169,5 @@ clean:
 	rm -f obj/*.o units/test-parser units/test-kv-compl units/test-sch-red-compl \
 	units/test-sch-compl units/test-nfa-prop units/test-sch-hard \
 	units/test-simulation units/test-process units/test-simulation ranker \
-	units/test-hoa-parser units/test-classify ranker-composition ranker-sim \
-	units/test-hoa-word ranker-tight
+	units/test-hoa-parser units/test-classify \
+	units/test-hoa-word ranker-tight gitversion.cpp
