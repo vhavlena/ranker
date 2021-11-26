@@ -68,7 +68,7 @@ BuchiAutomaton<StateGcoBA, int> CoBuchiAutomatonCompl::complementCoBASim(ComplOp
   }*/
 
   Relation<int> sim;
-  set<int> (CoBuchiAutomatonCompl::*getSet)(set<int>, Relation<int>);
+  set<int> (CoBuchiAutomatonCompl::*getSet)(set<int>, Relation<int>) = NULL;
   if (opt.iwSim){
     sim = this->getReachDirSim();
     getSet = &CoBuchiAutomatonCompl::getDirectSet;
