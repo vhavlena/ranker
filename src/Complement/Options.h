@@ -63,6 +63,9 @@ struct ComplOptions
   bool complete = false;
 
   bool lowrankopt = false;
+
+  bool iwSim = false;
+  bool iwSat = false;
 };
 
 #endif

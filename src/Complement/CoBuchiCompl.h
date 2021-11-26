@@ -17,6 +17,7 @@
 #include "../Automata/GenCoBuchiAutomaton.h"
 #include "StateGcoBA.h"
 #include "Options.h"
+#include "../Algorithms/Simulations.h"
 
 using std::vector;
 using std::set;
@@ -24,6 +25,10 @@ using std::map;
 
 class CoBuchiAutomatonCompl : public GeneralizedCoBuchiAutomaton<int, int>
 {
+
+private:
+  Relation<int> dirSim;
+  Relation<int> reachDirSim;
 
 public:
   CoBuchiAutomatonCompl(GeneralizedCoBuchiAutomaton<int, int> *t) : GeneralizedCoBuchiAutomaton<int, int>(*t) { }
@@ -42,6 +47,24 @@ public:
     mp.insert({0, fins});
     this->setFinals(mp);
 
+    // change IW to weak
+    std::set<int> weakFins;
+    std::set_difference(inhWeakBA.getStates().begin(), inhWeakBA.getStates().end(), fins.begin(), fins.end(), std::inserter(weakFins, weakFins.begin()));
+    inhWeakBA.setFinals(weakFins);
+
+    // compute direct sim on weak automaton
+    this->reachDirSim = inhWeakBA.getDirectSim();
+
+    // NEW reachability
+    Relation<int> rel;
+    SCCs reachabilityVector = inhWeakBA.reachableVector();
+    for (auto pr : this->dirSim){
+      // check reachability
+      if (reachabilityVector[pr.second].find(pr.first) == reachabilityVector[pr.second].end())
+        rel.insert(pr);
+    }
+    this->dirSim = rel;
+
     this->states = inhWeakBA.getStates();
     this->trans = inhWeakBA.getTransitions();
     this->initials = inhWeakBA.getInitials();
@@ -50,7 +73,18 @@ public:
   }
 
   BuchiAutomaton<StateGcoBA, int> complementCoBA();
+  BuchiAutomaton<StateGcoBA, int> complementCoBASim(ComplOptions opt);
   set<int> succSet(set<int>& states, int symbol);
+  set<int> getDirectSet(set<int> states, Relation<int> dirSim);
+  set<int> getSatSet(set<int> allStates, Relation<int> dirSim);
+
+  Relation<int> getWeakDirSim(){
+    return this->dirSim;
+  }
+
+  Relation<int> getReachDirSim(){
+    return this->reachDirSim;
+  }
 };
 
 #endif

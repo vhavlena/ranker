@@ -50,6 +50,8 @@ int main(int argc, char *argv[])
   args::ValueFlag<std::string> preprocessFlag(parser, "preprocess", "Preprocessing [copyiwa/copydet/copyall/copytrivial/copyheur]", {"preprocess"});
   args::Flag accPropagationFlag(parser, "acc-propagation", "Propagate accepting states in each SCC", {"acc-propagation"});
   args::Flag sdFlag(parser, "sd", "Use semideterminization", {"sd"});
+  args::Flag iwSimFlag(parser, "iw-sim", "Use direct simulation", {"iw-sim"});
+  args::Flag iwSatFlag(parser, "iw-sat", "Macrostates saturation", {"iw-sat"});
   args::Flag backoffFlag(parser, "backoff", "Use backoff", {"backoff"});
   args::Flag versionFlag(parser, "version", "Git commit version", {"version"});
 
@@ -59,7 +61,8 @@ int main(int argc, char *argv[])
       .debug = false, .elevator = { .elevatorRank = true, .detBeginning = false },
       .sim = true, .sl = true, .reach = true, .flowDirSim = false, .preprocess = NONE, .accPropagation = false,
       .semideterminize = false, .backoff = false, .BOBound = { {11,15}, {11,13} },
-      .semideterministic = false, .complete = false, .lowrankopt = false };
+      .semideterministic = false, .complete = false, .lowrankopt = false, 
+      .iwSim = false, .iwSat = false, };
 
   try
   {
@@ -136,6 +139,15 @@ int main(int argc, char *argv[])
   if(sdFlag)
   {
     opt.semideterminize = true;
+  }
+
+  if (iwSimFlag)
+  {
+    opt.iwSim = true;
+  }
+  else if (iwSatFlag)
+  {
+    opt.iwSat = true;
   }
 
   // delay version
@@ -407,8 +419,10 @@ int main(int argc, char *argv[])
           if(el.isInherentlyWeakBA())
           {
             // inherently weak complementation
+            //std::cerr << renBuchi.toGraphwiz() << std::endl;
             CoBuchiAutomatonCompl iw(el);
-            complementCoBAWrap(&iw, &compGcoBA, &renCompl, &stats);
+            complementCoBAWrap(&iw, &compGcoBA, &renCompl, &stats, opt);
+            //cerr << renCompl.toGraphwiz() << std::endl;
           }
           else
           {
