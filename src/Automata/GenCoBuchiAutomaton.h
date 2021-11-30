@@ -33,7 +33,6 @@ public:
 private:
   SetFins finals;
 
-
 protected:
   std::string toStringWith(std::function<std::string(State)>& stateStr,  std::function<std::string(Symbol)>& symStr);
   std::string toGraphwizWith(std::function<std::string(State)>& stateStr,  std::function<std::string(Symbol)>& symStr);

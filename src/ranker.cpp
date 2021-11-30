@@ -419,7 +419,6 @@ int main(int argc, char *argv[])
           if(el.isInherentlyWeakBA())
           {
             // inherently weak complementation
-            std::cerr << "Inherently weak" << std::endl;
             CoBuchiAutomatonCompl iw(el);
             complementCoBAWrap(&iw, &compGcoBA, &renCompl, &stats, opt);
           }
