@@ -6,6 +6,8 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <algorithm>
+#include <cassert>
 
 using namespace std;
 
@@ -74,6 +76,20 @@ namespace Aux
     return ret;
   }
 
+  template<typename T, typename S>
+  std::map<int, std::set<S>> mapMap(std::map<T, S> &mp, std::map<int, std::set<T>> &st){
+    std::map<int, std::set<S>> ret;
+    for (unsigned i = 0; i < st.size(); i++){
+      std::set<int> emptySet;
+      ret.insert({i, emptySet});
+      auto it = ret.find(i);
+      for (const auto& p : st[i]){
+        it->second.insert(mp[p]);
+      }
+    }
+    return ret;
+  }
+
 
   /*
    * Reverse a given mapping (assume it is a bijection)
@@ -89,6 +105,20 @@ namespace Aux
       rev.insert({t.second, t.first});
     }
     return rev;
+  }
+
+
+  template<typename K>
+  int maxValue(map<K, int>& mp)
+  {
+    assert(mp.size() > 0);
+
+    auto pr = std::max_element(mp.begin(), mp.end(),
+      [] (const auto & p1, const auto & p2) {
+          return p1.second < p2.second;
+      }
+    );
+    return pr->second;
   }
 
 }

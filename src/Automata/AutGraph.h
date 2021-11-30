@@ -15,6 +15,7 @@ using std::map;
 using std::vector;
 using std::string;
 using std::stack;
+using std::pair;
 
 /*
  * Vertex with additional information for Tarjan
@@ -37,6 +38,7 @@ class AutGraph
 private:
   AdjList adjList;
   set<int> finals;
+  map<int, set<int>> finalsGBA;
   Vertices vertices;
   SCCs finalComponents;
   SCCs allComponents;
@@ -46,6 +48,7 @@ private:
 
 protected:
   void strongConnect(int v);
+  void strongConnect(int v, map<int, set<int>> finals, bool coBuchi, std::vector<std::vector<int>> allCycles);
 
 public:
   AutGraph(AdjList& adj, Vertices& vert, set<int>& finals)
@@ -55,7 +58,16 @@ public:
     this->finals = finals;
   }
 
+  AutGraph(AdjList &adj, Vertices &vert, map<int, set<int>> finalsGBA)
+  {
+    this->adjList = adj;
+    this->vertices = vert;
+    this->finalsGBA = finalsGBA;
+  }
+
   void computeSCCs();
+  void computeSCCs(set<pair<int, int> >& accTrans);
+  void computeSCCs(map<int, set<int>> finals, bool coBuchi, std::vector<std::vector<int>> alCycles);
   set<int> reachableVertices(set<int>& from);
   static set<int> reachableVertices(AdjList &lst, set<int>& from);
 

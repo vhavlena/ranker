@@ -13,6 +13,7 @@ src/units/test-simulation
 src/units/test-sch-opt-compl
 src/units/test-hoa-parser
 src/units/test-classify
+src/units/test-hoa-word
 src/rnk-red-complement
 src/ranker
 src/ranker-sim

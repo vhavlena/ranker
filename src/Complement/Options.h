@@ -2,6 +2,24 @@
 #ifndef _COMPL_OPT_H_
 #define _COMPL_OPT_H_
 
+#include "BuchiDelay.h"
+
+enum DataFlowOptions
+{
+  LIGHT,
+  INNER
+};
+
+enum PreprocessOptions
+{
+  NONE,
+  CPIWA,
+  CPDET,
+  CPALL,
+  CPTRIVIAL,
+  CPHEUR
+};
+
 struct ComplOptions
 {
   bool cutPoint = false;
@@ -14,6 +32,26 @@ struct ComplOptions
   int CacheMaxRank = 8;
 
   bool semidetOpt = false;
+  DataFlowOptions dataFlow = INNER;
+
+  bool delay = false;
+  DelayVersion delayVersion = oldVersion;
+  float delayW = 0.5;
+
+  bool eta4 = false;
+
+  bool debug = false;
+
+  ElevatorOptions elevator = { .elevatorRank = true, .detBeginning = false };
+
+  bool sim = true;
+  bool sl = true;
+  bool reach = true;
+
+  bool flowDirSim = false;
+
+  PreprocessOptions preprocess = NONE;
+  bool accPropagation = false;
 };
 
 #endif

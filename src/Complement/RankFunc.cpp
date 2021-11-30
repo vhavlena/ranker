@@ -499,7 +499,7 @@ bool RankFunc::eqEven() const
  * Implementation of <
  * @return this < f
  */
-bool RankFunc::isAllLeq(const RankFunc& f)
+bool RankFunc::isAllLeq(const RankFunc& f) const
 {
   vector<int> rnk = f.getRanks();
   if(this->ranks.size() != rnk.size())
@@ -598,7 +598,7 @@ vector<RankFunc> RankFunc::getRORanks(int ranks, std::set<int>& states, std::set
   vector<vector<int>> subsets = Aux::getAllSubsets(nfvec);
   for(auto& sb : subsets)
   {
-    if((int)sb.size() > ranks || sb.size() == 0)
+    if(2*((int)sb.size()) - 1 > ranks || sb.size() == 0)
       continue;
 
     vector<int> perm(sb.begin(), sb.end());

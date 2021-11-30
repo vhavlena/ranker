@@ -16,6 +16,7 @@
 
 #include <boost/algorithm/string.hpp>
 #include "../Automata/BuchiAutomaton.h"
+#include "../Automata/GenBuchiAutomaton.h"
 
 using namespace std;
 
@@ -79,6 +80,17 @@ public:
     }
     return dir;
   };
+
+  template<typename State, typename Symbol>
+  Relation<State> identity(BuchiAutomaton<State, Symbol>& ba)
+  {
+    Relation<State> dir;
+    for(const State& st : ba.getStates())
+    {
+      dir.insert({st, st});
+    }
+    return dir;
+  }
 
 protected:
 

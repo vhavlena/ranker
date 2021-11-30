@@ -11,9 +11,11 @@
 #include <tuple>
 #include <functional>
 #include <numeric>
+#include <chrono>
 
 #include "AutGraph.h"
 #include "../Complement/StateKV.h"
+#include "AutomatonStruct.h"
 #include "../Complement/StateSch.h"
 #include "../Algorithms/AuxFunctions.h"
 #include "APSymbol.h"
@@ -21,58 +23,84 @@
 using std::tuple;
 
 class AutGraph;
+struct RankBound;
 
-/*
- * Single transition
- */
-template <typename State, typename Symbol>
-struct Transition {
-  State from;
-  State to;
-  Symbol symbol;
+struct ElevatorOptions{
+  bool elevatorRank = false;
+  bool detBeginning = false;
+};
+
+struct Stat
+{
+  size_t generatedStates;
+  size_t generatedTrans;
+  size_t reachStates;
+  size_t reachTrans;
+  size_t generatedTransitionsToTight;
+  size_t transitionsToTight; // generated transitions to the tight part
+  bool elevator; // is it an elevator automaton?
+  size_t elevatorStates;
+  size_t originalStates;
+  long duration;
+  string engine;
+  std::map<std::set<int>, RankBound> ranks;
+
+  // time
+  std::chrono::time_point<std::chrono::high_resolution_clock> beginning;
+  std::chrono::time_point<std::chrono::high_resolution_clock> end;
+  long waitingPart;
+  long rankBound;
+  long elevatorRank = -1;
+  long cycleClosingStates;
+  long getAllCycles = -1;
+  long statesToGenerate = -1;
+  long simulations;
+  long tightPart;
 };
 
 /*
- * States extended with labels
+ * Macrostate labels for the case of the DELAY optimization
  */
-template <typename State>
-struct LabelState {
-  State state;
-  int label;
+struct DelayLabel {
+  unsigned macrostateSize;
+  unsigned maxRank;
+  unsigned nonAccStates;
 };
 
 /*
- * Transition function
+ * Data structure for information about possible types of scc
  */
-template<typename State, typename Symbol> using Delta = std::map<std::pair<State, Symbol>, std::set<State>>;
+struct SccClassif {
+  set<int> states;
+  bool det = false;
+  bool inhWeak = false;
+  bool nonDet = false;
+  int rank = -1;
+  bool detBeginning = false;
+};
+
+/*
+ * State labels for the case of the DELAY optimization
+ */
+template<typename State> using DelayMap = std::map<State, DelayLabel>;
+
 
 template <typename State, typename Symbol>
-class BuchiAutomaton {
+class BuchiAutomaton : public AutomatonStruct<State, Symbol> {
 
 public:
   typedef std::set<State> SetStates;
-  typedef std::set<LabelState<State> > SetLabelStates;
-  typedef std::set<LabelState<State>* > SetLabelStatesPtr;
-  typedef std::vector<LabelState<State>* > VecLabelStatesPtr;
-  typedef std::vector<LabelState<State>> VecLabelStates;
+  typedef VecTrans<State, Symbol> VecTransG;
   typedef std::set<Symbol> SetSymbols;
   typedef Delta<State, Symbol> Transitions;
   typedef std::set<std::pair<State, State> > StateRelation;
 
 private:
-  SetStates states;
   SetStates finals;
-  SetStates initials;
-  SetSymbols alph;
-  Delta<State, Symbol> trans;
-  vector<string> apsPattern;
+  VecTransG accTrans;
 
   StateRelation directSim;
   StateRelation oddRankSim;
-
-  std::map<State, int> renameStateMap;
-  std::map<Symbol, int> renameSymbolMap;
-  std::vector<State> invRenameMap;
 
 protected:
   std::string toStringWith(std::function<std::string(State)>& stateStr,  std::function<std::string(Symbol)>& symStr);
@@ -85,45 +113,46 @@ protected:
     StateRelation& rel,StateRelation& nw);
   void transitiveClosure(StateRelation& rel, SetStates& cl);
 
-  bool isReachDeterministic(set<State>& start);
-
 public:
-  BuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans)
+  BuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans) : AutomatonStruct<State, Symbol>(st, ini, trans)
   {
-    this->states = st;
     this->finals = fin;
-    this->trans = trans;
-    this->initials = ini;
-    this->alph = getAlph();
-    this->apsPattern = vector<string>();
+    this->accTrans = VecTransG();
   }
 
-  BuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans, SetSymbols alp)
+  BuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans, SetSymbols alp) : AutomatonStruct<State, Symbol>(st, ini, trans, alp)
   {
-    this->states = st;
     this->finals = fin;
-    this->trans = trans;
-    this->initials = ini;
-    this->alph = alp;
-    this->apsPattern = vector<string>();
+    this->accTrans = VecTransG();
   }
 
-  BuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans, SetSymbols alp, vector<string> aps)
+  BuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans, SetSymbols alp, vector<string> aps) : AutomatonStruct<State, Symbol>(st, ini, trans, alp, aps)
   {
-    this->states = st;
     this->finals = fin;
-    this->trans = trans;
-    this->initials = ini;
-    if(alp.size() == 0)
-      this->alph = getAlph();
-    else
-      this->alph = alp;
-    this->apsPattern = aps;
+    this->accTrans = VecTransG();
+  }
+
+  BuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans, VecTransG accTr) : AutomatonStruct<State, Symbol>(st, ini, trans)
+  {
+    this->finals = fin;
+    this->accTrans = accTr;
+  }
+
+  BuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans, VecTransG accTr, SetSymbols alp) : AutomatonStruct<State, Symbol>(st, ini, trans, alp)
+  {
+    this->finals = fin;
+    this->accTrans = accTr;
+  }
+
+  BuchiAutomaton(SetStates st, SetStates fin, SetStates ini, Transitions trans, VecTransG accTr, SetSymbols alp, vector<string> aps) : AutomatonStruct<State, Symbol>(st, ini, trans, alp, aps)
+  {
+    this->finals = fin;
+    this->accTrans = accTr;
   }
 
   BuchiAutomaton() : BuchiAutomaton({}, {}, {}, {}) {};
 
-  BuchiAutomaton(BuchiAutomaton<State, Symbol>& other)
+  BuchiAutomaton(BuchiAutomaton<State, Symbol>& other) : AutomatonStruct<State, Symbol>(other)
   {
     this->states = other.states;
     this->finals = other.finals;
@@ -136,16 +165,132 @@ public:
     this->renameSymbolMap = other.renameSymbolMap;
     this->invRenameMap = other.invRenameMap;
     this->apsPattern = other.apsPattern;
+    this->accTrans = other.accTrans;
   }
 
-  std::set<Symbol> getAlph();
+  // BuchiAutomaton<State, Symbol>& operator=(BuchiAutomaton<State, Symbol> other)
+  // {
+  //   this->states = other.states;
+  //   this->finals = other.finals;
+  //   this->trans = other.trans;
+  //   this->initials = other.initials;
+  //   this->alph = other.alph;
+  //   this->directSim = other.directSim;
+  //   this->oddRankSim = other.oddRankSim;
+  //   this->renameStateMap = other.renameStateMap;
+  //   this->renameSymbolMap = other.renameSymbolMap;
+  //   this->invRenameMap = other.invRenameMap;
+  //   this->apsPattern = other.apsPattern;
+  //   return *this;
+  // }
+
+  BuchiAutomaton<State, Symbol>& operator=(BuchiAutomaton<State, Symbol> other)
+  {
+    this->states = other.states;
+    this->finals = other.finals;
+    this->trans = other.trans;
+    this->initials = other.initials;
+    this->alph = other.alph;
+    this->directSim = other.directSim;
+    this->oddRankSim = other.oddRankSim;
+    this->renameStateMap = other.renameStateMap;
+    this->renameSymbolMap = other.renameSymbolMap;
+    this->invRenameMap = other.invRenameMap;
+    this->apsPattern = other.apsPattern;
+    this->accTrans = other.accTrans;
+    return *this;
+  }
+
+
   std::string toString();
   std::string toGraphwiz();
-  std::string toGff();
   std::string toHOA();
-  BuchiAutomaton<int, int> renameAut(int start = 0);
+  std::string toHOA(std::map<int,int> sccs);
+  std::string toGff();
+
+  /*
+  * Rename states and symbols of the automaton (to consecutive numbers).
+  * @param start Starting number for states
+  * @return Renamed automaton
+  */
+  BuchiAutomaton<int, int> renameAut(int start = 0) {
+    int stcnt = start;
+    int symcnt = 0;
+    std::map<State, int> mpstate;
+    std::map<Symbol, int> mpsymbol;
+    std::set<int> rstate;
+    Delta<int, int> rtrans;
+    std::set<int> rfin;
+    std::set<int> rini;
+    set<int> rsym;
+    VecTrans<int, int> ftrans;
+
+    this->invRenameMap = std::vector<State>(this->states.size() + start);
+
+    for(auto st : this->states)
+    {
+      auto it = mpstate.find(st);
+      this->invRenameMap[stcnt] = st;
+      if(it == mpstate.end())
+      {
+        mpstate[st] = stcnt++;
+      }
+    }
+    for(const auto& a : this->alph)
+    {
+      rsym.insert(symcnt);
+      mpsymbol[a] = symcnt++;
+    }
+
+    rstate = Aux::mapSet(mpstate, this->states);
+    rini = Aux::mapSet(mpstate, this->initials);
+    rfin = Aux::mapSet(mpstate, this->finals);
+    for(auto p : this->trans)
+    {
+      auto it = mpsymbol.find(p.first.second);
+      int val;
+      if(it == mpsymbol.end())
+      {
+        val = symcnt;
+        mpsymbol[p.first.second] = symcnt++;
+      }
+      else
+      {
+        val = it->second;
+      }
+      std::set<int> to = Aux::mapSet(mpstate, p.second);
+      rtrans.insert({std::make_pair(mpstate[p.first.first], val), to});
+    }
+
+    for(unsigned i = 0; i < this->accTrans.size(); i++)
+    {
+      ftrans.push_back({ .from = mpstate[this->accTrans[i].from],
+          .to = mpstate[this->accTrans[i].to],
+          .symbol = mpsymbol[this->accTrans[i].symbol] });
+    }
+
+    BuchiAutomaton<int, int> ret = BuchiAutomaton<int, int>(rstate, rfin, rini, rtrans, ftrans, rsym);
+    this->renameStateMap = mpstate;
+    this->renameSymbolMap = mpsymbol;
+
+    std::set<std::pair<int, int> > rdirSim, roddSim;
+    for(auto item : this->directSim)
+    {
+      rdirSim.insert({mpstate[item.first], mpstate[item.second]});
+    }
+    for(auto item : this->oddRankSim)
+    {
+      roddSim.insert({mpstate[item.first], mpstate[item.second]});
+    }
+    ret.setDirectSim(rdirSim);
+    ret.setOddRankSim(roddSim);
+    ret.setAPPattern(this->apsPattern);
+    return ret;
+  }
+
   BuchiAutomaton<int, int> renameAutDict(map<Symbol, int>& mpsymbol, int start = 0);
 
+  //bool isElevator();
 
   /*
    * Rename symbols of the automaton.
@@ -156,40 +301,27 @@ public:
   BuchiAutomaton<State, NewSymbol> renameAlphabet(map<Symbol, NewSymbol>& mpsymbol)
   {
     std::set<NewSymbol> ralph;
-    Delta<int, NewSymbol> rtrans;
+    Delta<State, NewSymbol> rtrans;
+    VecTrans<State, NewSymbol> ftrans;
     for(const auto& al : this->alph)
     {
       ralph.insert(mpsymbol[al]);
     }
     for(auto p : this->trans)
     {
-      //auto it = mpsymbol.find(p.first.second);
       NewSymbol val = mpsymbol[p.first.second];
-      // if(it == mpsymbol.end())
-      // {
-      //   val = symcnt;
-      //   mpsymbol[p.first.second] = symcnt++;
-      // }
-      // else
-      // {
-      //   val = it->second;
-      // }
       rtrans.insert({std::make_pair(p.first.first, val), p.second});
     }
-    auto ret = BuchiAutomaton<State, NewSymbol>(this->states, this->finals, this->initials, rtrans, ralph, this->apsPattern);
+    for(unsigned i = 0; i < this->accTrans.size(); i++)
+    {
+      ftrans.push_back({ .from = this->accTrans[i].from, .to = this->accTrans[i].to,
+          .symbol = mpsymbol[this->accTrans[i].symbol] });
+    }
+    auto ret = BuchiAutomaton<State, NewSymbol>(this->states, this->finals, this->initials, rtrans, ftrans, ralph, this->apsPattern);
     ret.setDirectSim(this->directSim);
     ret.setOddRankSim(this->oddRankSim);
     ret.setAPPattern(this->apsPattern);
     return ret;
-  }
-
-  /*
-   * Get automaton states.
-   * @return Set of states
-   */
-  SetStates& getStates()
-  {
-    return this->states;
   }
 
   /*
@@ -201,40 +333,25 @@ public:
     return this->finals;
   }
 
-  /*
-   * Get automaton initial states.
-   * @return Set of initial states
-   */
-  SetStates& getInitials()
+  VecTransG& getFinTrans()
   {
-    return this->initials;
+    return this->accTrans;
   }
 
-  /*
-   * Get automaton transitions.
-   * @return Transitions: map<pair<State, Symbol>, Set<States>>
-   */
-  Transitions& getTransitions()
-  {
-    return this->trans;
+  void addStates(State state){
+    this->states.insert(state);
   }
 
-  /*
-   * Get automaton alphabet.
-   * @return Set of symbols
-   */
-  SetSymbols& getAlphabet()
-  {
-    return this->alph;
+  void addFinals(State state){
+    this->finals.insert(state);
   }
 
-  /*
-   * Set automaton alphabet.
-   * @params st New set of symbols
-   */
-  void setAlphabet(SetSymbols st)
-  {
-    this->alph = st;
+  void addNewTransition(std::pair<State, Symbol> src, std::set<State> dst){
+    this->trans.insert({src, dst});
+  }
+
+  void addNewStatesToTransition(std::pair<State, Symbol> src, std::set<State> dst){
+    this->trans[src].insert(dst.begin(), dst.end());
   }
 
   /*
@@ -273,68 +390,6 @@ public:
     return this->directSim;
   }
 
-  /*
-   * Get mapping used for renaming states of the automaton (created by calling
-   * of renameAut(dict) method)
-   * @return Mapping of states to int
-   */
-  std::map<State, int>& getRenameStateMap()
-  {
-    return this->renameStateMap;
-  }
-
-  /*
-   * Get mapping used for renaming symbols of the automaton (created by calling
-   * of renameAut method)
-   * @return Mapping of symbols to int
-   */
-  std::map<Symbol, int>& getRenameSymbolMap()
-  {
-    return this->renameSymbolMap;
-  }
-
-  /*
-   * Set mapping used for renaming states of the automaton.
-   * @param mp Mapping of states to int
-   */
-  void setRenameStateMap(std::map<State, int> mp)
-  {
-    this->renameStateMap = mp;
-  }
-
-  /*
-   * Get atomic propositions
-   * @return Vector of atomic propositions
-   */
-  vector<string> getAPPattern()
-  {
-    return this->apsPattern;
-  }
-
-  /*
-   * Set atomic propositions
-   * @param aps Vector of atomic propositions
-   */
-  void setAPPattern(vector<string> aps)
-  {
-    this->apsPattern = aps;
-  }
-
-  /*
-   * Get the number of simple transitions
-   * @return Transitions count
-   */
-  int getTransCount() const
-  {
-    int cnt = 0;
-    for(const auto& t : this->trans)
-    {
-      cnt += t.second.size();
-    }
-    return cnt;
-  }
-
-  vector<set<State> > reachableVector();
   void complete(State trap, bool fin = false);
   void completeAPComplement();
   void removeUseless();
@@ -342,29 +397,38 @@ public:
 
   void computeRankSim(SetStates& cl);
   bool containsRankSimEq(SetStates& cl);
-  vector<Symbol> containsSelfLoop(State& state);
 
-  void getAutGraphComponents(AdjList& adjList, Vertices& vrt);
-  vector<set<State>> getAutGraphSCCs();
   set<State> getEventReachable(set<State>& sls);
-  set<State> getSelfLoops();
-
-  std::map<State, int> propagateGraphValues(const std::function<int(LabelState<State>*,VecLabelStatesPtr)>& updFnc,
-    const std::function<int(const State&)>& initFnc);
-
   SetStates getCycleClosingStates(SetStates& slignore);
-  bool reachWithRestriction(const State& from, const State& to, SetStates& restr, SetStates& high);
-
-  bool isEmpty();
 
   /*
-   * Is the automaton deterministic
-   * @return True deterministic, false otherwise
-   */
-  bool isDeterministic()
-  {
-    return this->initials.size() <= 1 && isReachDeterministic(this->initials);
+  * Get SCCs of the automaton
+  * @return Vector of SCCs (represented as a set of states)
+  */
+  vector<set<State>> getAutGraphSCCs(){
+    BuchiAutomaton<int, int> renAutBA = this->renameAut();
+
+    vector<vector<int>> adjList(this->states.size());
+    vector<VertItem> vrt;
+    vector<set<State>> sccs;
+
+    renAutBA.getAutGraphComponents(adjList, vrt);
+    AutGraph gr(adjList, vrt, renAutBA.getFinals());
+    gr.computeSCCs();
+
+    for(auto& scc : gr.getAllComponents())
+    {
+      set<State> singleScc;
+      for(auto &st : scc)
+      {
+        singleScc.insert(this->invRenameMap[st]);
+      }
+      sccs.push_back(singleScc);
+    }
+    return sccs;
   }
+
+  bool isEmpty();
 
   /*
    * Is the automaton semideterministic
@@ -372,19 +436,36 @@ public:
    */
   bool isSemiDeterministic()
   {
-    return isReachDeterministic(this->finals);
+    set<State> rch;
+    for(const auto& tr : this->accTrans)
+      rch.insert(tr.from);
+
+    set<State> sun;
+    set_union(rch.begin(), rch.end(), this->finals.begin(), this->finals.end(),
+        inserter(sun, sun.begin()));
+    return this->isReachDeterministic(sun);
+  }
+
+  void setFinals(SetStates finals){
+    this->finals = finals;
   }
 
   BuchiAutomaton<tuple<State, int, bool>, Symbol> productBA(BuchiAutomaton<int, Symbol>& other);
+  BuchiAutomaton<pair<State, int>, Symbol> cartProductBA(BuchiAutomaton<int, Symbol>& other);
   BuchiAutomaton<State, Symbol> unionBA(BuchiAutomaton<State, Symbol>& other);
-  void singleInitial(State init);
-
   BuchiAutomaton<State, Symbol> reverseBA();
-  Delta<State, Symbol> getReverseTransitions();
-
-  vector<set<State>> getRunTree(vector<Symbol>& word);
 
   BuchiAutomaton<StateSch, int> getComplStructure(std::map<int, StateSch>& mpst);
+
+  map<State, set<Symbol> > getPredSymbolMap();
+  map<State, set<Symbol>> getReverseSymbolMap();
+
+  bool isTBA() const
+  {
+    return this->accTrans.size() > 0;
+  }
+
+  BuchiAutomaton<int, int> copyStateAcc(int start);
 };
 
 #endif
