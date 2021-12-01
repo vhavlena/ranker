@@ -21,6 +21,7 @@
 #include "Complement/CoBuchiCompl.h"
 
 extern const char *gitversion;
+extern const char *gitdescribe;
 
 using namespace std;
 
@@ -61,7 +62,7 @@ int main(int argc, char *argv[])
       .debug = false, .elevator = { .elevatorRank = true, .detBeginning = false },
       .sim = true, .sl = true, .reach = true, .flowDirSim = false, .preprocess = NONE, .accPropagation = false,
       .semideterminize = false, .backoff = false, .BOBound = { {11,15}, {11,13} },
-      .semideterministic = false, .complete = false, .lowrankopt = false, 
+      .semideterministic = false, .complete = false, .lowrankopt = false,
       .iwSim = false, .iwSat = false, };
 
   try
