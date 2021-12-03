@@ -19,6 +19,7 @@ src/ranker
 src/ranker-sim
 src/ranker-composition
 src/ranker-tight
+src/build
 
 src/units/tmp*
 src/units/all.ba

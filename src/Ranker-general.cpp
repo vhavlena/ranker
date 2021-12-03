@@ -342,9 +342,9 @@ void printStat(Stat& st)
   cerr << "States: " << st.reachStates << "\nTransitions: " << st.reachTrans << endl;
   cerr << "Generated-transitions-to-tight: " << st.generatedTransitionsToTight << endl;
   //cerr << "Transitions to tight: " << st.transitionsToTight << endl;
-  cerr << "Elevator-automaton: " << (st.elevator ? "Yes" : "No") << endl;
+  //cerr << "Elevator-automaton: " << (st.elevator ? "Yes" : "No") << endl;
   cerr << "States-before-complementation: " << st.originalStates << endl;
-  cerr << "Elevator-states: " << st.elevatorStates << endl;
+  //cerr << "Elevator-states: " << st.elevatorStates << endl;
   cerr << "Engine: " << st.engine << endl;
   cerr << std::fixed;
   cerr << std::setprecision(2);

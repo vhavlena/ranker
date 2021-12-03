@@ -336,7 +336,8 @@ int main(int argc, char *argv[])
 
           ElevatorAutomaton el(renBuchi);
           if (elevatorTest){
-            std::cout << "Elevator automaton: " << (el.isElevator() ? "Yes" : "No") << std::endl;
+            cout << "Elevator automaton: " << (el.isElevator() ? "Yes" : "No") << endl;
+            cout << "Elevaor states: " << el.elevatorStates() << endl;
             os.close();
             return 0;
           }

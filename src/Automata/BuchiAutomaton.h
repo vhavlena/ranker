@@ -34,30 +34,30 @@ struct ElevatorOptions{
 
 struct Stat
 {
-  size_t generatedStates;
-  size_t generatedTrans;
+  size_t generatedStates = 0;
+  size_t generatedTrans = 0;
   size_t reachStates;
   size_t reachTrans;
-  size_t generatedTransitionsToTight;
+  size_t generatedTransitionsToTight = 0;
   size_t transitionsToTight; // generated transitions to the tight part
   bool elevator; // is it an elevator automaton?
-  size_t elevatorStates;
-  size_t originalStates;
-  long duration;
+  size_t elevatorStates = 0;
+  size_t originalStates = 0;
+  long duration = 0;
   string engine;
   std::map<std::set<int>, RankBound> ranks;
 
   // time
   std::chrono::time_point<std::chrono::high_resolution_clock> beginning;
   std::chrono::time_point<std::chrono::high_resolution_clock> end;
-  long waitingPart;
-  long rankBound;
+  long waitingPart = 0;
+  long rankBound = 0;
   long elevatorRank = -1;
-  long cycleClosingStates;
+  long cycleClosingStates = 0;
   long getAllCycles = -1;
   long statesToGenerate = -1;
-  long simulations;
-  long tightPart;
+  long simulations = 0;
+  long tightPart = 0;
 };
 
 /*
