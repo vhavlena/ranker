@@ -1,0 +1,2 @@
+const char *gitversion = "@GIT_SHA1@";
+const char *getdescribe = "@GIT_DESCRIBE@";
