@@ -38,9 +38,11 @@ public:
     // convert inherently weak to co-BA
     auto sccs = inhWeakBA.getAutGraphSCCs();
     auto finals = inhWeakBA.getFinals();
+    auto finTrans = inhWeakBA.getFinTrans();
     std::set<int> fins;
     for (auto scc : sccs){
-      if (not std::any_of(scc.begin(), scc.end(), [finals](int state){return finals.find(state) != finals.end();}))
+      if ((not std::any_of(scc.begin(), scc.end(), [finals](int state){return finals.find(state) != finals.end();})) and 
+          (not std::any_of(finTrans.begin(), finTrans.end(), [scc](auto tr){return scc.find(tr.from) != scc.end() and scc.find(tr.to) != scc.end();})))
         fins.insert(scc.begin(), scc.end());
     }
     std::map<int, std::set<int>> mp;

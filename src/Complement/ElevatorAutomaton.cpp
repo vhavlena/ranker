@@ -72,7 +72,7 @@ bool ElevatorAutomaton::isInherentlyWeak(std::set<int>& scc, map<int, set<int> >
       for (auto st : scc)
         state = st;
       for (auto symbol : predSyms[state]){
-        auto reach = this->getTransitions()[{state, symbol}];
+        auto reach = newTrans[{state, symbol}];
         if (reach.find(state) != reach.end())
           return false;
       }
@@ -634,8 +634,13 @@ bool ElevatorAutomaton::isInherentlyWeakBA()
   map<int, set<int>> predSyms = this->getPredSymbolMap();
   auto sccs = this->getAutGraphSCCs();
   auto finals = this->getFinals();
-  for (auto scc : sccs){
-    if (not isInherentlyWeak(scc, predSyms) and std::any_of(scc.begin(), scc.end(), [finals](int state){return finals.find(state) != finals.end();}))
+  auto finTrans = this->getFinTrans();
+  for (auto scc : sccs) {
+    if (not isInherentlyWeak(scc, predSyms) and 
+        (std::any_of(scc.begin(), scc.end(), [finals](int state){return finals.find(state) != finals.end();}) or 
+        std::any_of(finTrans.begin(), finTrans.end(), [scc](auto tr){
+            return scc.find(tr.from) != scc.end() and scc.find(tr.to) != scc.end();
+        })))
       return false;
   }
 

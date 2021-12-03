@@ -421,10 +421,8 @@ int main(int argc, char *argv[])
           if(el.isInherentlyWeakBA())
           {
             // inherently weak complementation
-            //std::cerr << renBuchi.toGraphwiz() << std::endl;
             CoBuchiAutomatonCompl iw(el);
             complementCoBAWrap(&iw, &compGcoBA, &renCompl, &stats, opt);
-            //cerr << renCompl.toGraphwiz() << std::endl;
           }
           else
           {
