@@ -135,7 +135,7 @@ $(OBJ)/ElevatorAutomaton.o: Complement/ElevatorAutomaton.cpp Automata/AutomatonS
 	Complement/ElevatorAutomaton.h $(OBJ)/BuchiAutomaton.o $(OBJ)/AutomatonStruct.o
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 
-$(OBJ)/SemiDeterministicCompl.o: Complement/SemiDeterministicCompl.cpp Automata/AutomatonStruct.h Automata/BuchiAutomaton.h \
+$(OBJ)/SemiDeterministicCompl.o: Complement/SemiDeterministicCompl.cpp Complement/SemiDeterministicCompl.h Automata/AutomatonStruct.h Automata/BuchiAutomaton.h \
 	$(OBJ)/BuchiAutomaton.o $(OBJ)/AutomatonStruct.o
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 

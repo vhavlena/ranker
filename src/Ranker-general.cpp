@@ -317,6 +317,8 @@ void complementScheweAutWrap(BuchiAutomaton<int, int>* ren, BuchiAutomaton<int, 
 void complementSDWrap(SemiDeterministicCompl& sp, BuchiAutomaton<int, int>* ren,
     BuchiAutomaton<int, int>* complRes, Stat* stats){
   std::cerr << "Here" << std::endl;
+
+  sp.complementSD(true);
 }
 
 BuchiAutomaton<int, int> createBA(vector<int>& loop)
