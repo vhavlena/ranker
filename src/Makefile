@@ -79,7 +79,7 @@ ranker: ranker.cpp $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/RankFunc.o $(OBJ)/AutGraph.o $(OBJ)/Simulations.o $(OBJ)/AuxFunctions.o \
 	$(OBJ)/ranker-general.o $(OBJ)/BuchiAutomatonDebug.o $(OBJ)/BuchiDelay.o \
 	$(OBJ)/GenCoBuchiAutomaton.o $(OBJ)/GenCoBuchiAutomatonCompl.o \
-	$(OBJ)/ElevatorAutomaton.o $(OBJ)/CoBuchiCompl.o gitversion.cpp
+	$(OBJ)/ElevatorAutomaton.o $(OBJ)/SemiDeterministicCompl.o $(OBJ)/CoBuchiCompl.o gitversion.cpp
 	$(GCC) $(CPPFLAGS) -o $@ $^ $(SUFF)
 
 ranker-tight: ranker-tight.cpp $(OBJ)/AuxFunctions.o $(OBJ)/ranker-general.o \
@@ -133,6 +133,10 @@ $(OBJ)/AutGraph.o: Automata/AutGraph.cpp Automata/AutGraph.h
 
 $(OBJ)/ElevatorAutomaton.o: Complement/ElevatorAutomaton.cpp Automata/AutomatonStruct.h Automata/BuchiAutomaton.h \
 	Complement/ElevatorAutomaton.h $(OBJ)/BuchiAutomaton.o $(OBJ)/AutomatonStruct.o
+	$(GCC) $(CPPFLAGS) -c -o $@ $<
+
+$(OBJ)/SemiDeterministicCompl.o: Complement/SemiDeterministicCompl.cpp Automata/AutomatonStruct.h Automata/BuchiAutomaton.h \
+	$(OBJ)/BuchiAutomaton.o $(OBJ)/AutomatonStruct.o
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 
 $(OBJ)/AuxFunctions.o: Algorithms/AuxFunctions.cpp Algorithms/AuxFunctions.h

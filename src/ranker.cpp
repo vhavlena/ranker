@@ -19,6 +19,7 @@
 #include "Automata/GenCoBuchiAutomaton.h"
 #include "Complement/GenCoBuchiAutomatonCompl.h"
 #include "Complement/CoBuchiCompl.h"
+#include "Complement/SemiDeterministicCompl.h"
 
 extern const char *gitversion;
 extern const char *gitdescribe;
@@ -419,7 +420,8 @@ int main(int argc, char *argv[])
 
           sp.setComplOptions(opt);
           if (el.isSemiDeterministic()){
-            complementSDWrap(sp, &renBuchi, &renCompl, &stats);
+            SemiDeterministicCompl sd(&renBuchi);
+            complementSDWrap(sd, &renBuchi, &renCompl, &stats);
           }
           else if(el.isInherentlyWeakBA())
           {

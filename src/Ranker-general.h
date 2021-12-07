@@ -23,6 +23,7 @@
 #include "Automata/GenCoBuchiAutomaton.h"
 #include "Complement/GenCoBuchiAutomatonCompl.h"
 #include "Complement/CoBuchiCompl.h"
+#include "Complement/SemiDeterministicCompl.h"
 
 using namespace std;
 
@@ -55,7 +56,7 @@ BuchiAutomaton<int, int> createBA(vector<int>& loop);
 void complementGcoBAWrap(GeneralizedCoBuchiAutomaton<int, int> *ren, BuchiAutomaton<StateGcoBA, int> *complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats);
 void complementCoBAWrap(CoBuchiAutomatonCompl *ren, BuchiAutomaton<StateGcoBA, int> *complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats, ComplOptions opt);
 
-void complementSDWrap(BuchiAutomatonSpec& sp ,BuchiAutomaton<int, int>* ren, BuchiAutomaton<int, int>* complRes,
+void complementSDWrap(SemiDeterministicCompl& sp ,BuchiAutomaton<int, int>* ren, BuchiAutomaton<int, int>* complRes,
     Stat* stats);
 
 GeneralizedCoBuchiAutomaton<int, APSymbol> parseRenameHOAGCOBA(BuchiAutomataParser& parser);
