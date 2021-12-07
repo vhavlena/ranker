@@ -55,17 +55,18 @@ public:
     inhWeakBA.setFinals(weakFins);
 
     // compute direct sim on weak automaton
-    this->reachDirSim = inhWeakBA.getDirectSim();
+    this->dirSim = inhWeakBA.getDirectSim();
 
-    // NEW reachability
+    // reachability
     Relation<int> rel;
     SCCs reachabilityVector = inhWeakBA.reachableVector();
     for (auto pr : this->dirSim){
       // check reachability
-      if (reachabilityVector[pr.second].find(pr.first) == reachabilityVector[pr.second].end())
+      //if (reachabilityVector[pr.second].find(pr.first) == reachabilityVector[pr.second].end())
+      if (reachabilityVector[pr.first].find(pr.second) != reachabilityVector[pr.first].end() and reachabilityVector[pr.second].find(pr.first) == reachabilityVector[pr.second].end())
         rel.insert(pr);
     }
-    this->dirSim = rel;
+    this->reachDirSim = rel;
 
     this->states = inhWeakBA.getStates();
     this->trans = inhWeakBA.getTransitions();
@@ -81,11 +82,11 @@ public:
   set<int> getSatSet(set<int> allStates, Relation<int> dirSim);
 
   Relation<int> getWeakDirSim(){
-    return this->dirSim;
+    return this->reachDirSim;
   }
 
-  Relation<int> getReachDirSim(){
-    return this->reachDirSim;
+  Relation<int> getDirSim(){
+    return this->dirSim;
   }
 };
 

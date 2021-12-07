@@ -18,6 +18,7 @@
 #include "StateSemiDet.h"
 #include "AutomatonStruct.h"
 #include "../Complement/StateSch.h"
+#include "../Complement/StateSD.h"
 #include "../Algorithms/AuxFunctions.h"
 #include "APSymbol.h"
 //#include "../Algorithms/Simulations.h"

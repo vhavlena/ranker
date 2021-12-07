@@ -418,7 +418,10 @@ int main(int argc, char *argv[])
           }
 
           sp.setComplOptions(opt);
-          if(el.isInherentlyWeakBA())
+          if (el.isSemiDeterministic()){
+            complementSDWrap(sp, &renBuchi, &renCompl, &stats);
+          }
+          else if(el.isInherentlyWeakBA())
           {
             // inherently weak complementation
             CoBuchiAutomatonCompl iw(el);

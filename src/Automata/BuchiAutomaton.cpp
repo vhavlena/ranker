@@ -1712,3 +1712,5 @@ template class BuchiAutomaton<StateGcoBA, int>;
 template class BuchiAutomaton<StateGcoBA, APSymbol>;
 template class BuchiAutomaton<StateSemiDet, int>;
 template class BuchiAutomaton<StateSemiDet, APSymbol>;
+template class BuchiAutomaton<StateSD, int>;
+template class BuchiAutomaton<StateSD, APSymbol>;

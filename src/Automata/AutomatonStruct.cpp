@@ -392,4 +392,11 @@ template class AutomatonStruct<pair<StateSemiDet, int>, int>;
 template class AutomatonStruct<pair<StateSemiDet, int>, APSymbol>;
 template class AutomatonStruct<tuple<StateSemiDet, int, bool>, int>;
 template class AutomatonStruct<tuple<StateSemiDet, int, bool>, APSymbol>;
+
+template class AutomatonStruct<StateSD, APSymbol>;
+template class AutomatonStruct<StateSD, int>;
+template class AutomatonStruct<pair<StateSD, int>, int>;
+template class AutomatonStruct<pair<StateSD, int>, APSymbol>;
+template class AutomatonStruct<tuple<StateSD, int, bool>, int>;
+template class AutomatonStruct<tuple<StateSD, int, bool>, APSymbol>;
 //

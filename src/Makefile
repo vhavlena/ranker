@@ -105,7 +105,7 @@ $(OBJ)/BuchiAutomataParser.o: Automata/BuchiAutomataParser.cpp \
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 
 $(OBJ)/BuchiAutomaton.o: Automata/BuchiAutomaton.cpp Automata/BuchiAutomaton.h \
-	Automata/AutomatonStruct.h Complement/StateSch.h Complement/StateKV.h \
+	Automata/AutomatonStruct.h Complement/StateSch.h Complement/StateKV.h Complement/StateSD.h \
 	Complement/RankFunc.h Automata/APSymbol.h Automata/StateSemiDet.h $(OBJ)/AutGraph.o \
 	$(OBJ)/AuxFunctions.o $(OBJ)/AutomatonStruct.o
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
@@ -117,7 +117,7 @@ $(OBJ)/GenCoBuchiAutomaton.o: Automata/GenCoBuchiAutomaton.cpp Automata/GenCoBuc
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 
 $(OBJ)/AutomatonStruct.o: Automata/AutomatonStruct.cpp Automata/AutomatonStruct.h \
-	Complement/StateSch.h Complement/StateKV.h Complement/RankFunc.h \
+	Complement/StateSch.h Complement/StateKV.h Complement/StateSD.h Complement/RankFunc.h \
 	Automata/APSymbol.h $(OBJ)/AutGraph.o $(OBJ)/AuxFunctions.o
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 
