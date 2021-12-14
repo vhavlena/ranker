@@ -61,6 +61,7 @@ public:
   }
 
   std::vector<StateSD> getSuccessorsOriginal(StateSD state, int symbol);
+  std::vector<StateSD> getSuccessorsLazy(StateSD state, int symbol);
 
   std::vector<std::vector<int>> getSubsets(std::vector<int> states);
 

@@ -66,6 +66,8 @@ struct ComplOptions
 
   bool iwSim = false;
   bool iwSat = false;
+
+  bool ncsbLazy = false;
 };
 
 #endif

@@ -314,10 +314,10 @@ void complementScheweAutWrap(BuchiAutomaton<int, int>* ren, BuchiAutomaton<int, 
     *complRes = renCompl;
 }
 
-void complementSDWrap(SemiDeterministicCompl& sp, BuchiAutomaton<int, int>* ren, BuchiAutomaton<int, int>* complRes, Stat* stats){
+void complementSDWrap(SemiDeterministicCompl& sp, BuchiAutomaton<int, int>* ren, BuchiAutomaton<int, int>* complRes, Stat* stats, bool original){
 
   BuchiAutomaton<StateSD, int> comp;
-  comp = sp.complementSD(true);
+  comp = sp.complementSD(original);
 
   map<int, int> id;
   for(auto al : comp.getAlphabet())
