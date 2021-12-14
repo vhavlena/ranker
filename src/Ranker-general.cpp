@@ -323,7 +323,7 @@ void complementSDWrap(SemiDeterministicCompl& sp, BuchiAutomaton<int, int>* ren,
   for(auto al : comp.getAlphabet())
     id[al] = al;
   BuchiAutomaton<int, int> renCompl = comp.renameAutDict(id);
-  renCompl.removeUseless();
+  //renCompl.removeUseless();
 
   *complRes = renCompl;
 }
