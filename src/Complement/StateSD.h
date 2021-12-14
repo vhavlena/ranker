@@ -17,6 +17,15 @@ struct StateSD {
 
   bool operator <(const StateSD& rhs) const
   {
+      if (N == rhs.N){
+        if (C == rhs.C){
+          if (S == rhs.S){
+              return B < rhs.B;
+          }
+          return S < rhs.S;
+        }
+        return C < rhs.C;
+      }
       return N < rhs.N;
   }
 

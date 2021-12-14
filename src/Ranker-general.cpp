@@ -314,11 +314,18 @@ void complementScheweAutWrap(BuchiAutomaton<int, int>* ren, BuchiAutomaton<int, 
     *complRes = renCompl;
 }
 
-void complementSDWrap(SemiDeterministicCompl& sp, BuchiAutomaton<int, int>* ren,
-    BuchiAutomaton<int, int>* complRes, Stat* stats){
-  std::cerr << "Here" << std::endl;
+void complementSDWrap(SemiDeterministicCompl& sp, BuchiAutomaton<int, int>* ren, BuchiAutomaton<int, int>* complRes, Stat* stats){
 
-  sp.complementSD(true);
+  BuchiAutomaton<StateSD, int> comp;
+  comp = sp.complementSD(true);
+
+  map<int, int> id;
+  for(auto al : comp.getAlphabet())
+    id[al] = al;
+  BuchiAutomaton<int, int> renCompl = comp.renameAutDict(id);
+  renCompl.removeUseless();
+
+  *complRes = renCompl;
 }
 
 BuchiAutomaton<int, int> createBA(vector<int>& loop)

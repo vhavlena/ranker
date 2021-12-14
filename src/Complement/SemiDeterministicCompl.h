@@ -36,15 +36,13 @@ protected:
 public:
   SemiDeterministicCompl(BuchiAutomaton<int, int> *t) : BuchiAutomaton<int, int>(*t), det(), nondet()
   {
-    SCCs reachableVector = this->reachableVector();
-    auto finals = this->getFinals();
-    for (auto state : this->getStates()){
-        std::vector<int> intersection;
-        std::set_intersection(reachableVector[state].begin(), reachableVector[state].end(), finals.begin(), finals.end(), std::back_inserter(intersection));
-        if (finals.find(state) != finals.end() or intersection.size() > 0)
-            this->det.insert(state);
-        else
-            this->nondet.insert(state);
+    SCCs sccs = this->getAutGraphSCCs();
+    for (auto scc : sccs){
+        if (this->isReachDeterministic(scc)){
+            this->det.insert(scc.begin(), scc.end());
+        } else {
+            this->nondet.insert(scc.begin(), scc.end());
+        }
     }
   }
 
