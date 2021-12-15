@@ -57,7 +57,7 @@ void complementGcoBAWrap(GeneralizedCoBuchiAutomaton<int, int> *ren, BuchiAutoma
 void complementCoBAWrap(CoBuchiAutomatonCompl *ren, BuchiAutomaton<StateGcoBA, int> *complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats, ComplOptions opt);
 
 void complementSDWrap(SemiDeterministicCompl& sp ,BuchiAutomaton<int, int>* ren, BuchiAutomaton<int, int>* complRes,
-    Stat* stats, bool original);
+    Stat* stats, ComplOptions opt);
 
 GeneralizedCoBuchiAutomaton<int, APSymbol> parseRenameHOAGCOBA(BuchiAutomataParser& parser);
 BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, ComplOptions opt);

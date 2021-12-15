@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
       .sim = true, .sl = true, .reach = true, .flowDirSim = false, .preprocess = NONE, .accPropagation = false,
       .semideterminize = false, .backoff = false, .BOBound = { {11,15}, {11,13} },
       .semideterministic = false, .complete = false, .lowrankopt = false,
-      .iwSim = false, .iwSat = false, .ncsbLazy = false};
+      .iwSim = true, .iwSat = false, .ncsbLazy = false};
 
   try
   {
@@ -424,15 +424,17 @@ int main(int argc, char *argv[])
           }
 
           sp.setComplOptions(opt);
-          if (el.isSemiDeterministic()){
-            SemiDeterministicCompl sd(&renBuchi);
-            complementSDWrap(sd, &renBuchi, &renCompl, &stats, opt.ncsbLazy);
-          }
-          else if(el.isInherentlyWeakBA())
+
+          if(el.isInherentlyWeakBA())
           {
             // inherently weak complementation
             CoBuchiAutomatonCompl iw(el);
             complementCoBAWrap(&iw, &compGcoBA, &renCompl, &stats, opt);
+          }
+          else if (el.isSemiDeterministic())
+          {
+            SemiDeterministicCompl sd(&renBuchi);
+            complementSDWrap(sd, &renBuchi, &renCompl, &stats, opt);
           }
           else
           {

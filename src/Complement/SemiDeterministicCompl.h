@@ -31,7 +31,7 @@ private:
     std::set<int> nondet;
 
 protected:
-  
+
 
 public:
   SemiDeterministicCompl(BuchiAutomaton<int, int> *t) : BuchiAutomaton<int, int>(*t), det(), nondet()
@@ -46,7 +46,7 @@ public:
     }
   }
 
-  BuchiAutomaton<StateSD, int> complementSD(bool original);
+  BuchiAutomaton<StateSD, int> complementSD(ComplOptions opt);
 
   std::set<int> getDet(){
       return this->det;

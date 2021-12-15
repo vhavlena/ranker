@@ -142,15 +142,6 @@ BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, Comp
       tmp = elev.copyPreprocessing(predtri);
     }
 
-    // cout << tmp.toGraphwiz() << endl << endl;
-
-
-
-    //cout << tmp.getStates().size() << endl;
-
-    //cout << tmp.toGraphwiz() << endl;
-
-
     orig = tmp.renameAlphabet(intap);
 
     //cout << orig.toHOA() << endl;
@@ -229,7 +220,8 @@ void complementAutWrap(BuchiAutomatonSpec& sp, BuchiAutomaton<int, int>* ren,
     *complRes = renCompl;
 }
 
-void complementGcoBAWrap(GeneralizedCoBuchiAutomaton<int, int> *ren, BuchiAutomaton<StateGcoBA, int> *complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats){
+void complementGcoBAWrap(GeneralizedCoBuchiAutomaton<int, int> *ren, BuchiAutomaton<StateGcoBA, int> *complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats)
+{
   //ren->removeUseless();
   //std::cerr << ren->toGraphwiz() << std::endl;
   GeneralizedCoBuchiAutomatonCompl sp(ren);
@@ -255,32 +247,42 @@ void complementGcoBAWrap(GeneralizedCoBuchiAutomaton<int, int> *ren, BuchiAutoma
   *complRes = renCompl;
 }
 
-void complementCoBAWrap(CoBuchiAutomatonCompl *ren, BuchiAutomaton<StateGcoBA, int> *complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats, ComplOptions opt){
-  //ren->removeUseless();
-  //std::cerr << ren->toGraphwiz() << std::endl;
-
-  if (opt.iwSim or opt.iwSat)
-    *complOrig = ren->complementCoBASim(opt);
-  else
-    *complOrig = ren->complementCoBA();
-
-  stats->generatedStates = complOrig->getStates().size();
-  stats->generatedTrans = complOrig->getTransCount();
+void complementCoBAWrap(CoBuchiAutomatonCompl *ren, BuchiAutomaton<StateGcoBA, int> *complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats, ComplOptions opt)
+{
+  auto complSim = ren->complementCoBASim(opt);
+  auto pure = ren->complementCoBA();
 
   map<int, int> id;
   for(auto al : complOrig->getAlphabet())
     id[al] = al;
-  //std::cerr << complOrig->toString() << std::endl;
-  BuchiAutomaton<int, int> renCompl = complOrig->renameAutDict(id);
-  renCompl.removeUseless();
-  renCompl = renCompl.renameAutDict(id);
 
-  stats->reachStates = renCompl.getStates().size();
-  stats->reachTrans = renCompl.getTransCount();
+  BuchiAutomaton<int, int> renSim = complSim.renameAutDict(id);
+  renSim.removeUseless();
+  renSim = renSim.renameAutDict(id);
+
+  BuchiAutomaton<int, int> renPure = pure.renameAutDict(id);
+  renPure.removeUseless();
+  renPure = renPure.renameAutDict(id);
+
+  if(renSim.getStates().size() > renPure.getStates().size())
+  {
+    *complOrig = pure;
+    *complRes = renPure;
+  }
+  else
+  {
+    *complOrig = complSim;
+    *complRes = renSim;
+  }
+
+  stats->generatedStates = complOrig->getStates().size();
+  stats->generatedTrans = complOrig->getTransCount();
+
+  stats->reachStates = complRes->getStates().size();
+  stats->reachTrans = complRes->getTransCount();
   stats->engine = "Ranker";
   stats->transitionsToTight = -1;
   stats->originalStates = ren->getStates().size();
-  *complRes = renCompl;
 }
 
 void complementScheweAutWrap(BuchiAutomaton<int, int>* ren, BuchiAutomaton<int, int>* complRes, Stat* stats, bool delay, double w)
@@ -314,17 +316,26 @@ void complementScheweAutWrap(BuchiAutomaton<int, int>* ren, BuchiAutomaton<int, 
     *complRes = renCompl;
 }
 
-void complementSDWrap(SemiDeterministicCompl& sp, BuchiAutomaton<int, int>* ren, BuchiAutomaton<int, int>* complRes, Stat* stats, bool original){
-
+void complementSDWrap(SemiDeterministicCompl& sp, BuchiAutomaton<int, int>* ren, BuchiAutomaton<int, int>* complRes, Stat* stats, ComplOptions opt)
+{
   BuchiAutomaton<StateSD, int> comp;
-  comp = sp.complementSD(original);
+  comp = sp.complementSD(opt);
+
+  stats->generatedStates = comp.getStates().size();
+  stats->generatedTrans = comp.getTransCount();
+  stats->generatedTransitionsToTight = 0;
 
   map<int, int> id;
-  for(auto al : comp.getAlphabet())
+  for(auto al : ren->getAlphabet())
     id[al] = al;
   BuchiAutomaton<int, int> renCompl = comp.renameAutDict(id);
-  //renCompl.removeUseless();
+  renCompl.removeUseless();
 
+  stats->reachStates = renCompl.getStates().size();
+  stats->reachTrans = renCompl.getTransCount();
+  stats->engine = "Ranker";
+  stats->transitionsToTight = -1;
+  stats->originalStates = sp.getStates().size();
   *complRes = renCompl;
 }
 

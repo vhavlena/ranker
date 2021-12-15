@@ -47,6 +47,7 @@ set(cxx_compiler_flags
   # -fPIC
   -fno-strict-aliasing
   -Woverloaded-virtual
+  -O2
   # -Wold-style-cast
 )
 
@@ -73,6 +74,7 @@ add_library(complement STATIC
 	Complement/ElevatorAutomaton.cpp
 	Complement/GenCoBuchiAutomatonCompl.cpp
 	Complement/RankFunc.cpp
+  Complement/SemiDeterministicCompl.cpp
 	Debug/BuchiAutomatonDebug.cpp
 	Ranker-general.cpp
 )

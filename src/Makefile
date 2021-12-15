@@ -92,7 +92,8 @@ ranker-tight: ranker-tight.cpp $(OBJ)/AuxFunctions.o $(OBJ)/ranker-general.o \
 $(OBJ)/ranker-general.o: Ranker-general.cpp $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/BuchiAutomaton.o $(OBJ)/AutomatonStruct.o $(OBJ)/BuchiAutomatonSpec.o \
 	$(OBJ)/RankFunc.o $(OBJ)/AutGraph.o $(OBJ)/Simulations.o $(OBJ)/AuxFunctions.o \
-	$(OBJ)/BuchiAutomatonDebug.o $(OBJ)/GenCoBuchiAutomaton.o $(OBJ)/GenCoBuchiAutomatonCompl.o $(OBJ)/CoBuchiCompl.o
+	$(OBJ)/BuchiAutomatonDebug.o $(OBJ)/GenCoBuchiAutomaton.o $(OBJ)/GenCoBuchiAutomatonCompl.o \
+	$(OBJ)/CoBuchiCompl.o $(OBJ)/SemiDeterministicCompl.o
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 
 $(OBJ)/BuchiAutomatonDebug.o: Debug/BuchiAutomatonDebug.cpp \
