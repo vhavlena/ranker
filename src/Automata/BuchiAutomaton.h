@@ -18,6 +18,7 @@
 #include "StateSemiDet.h"
 #include "AutomatonStruct.h"
 #include "../Complement/StateSch.h"
+#include "../Complement/StateSD.h"
 #include "../Algorithms/AuxFunctions.h"
 #include "APSymbol.h"
 //#include "../Algorithms/Simulations.h"
@@ -95,7 +96,7 @@ class BuchiAutomaton : public AutomatonStruct<State, Symbol> {
 
 public:
   typedef std::set<State> SetStates;
-  typedef VecTrans<State, Symbol> VecTransG;
+  typedef VecTrans<State, Symbol> VecTransG;  
   typedef std::set<Symbol> SetSymbols;
   typedef Delta<State, Symbol> Transitions;
   typedef std::set<std::pair<State, State> > StateRelation;

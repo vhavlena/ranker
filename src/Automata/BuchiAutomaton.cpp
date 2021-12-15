@@ -653,6 +653,14 @@ std::string BuchiAutomaton<StateSch, int>::toString()
   return toStringWith(f1, f2);
 }
 
+template <>
+std::string BuchiAutomaton<StateSD, int>::toString()
+{
+  std::function<std::string(StateSD)> f1 = [&] (StateSD x) {return x.toString();};
+  std::function<std::string(int)> f2 = [=] (int x) {return std::to_string(x);};
+  return toStringWith(f1, f2);
+}
+
 
 /*
  * Function converting the automaton <int, APSymbol> to string.
@@ -1712,3 +1720,5 @@ template class BuchiAutomaton<StateGcoBA, int>;
 template class BuchiAutomaton<StateGcoBA, APSymbol>;
 template class BuchiAutomaton<StateSemiDet, int>;
 template class BuchiAutomaton<StateSemiDet, APSymbol>;
+template class BuchiAutomaton<StateSD, int>;
+template class BuchiAutomaton<StateSD, APSymbol>;

@@ -19,6 +19,7 @@
 #include "Automata/GenCoBuchiAutomaton.h"
 #include "Complement/GenCoBuchiAutomatonCompl.h"
 #include "Complement/CoBuchiCompl.h"
+#include "Complement/SemiDeterministicCompl.h"
 
 extern const char *gitversion;
 extern const char *gitdescribe;
@@ -55,6 +56,7 @@ int main(int argc, char *argv[])
   args::Flag iwSatFlag(parser, "iw-sat", "Macrostates saturation", {"iw-sat"});
   args::Flag backoffFlag(parser, "backoff", "Use backoff", {"backoff"});
   args::Flag versionFlag(parser, "version", "Git commit version", {"version"});
+  args::Flag sdVersionFlag(parser, "ncsb-lazy", "Use NCSB-lazy for SD complementation", {"ncsb-lazy"});
 
   ComplOptions opt = { .cutPoint = true, .succEmptyCheck = false, .ROMinState = 8,
       .ROMinRank = 6, .CacheMaxState = 6, .CacheMaxRank = 8, .semidetOpt = false,
@@ -63,7 +65,7 @@ int main(int argc, char *argv[])
       .sim = true, .sl = true, .reach = true, .flowDirSim = false, .preprocess = NONE, .accPropagation = false,
       .semideterminize = false, .backoff = false, .BOBound = { {11,15}, {11,13} },
       .semideterministic = false, .complete = false, .lowrankopt = false,
-      .iwSim = false, .iwSat = false, };
+      .iwSim = false, .iwSat = false, .ncsbLazy = false};
 
   try
   {
@@ -149,6 +151,10 @@ int main(int argc, char *argv[])
   else if (iwSatFlag)
   {
     opt.iwSat = true;
+  }
+
+  if (sdVersionFlag){
+    opt.ncsbLazy = true;
   }
 
   // delay version
@@ -418,7 +424,11 @@ int main(int argc, char *argv[])
           }
 
           sp.setComplOptions(opt);
-          if(el.isInherentlyWeakBA())
+          if (el.isSemiDeterministic()){
+            SemiDeterministicCompl sd(&renBuchi);
+            complementSDWrap(sd, &renBuchi, &renCompl, &stats, opt.ncsbLazy);
+          }
+          else if(el.isInherentlyWeakBA())
           {
             // inherently weak complementation
             CoBuchiAutomatonCompl iw(el);

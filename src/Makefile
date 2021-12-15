@@ -79,7 +79,7 @@ ranker: ranker.cpp $(OBJ)/BuchiAutomataParser.o \
 	$(OBJ)/RankFunc.o $(OBJ)/AutGraph.o $(OBJ)/Simulations.o $(OBJ)/AuxFunctions.o \
 	$(OBJ)/ranker-general.o $(OBJ)/BuchiAutomatonDebug.o $(OBJ)/BuchiDelay.o \
 	$(OBJ)/GenCoBuchiAutomaton.o $(OBJ)/GenCoBuchiAutomatonCompl.o \
-	$(OBJ)/ElevatorAutomaton.o $(OBJ)/CoBuchiCompl.o gitversion.cpp
+	$(OBJ)/ElevatorAutomaton.o $(OBJ)/SemiDeterministicCompl.o $(OBJ)/CoBuchiCompl.o gitversion.cpp
 	$(GCC) $(CPPFLAGS) -o $@ $^ $(SUFF)
 
 ranker-tight: ranker-tight.cpp $(OBJ)/AuxFunctions.o $(OBJ)/ranker-general.o \
@@ -105,7 +105,7 @@ $(OBJ)/BuchiAutomataParser.o: Automata/BuchiAutomataParser.cpp \
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 
 $(OBJ)/BuchiAutomaton.o: Automata/BuchiAutomaton.cpp Automata/BuchiAutomaton.h \
-	Automata/AutomatonStruct.h Complement/StateSch.h Complement/StateKV.h \
+	Automata/AutomatonStruct.h Complement/StateSch.h Complement/StateKV.h Complement/StateSD.h \
 	Complement/RankFunc.h Automata/APSymbol.h Automata/StateSemiDet.h $(OBJ)/AutGraph.o \
 	$(OBJ)/AuxFunctions.o $(OBJ)/AutomatonStruct.o
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
@@ -117,7 +117,7 @@ $(OBJ)/GenCoBuchiAutomaton.o: Automata/GenCoBuchiAutomaton.cpp Automata/GenCoBuc
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 
 $(OBJ)/AutomatonStruct.o: Automata/AutomatonStruct.cpp Automata/AutomatonStruct.h \
-	Complement/StateSch.h Complement/StateKV.h Complement/RankFunc.h \
+	Complement/StateSch.h Complement/StateKV.h Complement/StateSD.h Complement/RankFunc.h \
 	Automata/APSymbol.h $(OBJ)/AutGraph.o $(OBJ)/AuxFunctions.o
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 
@@ -133,6 +133,10 @@ $(OBJ)/AutGraph.o: Automata/AutGraph.cpp Automata/AutGraph.h
 
 $(OBJ)/ElevatorAutomaton.o: Complement/ElevatorAutomaton.cpp Automata/AutomatonStruct.h Automata/BuchiAutomaton.h \
 	Complement/ElevatorAutomaton.h $(OBJ)/BuchiAutomaton.o $(OBJ)/AutomatonStruct.o
+	$(GCC) $(CPPFLAGS) -c -o $@ $<
+
+$(OBJ)/SemiDeterministicCompl.o: Complement/SemiDeterministicCompl.cpp Complement/SemiDeterministicCompl.h Automata/AutomatonStruct.h Automata/BuchiAutomaton.h \
+	$(OBJ)/BuchiAutomaton.o $(OBJ)/AutomatonStruct.o
 	$(GCC) $(CPPFLAGS) -c -o $@ $<
 
 $(OBJ)/AuxFunctions.o: Algorithms/AuxFunctions.cpp Algorithms/AuxFunctions.h
