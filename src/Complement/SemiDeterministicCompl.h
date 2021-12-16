@@ -48,11 +48,11 @@ public:
 
   BuchiAutomaton<StateSD, int> complementSD(ComplOptions opt);
 
-  std::set<int> getDet(){
+  std::set<int>& getDet(){
       return this->det;
   }
 
-  std::set<int> getNonDet(){
+  std::set<int>& getNonDet(){
       return this->nondet;
   }
 
@@ -60,10 +60,9 @@ public:
       return state.B.size() == 0;
   }
 
-  std::vector<StateSD> getSuccessorsOriginal(StateSD state, int symbol);
-  std::vector<StateSD> getSuccessorsLazy(StateSD state, int symbol);
-
-  std::vector<std::vector<int>> getSubsets(std::vector<int> states);
+  std::vector<StateSD> getSuccessorsOriginal(StateSD& state, int symbol);
+  std::vector<StateSD> getSuccessorsLazy(StateSD& state, int symbol);
+  std::vector<StateSD> getSuccessorsMaxRank(StateSD& state, int symbol);
 
 };
 

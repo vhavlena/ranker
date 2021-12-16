@@ -17,7 +17,7 @@ BuchiAutomaton<StateSD, int> SemiDeterministicCompl::complementSD(ComplOptions o
     if (this->getDet().size() > 0)
         std::set_intersection(this->getDet().begin(), this->getDet().end(), this->getInitials().begin(), this->getInitials().end(), std::back_inserter(C_union_S));
 
-    for (const auto& subset : getSubsets(C_union_S)) {
+    for (const auto& subset : Aux::getAllSubsets(C_union_S)) {
         std::vector<int> subsetComplement;
         if (subset.size() > 0)
             std::set_difference(C_union_S.begin(), C_union_S.end(), subset.begin(), subset.end(), std::back_inserter(subsetComplement));
@@ -50,13 +50,19 @@ BuchiAutomaton<StateSD, int> SemiDeterministicCompl::complementSD(ComplOptions o
         if (isSDStateFinal(state))
             finals.insert(state);
 
-        for (const auto& symbol : alphabet){
+        for (const auto& symbol : alphabet)
+        {
             // get successors
             std::vector<StateSD> successors;
             if (!opt.ncsbLazy)
-                successors = getSuccessorsOriginal(state, symbol);
+            {
+                //successors = getSuccessorsOriginal(state, symbol);
+                successors = getSuccessorsMaxRank(state, symbol);
+            }
             else
+            {
                 successors = getSuccessorsLazy(state, symbol);
+            }
 
             for (const auto& succ : successors){
                 //std::cerr << succ.toString() << std::endl;
@@ -77,7 +83,60 @@ BuchiAutomaton<StateSD, int> SemiDeterministicCompl::complementSD(ComplOptions o
     return ret;
 }
 
-std::vector<StateSD> SemiDeterministicCompl::getSuccessorsOriginal(StateSD state, int symbol){
+
+std::vector<StateSD> SemiDeterministicCompl::getSuccessorsMaxRank(StateSD& state, int symbol)
+{
+    std::vector<StateSD> successors;
+    auto fin = this->getFinals();
+
+    StateSD succ1;
+
+    auto NsuccSet = this->succSet(state.N, symbol);
+    std::set_intersection(NsuccSet.begin(), NsuccSet.end(), this->getNonDet().begin(), this->getNonDet().end(), std::inserter(succ1.N, succ1.N.begin()));
+
+    std::vector<int> NtoDet;
+    std::set_intersection(NsuccSet.begin(), NsuccSet.end(), this->getDet().begin(), this->getDet().end(), std::back_inserter(NtoDet));
+
+    succ1.C = this->succSet(state.C, symbol);
+    succ1.C.insert(NtoDet.begin(), NtoDet.end());
+
+    auto SsuccSet = this->succSet(state.S, symbol);
+    set<int> FinS;
+    std::set_intersection(SsuccSet.begin(), SsuccSet.end(), fin.begin(), fin.end(), std::inserter(FinS, FinS.begin()));
+    if(FinS.size() > 0)
+    {
+      return successors;
+    }
+
+    succ1.S = SsuccSet;
+
+    if(state.B.size() == 0)
+    {
+      succ1.B = succ1.C;
+    }
+    else
+    {
+      succ1.B = this->succSet(state.B, symbol);
+    }
+
+    StateSD succ2 = succ1;
+    set<int> rem;
+    succ2.B = set<int>();
+    std::set_difference(succ1.B.begin(), succ1.B.end(), fin.begin(), fin.end(), std::inserter(rem, rem.begin()));
+    std::set_intersection(succ1.B.begin(), succ1.B.end(), fin.begin(), fin.end(), std::inserter(succ2.B, succ2.B.begin()));
+    succ2.S.insert(rem.begin(), rem.end());
+    set<int> aux;
+    std::set_difference(succ2.C.begin(), succ2.C.end(), rem.begin(), rem.end(), std::inserter(aux, aux.begin()));
+    succ2.C = aux;
+
+    successors.push_back(succ1);
+    successors.push_back(succ2);
+
+    return successors;
+}
+
+
+std::vector<StateSD> SemiDeterministicCompl::getSuccessorsOriginal(StateSD& state, int symbol){
     std::vector<StateSD> successors;
 
     std::set<int> N_prime;
@@ -110,7 +169,7 @@ std::vector<StateSD> SemiDeterministicCompl::getSuccessorsOriginal(StateSD state
     std::set_difference(remaining.begin(), remaining.end(), S_prime_base.begin(), S_prime_base.end(), std::back_inserter(rem2));
     remaining = rem2;
 
-    auto subsets = getSubsets(remaining);
+    auto subsets = Aux::getAllSubsets(remaining);
 
     for (const auto& subset : subsets){
         StateSD newState;
@@ -140,7 +199,7 @@ std::vector<StateSD> SemiDeterministicCompl::getSuccessorsOriginal(StateSD state
     return successors;
 }
 
-std::vector<StateSD> SemiDeterministicCompl::getSuccessorsLazy(StateSD state, int symbol){
+std::vector<StateSD> SemiDeterministicCompl::getSuccessorsLazy(StateSD& state, int symbol){
     std::vector<StateSD> successors;
 
     // N'
@@ -175,9 +234,9 @@ std::vector<StateSD> SemiDeterministicCompl::getSuccessorsLazy(StateSD state, in
         std::set_difference(remaining.begin(), remaining.end(), S_prime_base.begin(), S_prime_base.end(), std::back_inserter(rem2));
         remaining = rem2;
 
-        auto subsets = getSubsets(remaining);
+        auto subsets = Aux::getAllSubsets(remaining);
 
-        for (auto subset : subsets){
+        for (const auto& subset : subsets){
             StateSD newState;
             newState.N = N_prime;
 
@@ -218,9 +277,9 @@ std::vector<StateSD> SemiDeterministicCompl::getSuccessorsLazy(StateSD state, in
         std::set_difference(remReach.begin(), remReach.end(), S_prime_base.begin(), S_prime_base.end(), std::back_inserter(rem2));
         remReach = rem2;
 
-        auto subsets = getSubsets(remReach);
+        auto subsets = Aux::getAllSubsets(remReach);
 
-        for (auto subset : subsets){
+        for (const auto& subset : subsets){
             StateSD newState;
             newState.N = N_prime;
 
@@ -249,22 +308,4 @@ std::vector<StateSD> SemiDeterministicCompl::getSuccessorsLazy(StateSD state, in
     }
 
     return successors;
-}
-
-std::vector<std::vector<int>> SemiDeterministicCompl::getSubsets(std::vector<int> states){
-    std::vector<std::vector<int>> subset;
-    vector<int> empty;
-    subset.push_back( empty );
-
-    for (unsigned i = 0; i < states.size(); i++)
-    {
-        std::vector<std::vector<int> > subsetTemp = subset;
-
-        for (unsigned j = 0; j < subsetTemp.size(); j++)
-            subsetTemp[j].push_back(states[i]);
-
-        for (unsigned j = 0; j < subsetTemp.size(); j++)
-            subset.push_back(subsetTemp[j]);
-    }
-    return subset;
 }
