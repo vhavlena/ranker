@@ -56,6 +56,10 @@ public:
       return this->nondet;
   }
 
+  void addDetState(int state){
+      this->det.insert(state);
+  }
+
   bool isSDStateFinal(StateSD state){
       return state.B.size() == 0;
   }
@@ -63,6 +67,8 @@ public:
   std::vector<StateSD> getSuccessorsOriginal(StateSD& state, int symbol);
   std::vector<StateSD> getSuccessorsLazy(StateSD& state, int symbol);
   std::vector<StateSD> getSuccessorsMaxRank(StateSD& state, int symbol);
+
+  void ncsbTransform();
 
 };
 
