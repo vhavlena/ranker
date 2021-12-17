@@ -61,7 +61,9 @@ BuchiAutomaton<StateGcoBA, int> CoBuchiAutomatonCompl::complementCoBA()
     }
   }
 
-  return BuchiAutomaton<StateGcoBA, int>(states, finals, initials, mp, alph, getAPPattern());
+  auto ret = BuchiAutomaton<StateGcoBA, int>(states, finals, initials, mp, alph, getAPPattern());
+  //std::cerr << ret.toString() << std::endl;
+  return ret;
 }
 
 BuchiAutomaton<StateGcoBA, int> CoBuchiAutomatonCompl::complementCoBASim(ComplOptions opt){
@@ -137,7 +139,9 @@ BuchiAutomaton<StateGcoBA, int> CoBuchiAutomatonCompl::complementCoBASim(ComplOp
     }
   }
 
-  return BuchiAutomaton<StateGcoBA, int>(states, finals, initials, mp, alph, getAPPattern());
+  auto ret = BuchiAutomaton<StateGcoBA, int>(states, finals, initials, mp, alph, getAPPattern());
+  //std::cerr << ret.toString() << std::endl;
+  return ret;
 }
 
 set<int> CoBuchiAutomatonCompl::succSet(set<int>& states, int symbol)
