@@ -427,7 +427,6 @@ int main(int argc, char *argv[])
 
           if(el.isInherentlyWeakBA())
           {
-            // inherently weak complementation
             CoBuchiAutomatonCompl iw(el);
             complementCoBAWrap(&iw, &compGcoBA, &renCompl, &stats, opt);
           }

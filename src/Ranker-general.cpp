@@ -248,12 +248,12 @@ void complementGcoBAWrap(GeneralizedCoBuchiAutomaton<int, int> *ren, BuchiAutoma
 }
 
 void complementCoBAWrap(CoBuchiAutomatonCompl *ren, BuchiAutomaton<StateGcoBA, int> *complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats, ComplOptions opt)
-{
+{ 
   auto complSim = ren->complementCoBASim(opt);
   auto pure = ren->complementCoBA();
 
   map<int, int> id;
-  for(auto al : complOrig->getAlphabet())
+  for(auto al : pure.getAlphabet())
     id[al] = al;
 
   BuchiAutomaton<int, int> renSim = complSim.renameAutDict(id);
@@ -319,6 +319,7 @@ void complementScheweAutWrap(BuchiAutomaton<int, int>* ren, BuchiAutomaton<int, 
 void complementSDWrap(SemiDeterministicCompl& sp, BuchiAutomaton<int, int>* ren, BuchiAutomaton<int, int>* complRes, Stat* stats, ComplOptions opt)
 {
   BuchiAutomaton<StateSD, int> comp;
+
   comp = sp.complementSD(opt);
 
   stats->generatedStates = comp.getStates().size();
@@ -329,7 +330,8 @@ void complementSDWrap(SemiDeterministicCompl& sp, BuchiAutomaton<int, int>* ren,
   for(auto al : ren->getAlphabet())
     id[al] = al;
   BuchiAutomaton<int, int> renCompl = comp.renameAutDict(id);
-  renCompl.removeUseless();
+  //renCompl.removeUseless();
+  renCompl = renCompl.removeUselessRename();
 
   stats->reachStates = renCompl.getStates().size();
   stats->reachTrans = renCompl.getTransCount();

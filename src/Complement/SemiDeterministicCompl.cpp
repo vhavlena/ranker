@@ -3,6 +3,10 @@
 BuchiAutomaton<StateSD, int> SemiDeterministicCompl::complementSD(ComplOptions opt) {
     //std::cerr << this->getDet().size() << " " << this->getNonDet().size() << std::endl;
 
+    if (opt.ncsbLazy)
+        this->ncsbTransform();
+    //std::cerr << this->toString() << std::endl;
+
     std::set<StateSD> initials;
     std::set<StateSD> states;
     std::set<StateSD> finals;
@@ -17,26 +21,11 @@ BuchiAutomaton<StateSD, int> SemiDeterministicCompl::complementSD(ComplOptions o
     if (this->getDet().size() > 0)
         std::set_intersection(this->getDet().begin(), this->getDet().end(), this->getInitials().begin(), this->getInitials().end(), std::back_inserter(C_union_S));
 
-    for (const auto& subset : Aux::getAllSubsets(C_union_S)) {
-        std::vector<int> subsetComplement;
-        if (subset.size() > 0)
-            std::set_difference(C_union_S.begin(), C_union_S.end(), subset.begin(), subset.end(), std::back_inserter(subsetComplement));
-        else {
-            std::vector<int> tmp(C_union_S.begin(), C_union_S.end());
-            subsetComplement = tmp;
-        }
-
-        std::set<int> S(subset.begin(), subset.end());
-        std::set<int> F_in_S;
-        std::set_intersection(S.begin(), S.end(), this->getFinals().begin(), this->getFinals().end(), std::inserter(F_in_S, F_in_S.begin()));
-        if (F_in_S.size() > 0)
-            continue;
-
-        std::set<int> C(subsetComplement.begin(), subsetComplement.end());
-        StateSD init = {N, C, S, C};
-        initials.insert(init);
-        states.insert(init);
-    }
+    // one initial state
+    std::set<int> C_union_S_set(C_union_S.begin(), C_union_S.end());
+    StateSD init = {N, C_union_S_set, std::set<int>(), C_union_S_set};
+    initials.insert(init);
+    states.insert(init);
 
 
     std::stack<StateSD> stack;
@@ -219,20 +208,12 @@ std::vector<StateSD> SemiDeterministicCompl::getSuccessorsLazy(StateSD& state, i
         std::vector<int> N_to_det;
         auto succSet = this->succSet(state.N, symbol);
         std::set_intersection(succSet.begin(), succSet.end(), this->getDet().begin(), this->getDet().end(), std::back_inserter(N_to_det));
-        std::vector<int> F_in_C;
-        std::set_intersection(state.C.begin(), state.C.end(), this->getFinals().begin(), this->getFinals().end(), std::back_inserter(F_in_C));
 
-        std::set<int> tmp(F_in_C.begin(), F_in_C.end());
-        std::set<int> F_in_C_not_S_reach = this->succSet(tmp, symbol);
-
+        std::set<int> C_reach = this->succSet(state.C, symbol);
+        std::set<int> union_reach;
+        std::set_union(N_to_det.begin(), N_to_det.end(), C_reach.begin(), C_reach.end(), std::inserter(union_reach, union_reach.begin()));
         std::vector<int> remaining;
-        std::set_union(N_to_det.begin(), N_to_det.end(), F_in_C_not_S_reach.begin(), F_in_C_not_S_reach.end(), std::back_inserter(remaining));
-        std::vector<int> rem;
-        std::set_difference(remaining.begin(), remaining.end(), C_prime_base.begin(), C_prime_base.end(), std::back_inserter(rem));
-        remaining = rem;
-        std::vector<int> rem2;
-        std::set_difference(remaining.begin(), remaining.end(), S_prime_base.begin(), S_prime_base.end(), std::back_inserter(rem2));
-        remaining = rem2;
+        std::set_difference(union_reach.begin(), union_reach.end(), S_prime_base.begin(), S_prime_base.end(), std::back_inserter(remaining));
 
         auto subsets = Aux::getAllSubsets(remaining);
 
@@ -308,4 +289,47 @@ std::vector<StateSD> SemiDeterministicCompl::getSuccessorsLazy(StateSD& state, i
     }
 
     return successors;
+}
+
+void SemiDeterministicCompl::ncsbTransform() {
+    // get D start states
+    std::set<int> detStart;
+    auto nonDet = this->getNonDet();
+    auto det = this->getDet();
+    for (auto tr : this->getTransitions()){
+        if (nonDet.find(tr.first.first) != nonDet.end()){
+            for (auto second : tr.second){
+                if (det.find(second) != det.end() and this->getFinals().find(second) == this->getFinals().end())
+                    detStart.insert(second);
+            }
+        }
+    }
+
+    for (auto state : detStart){
+        // add new accepting state
+        int newState = this->getStates().size();
+        this->addStates(newState);
+        this->addFinals(newState);
+        this->addDetState(newState);
+        auto trans = this->getTransitions();
+        for (auto& tr : trans){
+            // redirect transitions to 'state' to the new state
+            auto it = tr.second.find(state);
+            if (it != tr.second.end()){
+                tr.second.erase(state);
+                tr.second.insert(newState);
+            }
+
+            // duplicate all outgoing transitions of 'state' to the new state
+            if (tr.first.first == state){
+                if (this->getTransitions().count({newState, tr.first.second}) == 0){
+                    // transition does not exist
+                    this->addNewTransition({newState, tr.first.second}, tr.second);
+                } else {
+                    // transition already exists
+                    this->addNewStatesToTransition({newState, tr.first.second}, tr.second);
+                }
+            }
+        }
+    }
 }
