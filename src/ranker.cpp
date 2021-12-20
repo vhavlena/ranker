@@ -433,7 +433,16 @@ int main(int argc, char *argv[])
           else if (el.isSemiDeterministic())
           {
             SemiDeterministicCompl sd(&renBuchi);
-            complementSDWrap(sd, &renBuchi, &renCompl, &stats, opt);
+            BuchiAutomaton<int, int> renComplSD;
+            complementSDWrap(sd, &renBuchi, &renComplSD, &stats, opt);
+            Stat s1 = stats;
+            complementAutWrap(sp, &renBuchi, &compBA, &renCompl, &stats, !opt.backoff);
+
+            if(renComplSD.getStates().size() <= renCompl.getStates().size())
+            {
+              stats = s1;
+              renCompl = renComplSD;
+            }
           }
           else
           {

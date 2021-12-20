@@ -248,7 +248,7 @@ void complementGcoBAWrap(GeneralizedCoBuchiAutomaton<int, int> *ren, BuchiAutoma
 }
 
 void complementCoBAWrap(CoBuchiAutomatonCompl *ren, BuchiAutomaton<StateGcoBA, int> *complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats, ComplOptions opt)
-{ 
+{
   auto complSim = ren->complementCoBASim(opt);
   auto pure = ren->complementCoBA();
 
