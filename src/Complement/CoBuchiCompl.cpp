@@ -73,7 +73,7 @@ BuchiAutomaton<StateGcoBA, int> CoBuchiAutomatonCompl::complementCoBASim(ComplOp
   }*/
 
   Relation<int> sim;
-  set<int> (CoBuchiAutomatonCompl::*getSet)(set<int>, Relation<int>) = NULL;
+  set<int> (CoBuchiAutomatonCompl::*getSet)(set<int>&, Relation<int>&) = NULL;
   if (opt.iwSim){
     sim = this->getWeakDirSim();
     getSet = &CoBuchiAutomatonCompl::getDirectSet;
@@ -112,7 +112,8 @@ BuchiAutomaton<StateGcoBA, int> CoBuchiAutomatonCompl::complementCoBASim(ComplOp
         auto pr = std::make_pair(state, sym);
         std::set<StateGcoBA> dst;
 
-        auto S_prime = (this->*getSet)(succSet(state.S, sym), sim);
+        auto ssucc = succSet(state.S, sym);
+        auto S_prime = (this->*getSet)(ssucc, sim);
         std::set<int> B_prime;
         if (state.B.empty()){
             std::set_difference(S_prime.begin(), S_prime.end(), this->getFinals()[0].begin(), this->getFinals()[0].end(), std::inserter(B_prime, B_prime.begin()));
@@ -155,11 +156,11 @@ set<int> CoBuchiAutomatonCompl::succSet(set<int>& states, int symbol)
   return ret;
 }
 
-set<int> CoBuchiAutomatonCompl::getDirectSet(set<int> states, Relation<int> dirSim)
+set<int> CoBuchiAutomatonCompl::getDirectSet(set<int>& states, Relation<int>& dirSim)
 {
   // remove smaller states w.r.t. direct simulation on weak automaton
   std::set<int> retStates;
-  for (auto state : states){
+  for (const auto& state : states){
     if (not std::any_of(dirSim.begin(), dirSim.end(), [state, states](std::pair<int, int> pr){ return state == pr.first and state != pr.second and states.find(pr.second) != states.end(); }))
       retStates.insert(state);
   }
@@ -167,10 +168,10 @@ set<int> CoBuchiAutomatonCompl::getDirectSet(set<int> states, Relation<int> dirS
   return retStates;
 }
 
-set<int> CoBuchiAutomatonCompl::getSatSet(set<int> allStates, Relation<int> dirSim){
+set<int> CoBuchiAutomatonCompl::getSatSet(set<int>& allStates, Relation<int>& dirSim){
   // add smaller states w.r.t. direct simulation on weak automaton
   std::set<int> retStates = allStates;
-  for (auto pr : dirSim){
+  for (const auto& pr : dirSim){
     if (allStates.find(pr.second) != allStates.end())
       retStates.insert(pr.first);
   }

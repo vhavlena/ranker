@@ -41,7 +41,7 @@ public:
     auto finTrans = inhWeakBA.getFinTrans();
     std::set<int> fins;
     for (auto scc : sccs){
-      if ((not std::any_of(scc.begin(), scc.end(), [finals](int state){return finals.find(state) != finals.end();})) and 
+      if ((not std::any_of(scc.begin(), scc.end(), [finals](int state){return finals.find(state) != finals.end();})) and
           (not std::any_of(finTrans.begin(), finTrans.end(), [scc](auto tr){return scc.find(tr.from) != scc.end() and scc.find(tr.to) != scc.end();})))
         fins.insert(scc.begin(), scc.end());
     }
@@ -63,6 +63,12 @@ public:
     for (auto pr : this->dirSim){
       // check reachability
       //if (reachabilityVector[pr.second].find(pr.first) == reachabilityVector[pr.second].end())
+
+      set<int> intersect;
+      std::set_intersection(reachabilityVector[pr.first].begin(), reachabilityVector[pr.first].end(), reachabilityVector[pr.second].begin(), reachabilityVector[pr.second].end(), std::inserter(intersect, intersect.begin()));
+      if(intersect.size() == 0)
+        rel.insert(pr);
+
       if (reachabilityVector[pr.first].find(pr.second) != reachabilityVector[pr.first].end() and reachabilityVector[pr.second].find(pr.first) == reachabilityVector[pr.second].end())
         rel.insert(pr);
     }
@@ -78,14 +84,14 @@ public:
   BuchiAutomaton<StateGcoBA, int> complementCoBA();
   BuchiAutomaton<StateGcoBA, int> complementCoBASim(ComplOptions opt);
   set<int> succSet(set<int>& states, int symbol);
-  set<int> getDirectSet(set<int> states, Relation<int> dirSim);
-  set<int> getSatSet(set<int> allStates, Relation<int> dirSim);
+  set<int> getDirectSet(set<int>& states, Relation<int>& dirSim);
+  set<int> getSatSet(set<int>& allStates, Relation<int>& dirSim);
 
-  Relation<int> getWeakDirSim(){
+  Relation<int>& getWeakDirSim(){
     return this->reachDirSim;
   }
 
-  Relation<int> getDirSim(){
+  Relation<int>& getDirSim(){
     return this->dirSim;
   }
 };

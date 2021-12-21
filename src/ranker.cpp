@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
       .ROMinRank = 6, .CacheMaxState = 6, .CacheMaxRank = 8, .semidetOpt = false,
       .dataFlow = INNER, .delay = false, .delayVersion = oldVersion, .delayW = 0.5,
       .debug = false, .elevator = { .elevatorRank = true, .detBeginning = false },
-      .sim = true, .sl = true, .reach = true, .flowDirSim = false, .preprocess = NONE, .accPropagation = false,
+      .dirsim = true, .ranksim = true, .sl = true, .reach = true, .flowDirSim = false, .preprocess = NONE, .accPropagation = false,
       .semideterminize = false, .backoff = false, .BOBound = { {11,15}, {11,13} },
       .semideterministic = false, .complete = false, .lowrankopt = false,
       .iwSim = true, .iwSat = false, .ncsbLazy = false};
@@ -219,7 +219,8 @@ int main(int argc, char *argv[])
       std::cerr << "Wrong combination of arguments" << std::endl;
       return 1;
     }
-    opt.sim = false;
+    opt.dirsim = false;
+    opt.ranksim = false;
     opt.sl = false;
     opt.reach = false;
     opt.succEmptyCheck = false;
@@ -229,7 +230,8 @@ int main(int argc, char *argv[])
 
   if(lightFlag)
   {
-    opt.sim = false;
+    opt.dirsim = false;
+    opt.ranksim = false;
     opt.sl = false;
     opt.reach = false;
     opt.succEmptyCheck = false;
@@ -312,18 +314,19 @@ int main(int argc, char *argv[])
 
           if(orig.isTBA())
           {
-            opt.sim = false;
+            opt.ranksim = false;
           }
 
           if(orig.getStates().size() >= 20)
           {
             opt.reach = false;
-            opt.sim = false;
+            opt.dirsim = false;
+            opt.ranksim = false;
             opt.sl = false;
           }
 
           Simulations sim;
-          if(!opt.sim || orig.isTBA())
+          if(!opt.dirsim)
           {
             auto ranksim = sim.identity(orig);
             orig.setDirectSim(ranksim);
@@ -334,8 +337,16 @@ int main(int argc, char *argv[])
             auto ranksim = sim.directSimulation<int, APSymbol>(orig, -1);
             orig.setDirectSim(ranksim);
 
-            auto cl = set<int>();
-            orig.computeRankSim(cl);
+            if(!opt.ranksim)
+            {
+              auto ranksim = sim.identity(orig);
+              orig.setOddRankSim(ranksim);
+            }
+            else
+            {
+              auto cl = set<int>();
+              orig.computeRankSim(cl);
+            }
           }
 
           renBuchi = orig.renameAut();

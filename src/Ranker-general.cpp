@@ -249,8 +249,8 @@ void complementGcoBAWrap(GeneralizedCoBuchiAutomaton<int, int> *ren, BuchiAutoma
 
 void complementCoBAWrap(CoBuchiAutomatonCompl *ren, BuchiAutomaton<StateGcoBA, int> *complOrig, BuchiAutomaton<int, int>* complRes, Stat* stats, ComplOptions opt)
 {
-  auto complSim = ren->complementCoBASim(opt);
   auto pure = ren->complementCoBA();
+  auto complSim = ren->complementCoBASim(opt);
 
   map<int, int> id;
   for(auto al : pure.getAlphabet())
@@ -318,27 +318,50 @@ void complementScheweAutWrap(BuchiAutomaton<int, int>* ren, BuchiAutomaton<int, 
 
 void complementSDWrap(SemiDeterministicCompl& sp, BuchiAutomaton<int, int>* ren, BuchiAutomaton<int, int>* complRes, Stat* stats, ComplOptions opt)
 {
-  BuchiAutomaton<StateSD, int> comp;
+  BuchiAutomaton<StateSD, int> compOrig;
+  BuchiAutomaton<StateSD, int> compLazy;
 
-  comp = sp.complementSD(opt);
+  opt.ncsbLazy = false;
+  compOrig = sp.complementSD(opt);
 
-  stats->generatedStates = comp.getStates().size();
-  stats->generatedTrans = comp.getTransCount();
-  stats->generatedTransitionsToTight = 0;
+  opt.ncsbLazy = true;
+  compLazy = sp.complementSD(opt);
 
   map<int, int> id;
   for(auto al : ren->getAlphabet())
     id[al] = al;
-  BuchiAutomaton<int, int> renCompl = comp.renameAutDict(id);
-  //renCompl.removeUseless();
-  renCompl = renCompl.removeUselessRename();
 
-  stats->reachStates = renCompl.getStates().size();
-  stats->reachTrans = renCompl.getTransCount();
+  BuchiAutomaton<int, int> renComplOrig = compOrig.renameAutDict(id);
+  renComplOrig = renComplOrig.removeUselessRename();
+
+  BuchiAutomaton<int, int> renComplLazy = compLazy.renameAutDict(id);
+  renComplLazy = renComplLazy.removeUselessRename();
+
+  stats->generatedTransitionsToTight = 0;
+
+  if(renComplOrig.getStates().size() <= renComplLazy.getStates().size())
+  {
+    *complRes = renComplOrig;
+    stats->generatedStates = compOrig.getStates().size();
+    stats->generatedTrans = compOrig.getTransCount();
+  }
+  else
+  {
+
+    *complRes = renComplLazy;
+    stats->generatedStates = compLazy.getStates().size();
+    stats->generatedTrans = compLazy.getTransCount();
+  }
+
+  // BuchiAutomaton<int, int> renCompl = comp.renameAutDict(id);
+  // //renCompl.removeUseless();
+  // renCompl = renCompl.removeUselessRename();
+
+  stats->reachStates = complRes->getStates().size();
+  stats->reachTrans = complRes->getTransCount();
   stats->engine = "Ranker";
   stats->transitionsToTight = -1;
   stats->originalStates = sp.getStates().size();
-  *complRes = renCompl;
 }
 
 BuchiAutomaton<int, int> createBA(vector<int>& loop)

@@ -44,7 +44,8 @@ struct ComplOptions
 
   ElevatorOptions elevator = { .elevatorRank = true, .detBeginning = false };
 
-  bool sim = true;
+  bool dirsim = true;
+  bool ranksim = true;
   bool sl = true;
   bool reach = true;
 

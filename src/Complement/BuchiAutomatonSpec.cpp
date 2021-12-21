@@ -1086,7 +1086,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomatonSpec::complementSchReduced(Stat *sta
   // simulations
   auto start = std::chrono::high_resolution_clock::now();
   set<int> cl;
-  if(this->opt.sim)
+  if(this->opt.ranksim && this->opt.dirsim)
   {
     this->computeRankSim(cl);
   }
@@ -1413,7 +1413,7 @@ map<DFAState, RankBound> BuchiAutomatonSpec::getRankBound(BuchiAutomaton<StateSc
     rnkmap[s] = 2*s.S.size() - 1;
   }
 
-  if(this->opt.sim)
+  if(this->opt.ranksim && this->opt.dirsim)
   {
     for(const StateSch& s : nfaSchewe.getStates())
     {
