@@ -447,7 +447,11 @@ int main(int argc, char *argv[])
             BuchiAutomaton<int, int> renComplSD;
             complementSDWrap(sd, &renBuchi, &renComplSD, &stats, opt);
             Stat s1 = stats;
+
             complementAutWrap(sp, &renBuchi, &compBA, &renCompl, &stats, !opt.backoff);
+            auto ranksim = sim.directSimulation<int, int>(renCompl, -1);
+            renCompl.setDirectSim(ranksim);
+            renCompl = renCompl.reduce();
 
             if(renComplSD.getStates().size() <= renCompl.getStates().size())
             {

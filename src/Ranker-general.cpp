@@ -40,6 +40,7 @@ BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, Comp
 
   if(orig.isSemiDeterministic())
   {
+    opt.accPropagation = true;
     //assume states numbered from 0 (no gaps)
     //orig.complete(orig.getStates().size());
   }
@@ -331,11 +332,18 @@ void complementSDWrap(SemiDeterministicCompl& sp, BuchiAutomaton<int, int>* ren,
   for(auto al : ren->getAlphabet())
     id[al] = al;
 
+  Simulations sim;
   BuchiAutomaton<int, int> renComplOrig = compOrig.renameAutDict(id);
   renComplOrig = renComplOrig.removeUselessRename();
+  auto ranksim = sim.directSimulation<int, int>(renComplOrig, -1);
+  renComplOrig.setDirectSim(ranksim);
+  renComplOrig = renComplOrig.reduce();
 
   BuchiAutomaton<int, int> renComplLazy = compLazy.renameAutDict(id);
   renComplLazy = renComplLazy.removeUselessRename();
+  ranksim = sim.directSimulation<int, int>(renComplLazy, -1);
+  renComplLazy.setDirectSim(ranksim);
+  renComplLazy = renComplLazy.reduce();
 
   stats->generatedTransitionsToTight = 0;
 
@@ -347,7 +355,6 @@ void complementSDWrap(SemiDeterministicCompl& sp, BuchiAutomaton<int, int>* ren,
   }
   else
   {
-
     *complRes = renComplLazy;
     stats->generatedStates = compLazy.getStates().size();
     stats->generatedTrans = compLazy.getTransCount();
