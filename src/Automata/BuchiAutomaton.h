@@ -96,7 +96,7 @@ class BuchiAutomaton : public AutomatonStruct<State, Symbol> {
 
 public:
   typedef std::set<State> SetStates;
-  typedef VecTrans<State, Symbol> VecTransG;  
+  typedef VecTrans<State, Symbol> VecTransG;
   typedef std::set<Symbol> SetSymbols;
   typedef Delta<State, Symbol> Transitions;
   typedef std::set<std::pair<State, State> > StateRelation;
@@ -539,6 +539,7 @@ public:
   BuchiAutomaton<int, int> removeUselessRename();
 
   BuchiAutomaton<int, Symbol> reduce();
+  BuchiAutomaton<int, Symbol> toTBA();
 };
 
 #endif

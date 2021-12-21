@@ -1710,6 +1710,91 @@ BuchiAutomaton<int, Symbol> BuchiAutomaton<State,Symbol>::reduce()
 }
 
 
+template<typename State, typename Symbol>
+BuchiAutomaton<int, Symbol> BuchiAutomaton<State,Symbol>::toTBA()
+{
+  assert(!this->isTBA() && "Reduce not supported for TBAs");
+
+  map<State, int> stmap;
+  map<State, set<Symbol>> predSyms = this->getPredSymbolMap();
+
+  set<pair<State,State>> eqRel;
+  for(const State& p : this->getStates())
+  {
+    for(const State& q : this->getStates())
+    {
+      if(predSyms[p] != predSyms[q])
+        continue;
+
+      bool add = true;
+      for(const Symbol& s : predSyms[p])
+      {
+        if(this->trans[{p,s}] != this->trans[{q,s}])
+        {
+          add = false;
+          break;
+        }
+      }
+      if(add) eqRel.insert({p,q});
+    }
+  }
+
+  set<set<State>> eqcl = Aux::getEqClasses(eqRel, this->getStates());
+
+  set<int> nst;
+  set<int> nini;
+  set<int> nfin;
+  set<State> generateFinTrans;
+  Delta<int, Symbol> ntr;
+  VecTrans<int, Symbol> accTrans;
+
+  int i = 0;
+  for(const auto& cl : eqcl)
+  {
+    nst.insert(i);
+    for(const State& st : cl)
+      stmap[st] = i;
+    if(std::includes(this->finals.begin(), this->finals.end(), cl.begin(), cl.end()))
+    {
+      nfin.insert(i);
+    }
+    else
+    {
+      for(const State& st : cl)
+      {
+        if(this->finals.find(st) != this->finals.end())
+          generateFinTrans.insert(st);
+      }
+    }
+    i++;
+  }
+
+  for(const State& src : generateFinTrans)
+  {
+    for(const Symbol& s : predSyms[src])
+    {
+      for(const State& dest : this->trans[{src, s}])
+      {
+        Transition<int, Symbol> tr = {.from = stmap[src], .to = stmap[dest], .symbol = s};
+        accTrans.push_back(tr);
+      }
+    }
+  }
+
+  nini = Aux::mapSet(stmap, this->initials);
+
+  for(auto& p : this->trans)
+  {
+    Symbol val = p.first.second;
+    std::set<int> to = Aux::mapSet(stmap, p.second);
+    ntr[{ stmap[p.first.first], val} ].insert(to.begin(), to.end());
+  }
+
+  return BuchiAutomaton<int, Symbol>(nst, nfin, nini, ntr, accTrans, this->getAlphabet(), this->getAPPattern());
+}
+
+
+
 
 template class BuchiAutomaton<int, int>;
 template class BuchiAutomaton<std::string, std::string>;
