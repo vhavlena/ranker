@@ -104,12 +104,18 @@ protected:
   {
     Delta<State, Symbol> revTr = ba.getReverseTransitions();
     map<tuple<Symbol, State, State>, unsigned> counter;
+    map<tuple<Symbol, State, State>, unsigned> cntAccTrans;
+    VecTrans<State, Symbol> accTrans = ba.getFinTrans();
+
     for(const Symbol& sym : ba.getAlphabet())
     {
       for(const State& s1 : ba.getStates())
       {
         for(const State& s2 : ba.getStates())
+        {
           counter[{sym, s1, s2}] = 0;
+          cntAccTrans[{sym, s1, s2}] = 0;
+        }
       }
     }
 
@@ -119,6 +125,16 @@ protected:
     set<State> nofin;
     set<State> fin = ba.getFinals();
     auto trans = ba.getTransitions();
+    Delta<State, Symbol> accTransMap;
+
+    for(const auto& tr : accTrans)
+    {
+      if(accTransMap.find({tr.from, tr.symbol}) == accTransMap.end())
+      {
+        accTransMap[{tr.from, tr.symbol}] = set<State>();
+      }
+      accTransMap[{tr.from, tr.symbol}].insert(tr.to);
+    }
 
     std::set_difference(ba.getStates().begin(), ba.getStates().end(), fin.begin(),
       fin.end(), std::inserter(nofin, nofin.begin()));
@@ -131,6 +147,24 @@ protected:
       }
     }
 
+    for(const Symbol& a : ba.getAlphabet())
+    {
+      for(const State& p : ba.getStates())
+      {
+        for(const State& q : ba.getStates())
+        {
+          if(accTransMap[{p, a}].size() > 0 && accTransMap[{q, a}].size() == 0)
+          {
+            if(ret.find({p,q}) == ret.end())
+            {
+              ret.insert({p,q});
+              proc.push({p,q});
+            }
+          }
+        }
+      }
+    }
+
     while(proc.size() > 0)
     {
       auto item = proc.front();
@@ -140,6 +174,27 @@ protected:
         for(const State& k : revTr[{item.second, a}])
         {
           counter[{a, item.first, k}] += 1;
+
+          Transition<State,Symbol> tr = {.from = k, .to = item.second, .symbol = a};
+          if(std::find(accTrans.begin(), accTrans.end(), tr) != accTrans.end())
+          {
+            cntAccTrans[{a, item.first, k}] += 1;
+          }
+
+          if(cntAccTrans[{a, item.first, k}] == accTransMap[{k, a}].size())
+          {
+
+            for(const State& m : revTr[{item.first, a}])
+            {
+              Transition<State,Symbol> tr = {.from = m, .to = item.first, .symbol = a};
+              if(ret.find({m,k}) == ret.end() && std::find(accTrans.begin(), accTrans.end(), tr) != accTrans.end())
+              {
+                ret.insert({m,k});
+                proc.push({m,k});
+              }
+            }
+          }
+
           if(counter[{a, item.first, k}] == trans[{k, a}].size())
           {
             for(const State& m : revTr[{item.first, a}])
