@@ -318,12 +318,6 @@ int main(int argc, char *argv[])
         {
           BuchiAutomaton<int, APSymbol> orig = parseRenameHOABA(parser, opt);
 
-          if(opt.tba)
-          {
-            os.close();
-            return 0;
-          }
-
           if(orig.isTBA())
           {
             opt.ranksim = false;

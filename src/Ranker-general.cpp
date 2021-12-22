@@ -172,9 +172,7 @@ BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, Comp
     auto renTba = tba.renameAut();
     ElevatorAutomaton el(renTba);
 
-    cout << tba.toHOA() << endl;
-
-    if(tba.getStates().size() < orig.getStates().size() && (tba.isSemiDeterministic() || el.isInherentlyWeakBA()))
+    if(/*tba.getStates().size() < orig.getStates().size() &&*/ (tba.isSemiDeterministic() || el.isInherentlyWeakBA()))
     {
       orig = tba;
     }
