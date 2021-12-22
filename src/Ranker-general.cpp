@@ -344,18 +344,18 @@ void complementSDWrap(SemiDeterministicCompl& sp, BuchiAutomaton<int, int>* ren,
   for(auto al : ren->getAlphabet())
     id[al] = al;
 
-  Simulations sim;
+  //Simulations sim;
   BuchiAutomaton<int, int> renComplOrig = compOrig.renameAutDict(id);
   renComplOrig = renComplOrig.removeUselessRename();
-  auto ranksim = sim.directSimulation<int, int>(renComplOrig, -1);
-  renComplOrig.setDirectSim(ranksim);
-  renComplOrig = renComplOrig.reduce();
+  // auto ranksim = sim.directSimulation<int, int>(renComplOrig, -1);
+  // renComplOrig.setDirectSim(ranksim);
+  // renComplOrig = renComplOrig.reduce();
 
   BuchiAutomaton<int, int> renComplLazy = compLazy.renameAutDict(id);
   renComplLazy = renComplLazy.removeUselessRename();
-  ranksim = sim.directSimulation<int, int>(renComplLazy, -1);
-  renComplLazy.setDirectSim(ranksim);
-  renComplLazy = renComplLazy.reduce();
+  // ranksim = sim.directSimulation<int, int>(renComplLazy, -1);
+  // renComplLazy.setDirectSim(ranksim);
+  // renComplLazy = renComplLazy.reduce();
 
   stats->generatedTransitionsToTight = 0;
 
