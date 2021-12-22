@@ -277,6 +277,8 @@ void complementCoBAWrap(CoBuchiAutomatonCompl *ren, BuchiAutomaton<StateGcoBA, i
   renPure.removeUseless();
   renPure = renPure.renameAutDict(id);
 
+  //cout << renSim.getStates().size() << " : " << renPure.getStates().size() << endl;
+
   if(renSim.getStates().size() > renPure.getStates().size())
   {
     *complOrig = pure;
@@ -334,11 +336,11 @@ void complementSDWrap(SemiDeterministicCompl& sp, BuchiAutomaton<int, int>* ren,
   BuchiAutomaton<StateSD, int> compOrig;
   BuchiAutomaton<StateSD, int> compLazy;
 
-  opt.ncsbLazy = false;
-  compOrig = sp.complementSD(opt);
+  ComplOptions optP = opt;
+  optP.ncsbLazy = false;
+  compOrig = sp.complementSD(optP);
 
-  opt.ncsbLazy = true;
-  compLazy = sp.complementSD(opt);
+
 
   map<int, int> id;
   for(auto al : ren->getAlphabet())
@@ -351,26 +353,46 @@ void complementSDWrap(SemiDeterministicCompl& sp, BuchiAutomaton<int, int>* ren,
   // renComplOrig.setDirectSim(ranksim);
   // renComplOrig = renComplOrig.reduce();
 
-  BuchiAutomaton<int, int> renComplLazy = compLazy.renameAutDict(id);
-  renComplLazy = renComplLazy.removeUselessRename();
+  BuchiAutomaton<int, int> renComplLazy;
+  if(opt.ncsbLazy)
+  {
+    //opt.ncsbLazy = true;
+    compLazy = sp.complementSD(opt);
+    renComplLazy = compLazy.renameAutDict(id);
+    renComplLazy = renComplLazy.removeUselessRename();
+  }
   // ranksim = sim.directSimulation<int, int>(renComplLazy, -1);
   // renComplLazy.setDirectSim(ranksim);
   // renComplLazy = renComplLazy.reduce();
 
+  //cout << compOrig.toGraphwiz() << endl;
+
+  //cout << "(" << renComplOrig.getStates().size() << ", " << compOrig.getStates().size() << ") : (" << renComplLazy.getStates().size() << ", " << compLazy.getStates().size() << ")" << endl;
+
   stats->generatedTransitionsToTight = 0;
 
-  if(renComplOrig.getStates().size() <= renComplLazy.getStates().size())
+  if(opt.ncsbLazy)
+  {
+    if(renComplOrig.getStates().size() <= renComplLazy.getStates().size())
+    {
+      *complRes = renComplOrig;
+      stats->generatedStates = compOrig.getStates().size();
+      stats->generatedTrans = compOrig.getTransCount();
+    }
+    else
+    {
+      *complRes = renComplLazy;
+      stats->generatedStates = compLazy.getStates().size();
+      stats->generatedTrans = compLazy.getTransCount();
+    }
+  }
+  else
   {
     *complRes = renComplOrig;
     stats->generatedStates = compOrig.getStates().size();
     stats->generatedTrans = compOrig.getTransCount();
   }
-  else
-  {
-    *complRes = renComplLazy;
-    stats->generatedStates = compLazy.getStates().size();
-    stats->generatedTrans = compLazy.getTransCount();
-  }
+
 
   // BuchiAutomaton<int, int> renCompl = comp.renameAutDict(id);
   // //renCompl.removeUseless();

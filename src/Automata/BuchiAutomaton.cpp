@@ -576,6 +576,14 @@ std::string BuchiAutomaton<pair<StateSch, int>, APSymbol>::toGraphwiz()
   return toGraphwizWith(f1, f2);
 }
 
+template <>
+std::string BuchiAutomaton<StateSD, int>::toGraphwiz()
+{
+  std::function<std::string(StateSD)> f1 = [&] (StateSD x) {return x.toString();};
+  std::function<std::string(int)> f2 = [=] (int x) {return std::to_string(x);};
+  return toGraphwizWith(f1, f2);
+}
+
 
 /*
  * Function converting the automaton <int, int> to string.

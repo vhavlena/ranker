@@ -97,6 +97,9 @@ std::vector<StateSD> SemiDeterministicCompl::getSuccessorsMaxRank(StateSD& state
       return successors;
     }
 
+    set<int> tmp;
+    std::set_difference(succ1.C.begin(), succ1.C.end(), SsuccSet.begin(), SsuccSet.end(), std::inserter(tmp, tmp.begin()));
+    succ1.C = tmp;
     succ1.S = SsuccSet;
 
     if(state.B.size() == 0)
@@ -105,7 +108,8 @@ std::vector<StateSD> SemiDeterministicCompl::getSuccessorsMaxRank(StateSD& state
     }
     else
     {
-      succ1.B = this->succSet(state.B, symbol);
+      auto succB = this->succSet(state.B, symbol);
+      std::set_intersection(succB.begin(), succB.end(), succ1.C.begin(), succ1.C.end(), std::inserter(succ1.B, succ1.B.begin()));
     }
 
     StateSD succ2 = succ1;
