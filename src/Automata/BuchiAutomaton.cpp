@@ -1717,6 +1717,8 @@ BuchiAutomaton<int, Symbol> BuchiAutomaton<State,Symbol>::toTBA()
 
   map<State, int> stmap;
   map<State, set<Symbol>> predSyms = this->getPredSymbolMap();
+  map<State, set<Symbol>> predSymsRev = this->getReverseSymbolMap();
+  Delta<State, Symbol> revTr = this->getReverseTransitions();
 
   set<pair<State,State>> eqRel;
   for(const State& p : this->getStates())
@@ -1771,11 +1773,11 @@ BuchiAutomaton<int, Symbol> BuchiAutomaton<State,Symbol>::toTBA()
 
   for(const State& src : generateFinTrans)
   {
-    for(const Symbol& s : predSyms[src])
+    for(const Symbol& s : predSymsRev[src])
     {
-      for(const State& dest : this->trans[{src, s}])
+      for(const State& dest : revTr[{src, s}])
       {
-        Transition<int, Symbol> tr = {.from = stmap[src], .to = stmap[dest], .symbol = s};
+        Transition<int, Symbol> tr = {.from = stmap[dest], .to = stmap[src], .symbol = s};
         accTrans.push_back(tr);
       }
     }

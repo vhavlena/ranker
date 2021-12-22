@@ -57,6 +57,7 @@ int main(int argc, char *argv[])
   args::Flag backoffFlag(parser, "backoff", "Use backoff", {"backoff"});
   args::Flag versionFlag(parser, "version", "Git commit version", {"version"});
   args::Flag sdVersionFlag(parser, "ncsb-lazy", "Use NCSB-lazy for SD complementation", {"ncsb-lazy"});
+  args::Flag tbaFlag(parser, "tba", "Use TBA preprocessing", {"tba"});
 
   ComplOptions opt = { .cutPoint = true, .succEmptyCheck = false, .ROMinState = 8,
       .ROMinRank = 6, .CacheMaxState = 6, .CacheMaxRank = 8, .semidetOpt = false,
@@ -65,7 +66,7 @@ int main(int argc, char *argv[])
       .dirsim = true, .ranksim = true, .sl = true, .reach = true, .flowDirSim = false, .preprocess = NONE, .accPropagation = false,
       .semideterminize = false, .backoff = false, .BOBound = { {11,15}, {11,13} },
       .semideterministic = false, .complete = false, .lowrankopt = false,
-      .iwSim = true, .iwSat = false, .ncsbLazy = false};
+      .iwSim = true, .iwSat = false, .ncsbLazy = false, .tba = false};
 
   try
   {
@@ -155,6 +156,11 @@ int main(int argc, char *argv[])
 
   if (sdVersionFlag){
     opt.ncsbLazy = true;
+  }
+
+  if(tbaFlag)
+  {
+    opt.tba = true;
   }
 
   // delay version
@@ -312,6 +318,12 @@ int main(int argc, char *argv[])
         {
           BuchiAutomaton<int, APSymbol> orig = parseRenameHOABA(parser, opt);
 
+          if(opt.tba)
+          {
+            os.close();
+            return 0;
+          }
+
           if(orig.isTBA())
           {
             opt.ranksim = false;
@@ -354,7 +366,7 @@ int main(int argc, char *argv[])
           ElevatorAutomaton el(renBuchi);
           if (elevatorTest){
             cout << "Elevator automaton: " << (el.isElevator() ? "Yes" : "No") << endl;
-            cout << "Elevaor states: " << el.elevatorStates() << endl;
+            cout << "Elevator states: " << el.elevatorStates() << endl;
             os.close();
             return 0;
           }
