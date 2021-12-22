@@ -284,7 +284,9 @@ std::string BuchiAutomaton<int, APSymbol>::toHOA()
 
   res += "acc-name: Buchi\n";
   res += "Acceptance: 1 Inf(0)\n";
-  res += "properties: trans-labels explicit-labels state-acc\n";
+  res += "properties: trans-labels explicit-labels";
+  if (!this->isTBA()) res += " state-acc\n";
+  else res += "\n";
   res += "AP: " + std::to_string(this->apsPattern.size());
 
   for (const auto& item : this->apsPattern){
@@ -342,7 +344,9 @@ std::string BuchiAutomaton<int, int>::toHOA(std::map<int, int> sccs)
 
   res += "acc-name: Buchi\n";
   res += "Acceptance: 1 Inf(0)\n";
-  res += "properties: trans-labels explicit-labels state-acc\n";
+  res += "properties: trans-labels explicit-labels";
+  if (!this->isTBA()) res += " state-acc\n";
+  else res += "\n";
   res += "AP: " + std::to_string(alph_size);
 
   // renumber symbols
