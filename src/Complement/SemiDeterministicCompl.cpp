@@ -25,7 +25,6 @@ BuchiAutomaton<StateSD, int> SemiDeterministicCompl::complementSD(ComplOptions o
     initials.insert(init);
     states.insert(init);
 
-
     std::stack<StateSD> stack;
     for (const auto& init : initials)
         stack.push(init);
@@ -88,8 +87,20 @@ std::vector<StateSD> SemiDeterministicCompl::getSuccessorsMaxRank(StateSD& state
     succ1.C.insert(NtoDet.begin(), NtoDet.end());
 
     auto SsuccSet = this->succSet(state.S, symbol);
+    
+    set<int> finReachS;
+    for (auto tr : this->getFinTrans())
+    {
+        if (tr.symbol == symbol and state.S.find(tr.from) != state.S.end() and SsuccSet.find(tr.to) != SsuccSet.end())
+        {
+            finReachS.insert(tr.to);
+        } 
+    }
+    set<int> allFins;
+    std::set_union(fin.begin(), fin.end(), finReachS.begin(), finReachS.end(), std::inserter(allFins, allFins.begin()));
+    
     set<int> FinS;
-    std::set_intersection(SsuccSet.begin(), SsuccSet.end(), fin.begin(), fin.end(), std::inserter(FinS, FinS.begin()));
+    std::set_intersection(SsuccSet.begin(), SsuccSet.end(), allFins.begin(), allFins.end(), std::inserter(FinS, FinS.begin()));
     if(FinS.size() > 0)
     {
       return successors;
@@ -113,31 +124,15 @@ std::vector<StateSD> SemiDeterministicCompl::getSuccessorsMaxRank(StateSD& state
     StateSD succ2 = succ1;
     set<int> rem;
     succ2.B = set<int>();
-    std::set_difference(succ1.B.begin(), succ1.B.end(), fin.begin(), fin.end(), std::inserter(rem, rem.begin()));
-    std::set_intersection(succ1.B.begin(), succ1.B.end(), fin.begin(), fin.end(), std::inserter(succ2.B, succ2.B.begin()));
+    std::set_difference(succ1.B.begin(), succ1.B.end(), allFins.begin(), allFins.end(), std::inserter(rem, rem.begin()));
+    std::set_intersection(succ1.B.begin(), succ1.B.end(), allFins.begin(), allFins.end(), std::inserter(succ2.B, succ2.B.begin()));
     succ2.S.insert(rem.begin(), rem.end());
     set<int> aux;
     std::set_difference(succ2.C.begin(), succ2.C.end(), rem.begin(), rem.end(), std::inserter(aux, aux.begin()));
     succ2.C = aux;
 
-    std::set<int> CUS;
-    std::set_union(state.C.begin(), state.C.end(), state.S.begin(), state.S.end(), std::inserter(CUS, CUS.begin()));
-    std::set<int> finReach;
-    for (auto tr : this->getFinTrans()){
-        if (tr.symbol == symbol and CUS.find(tr.from) != CUS.end()){
-            finReach.insert(tr.to);
-        }
-    }
-
-    std::set<int> diff;
-    std::set_difference(finReach.begin(), finReach.end(), succ1.C.begin(), succ1.C.end(), std::inserter(diff, diff.begin()));
-    if (diff.size() == 0)
-        successors.push_back(succ1);
-
-    diff.clear();
-    std::set_difference(finReach.begin(), finReach.end(), succ2.C.begin(), succ2.C.end(), std::inserter(diff, diff.begin()));
-    if (diff.size() == 0)
-        successors.push_back(succ2);
+    successors.push_back(succ1);
+    successors.push_back(succ2);
 
     return successors;
 }
@@ -155,15 +150,22 @@ std::vector<StateSD> SemiDeterministicCompl::getSuccessorsOriginal(StateSD& stat
     std::set<int> S_prime_base = this->succSet(state.S, symbol);
 
     std::set<int> C_not_acc;
-    if (state.C.size() > 0)
-        std::set_difference(state.C.begin(), state.C.end(), this->getFinals().begin(), this->getFinals().end(), std::inserter(C_not_acc, C_not_acc.begin()));
+    set<int> CFinTrans;
+    for (auto tr : this->getFinTrans()){
+        if (tr.symbol == symbol and state.C.find(tr.from) != state.C.end()){
+            CFinTrans.insert(tr.from);
+        }
+    }
+    set<int> allFins;
+    std::set_union(this->getFinals().begin(), this->getFinals().end(), CFinTrans.begin(), CFinTrans.end(), std::inserter(allFins, allFins.begin()));
+    std::set_difference(state.C.begin(), state.C.end(), allFins.begin(), allFins.end(), std::inserter(C_not_acc, C_not_acc.begin()));
     std::set<int> C_prime_base = this->succSet(C_not_acc, symbol);
 
     std::vector<int> N_to_det;
     auto succSet = this->succSet(state.N, symbol);
     std::set_intersection(succSet.begin(), succSet.end(), this->getDet().begin(), this->getDet().end(), std::back_inserter(N_to_det));
     std::vector<int> F_in_C;
-    std::set_intersection(state.C.begin(), state.C.end(), this->getFinals().begin(), this->getFinals().end(), std::back_inserter(F_in_C));
+    std::set_intersection(state.C.begin(), state.C.end(), allFins.begin(), allFins.end(), std::back_inserter(F_in_C));
     std::set<int> tmp(F_in_C.begin(), F_in_C.end());
     std::set<int> F_in_C_not_S_reach = this->succSet(tmp, symbol);
 
@@ -176,15 +178,6 @@ std::vector<StateSD> SemiDeterministicCompl::getSuccessorsOriginal(StateSD& stat
     std::set_difference(remaining.begin(), remaining.end(), S_prime_base.begin(), S_prime_base.end(), std::back_inserter(rem2));
     remaining = rem2;
 
-    std::set<int> CUS;
-    std::set_union(state.C.begin(), state.C.end(), state.S.begin(), state.S.end(), std::inserter(CUS, CUS.begin()));
-    std::set<int> finReach;
-    for (auto tr : this->getFinTrans()){
-        if (tr.symbol == symbol and CUS.find(tr.from) != CUS.end()){
-            finReach.insert(tr.to);
-        }
-    }
-
     auto subsets = Aux::getAllSubsets(remaining);
 
     for (const auto& subset : subsets){
@@ -195,15 +188,21 @@ std::vector<StateSD> SemiDeterministicCompl::getSuccessorsOriginal(StateSD& stat
         std::set_difference(remaining.begin(), remaining.end(), subset.begin(), subset.end(), std::back_inserter(subsetComplement));
 
         std::set_union(C_prime_base.begin(), C_prime_base.end(), subset.begin(), subset.end(), std::inserter(newState.C, newState.C.begin()));
-        std::set<int> diff;
-        std::set_difference(finReach.begin(), finReach.end(), newState.C.begin(), newState.C.end(), std::inserter(diff, diff.begin()));
-        if (diff.size() > 0)
-            continue;
 
         std::set_union(S_prime_base.begin(), S_prime_base.end(), subsetComplement.begin(), subsetComplement.end(), std::inserter(newState.S, newState.S.begin()));
 
+        set<int> SFinTrans;
+        for (auto tr : this->getFinTrans()){
+            if (tr.symbol == symbol and state.S.find(tr.from) != state.S.end()){
+                SFinTrans.insert(tr.to);
+            }
+        }
+
+        allFins.clear();
+        std::set_union(this->getFinals().begin(), this->getFinals().end(), SFinTrans.begin(), SFinTrans.end(), std::inserter(allFins, allFins.begin()));
+        
         std::set<int> F_in_S;
-        std::set_intersection(newState.S.begin(), newState.S.end(), this->getFinals().begin(), this->getFinals().end(), std::inserter(F_in_S, F_in_S.begin()));
+        std::set_intersection(newState.S.begin(), newState.S.end(), allFins.begin(), allFins.end(), std::inserter(F_in_S, F_in_S.begin()));
         if (F_in_S.size() > 0)
             continue;
 
@@ -234,15 +233,6 @@ std::vector<StateSD> SemiDeterministicCompl::getSuccessorsLazy(StateSD& state, i
     std::set<int> S_prime_base = this->succSet(state.S, symbol);
 
     if (state.B.size() == 0){
-        std::set<int> CUS;
-        std::set_union(state.C.begin(), state.C.end(), state.S.begin(), state.S.end(), std::inserter(CUS, CUS.begin()));
-        std::set<int> finReach;
-        for (auto tr : this->getFinTrans()){
-            if (tr.symbol == symbol and CUS.find(tr.from) != CUS.end()){
-                finReach.insert(tr.to);
-            }
-        }
-
         // C'
         std::set<int> C_prime_base;
 
@@ -266,15 +256,21 @@ std::vector<StateSD> SemiDeterministicCompl::getSuccessorsLazy(StateSD& state, i
             std::set_difference(remaining.begin(), remaining.end(), subset.begin(), subset.end(), std::back_inserter(subsetComplement));
 
             std::set_union(C_prime_base.begin(), C_prime_base.end(), subset.begin(), subset.end(), std::inserter(newState.C, newState.C.begin()));
-            std::set<int> diff;
-            std::set_difference(finReach.begin(), finReach.end(), newState.C.begin(), newState.C.end(), std::inserter(diff, diff.begin()));
-            if (diff.size() > 0)
-                continue;
 
             std::set_union(S_prime_base.begin(), S_prime_base.end(), subsetComplement.begin(), subsetComplement.end(), std::inserter(newState.S, newState.S.begin()));
 
+            set<int> SFinTrans;
+            for (auto tr : this->getFinTrans()){
+                if (tr.symbol == symbol and state.S.find(tr.from) != state.S.end()){
+                    SFinTrans.insert(tr.to);
+                }
+            }
+
+            std::set<int> allFins;
+            std::set_union(this->getFinals().begin(), this->getFinals().end(), SFinTrans.begin(), SFinTrans.end(), std::inserter(allFins, allFins.begin()));
+
             std::set<int> F_in_S;
-            std::set_intersection(newState.S.begin(), newState.S.end(), this->getFinals().begin(), this->getFinals().end(), std::inserter(F_in_S, F_in_S.begin()));
+            std::set_intersection(newState.S.begin(), newState.S.end(), allFins.begin(), allFins.end(), std::inserter(F_in_S, F_in_S.begin()));
             if (F_in_S.size() > 0)
                 continue;
 
@@ -285,18 +281,20 @@ std::vector<StateSD> SemiDeterministicCompl::getSuccessorsLazy(StateSD& state, i
     }
 
     else {
-        std::set<int> BUS;
-        std::set_union(state.B.begin(), state.B.end(), state.S.begin(), state.S.end(), std::inserter(BUS, BUS.begin()));
-        std::set<int> finReach;
+        set<int> BFinTrans;
         for (auto tr : this->getFinTrans()){
-            if (tr.symbol == symbol and BUS.find(tr.from) != BUS.end()){
-                finReach.insert(tr.to);
+            if (tr.symbol == symbol and state.B.find(tr.from) != state.B.end()){
+                BFinTrans.insert(tr.from);
             }
         }
 
+        set<int> allFins;
+        std::set_union(this->getFinals().begin(), this->getFinals().end(), BFinTrans.begin(), BFinTrans.end(), std::inserter(allFins, allFins.begin()));
+        
         std::set<int> B_not_acc;
-        if (state.B.size() > 0)
-            std::set_difference(state.B.begin(), state.B.end(), this->getFinals().begin(), this->getFinals().end(), std::inserter(B_not_acc, B_not_acc.begin()));
+        if (state.B.size() > 0){
+            std::set_difference(state.B.begin(), state.B.end(), allFins.begin(), allFins.end(), std::inserter(B_not_acc, B_not_acc.begin()));
+        }
         std::set<int> B_prime_base = this->succSet(B_not_acc, symbol);
 
         std::set<int> B_union_S;
@@ -323,15 +321,21 @@ std::vector<StateSD> SemiDeterministicCompl::getSuccessorsLazy(StateSD& state, i
             std::set_difference(remReach.begin(), remReach.end(), subset.begin(), subset.end(), std::back_inserter(subsetComplement));
 
             std::set_union(B_prime_base.begin(), B_prime_base.end(), subset.begin(), subset.end(), std::inserter(newState.B, newState.B.begin()));
-            std::set<int> diff;
-            std::set_difference(finReach.begin(), finReach.end(), newState.B.begin(), newState.B.end(), std::inserter(diff, diff.begin()));
-            if (diff.size() > 0)
-                continue;
 
             std::set_union(S_prime_base.begin(), S_prime_base.end(), subsetComplement.begin(), subsetComplement.end(), std::inserter(newState.S, newState.S.begin()));
 
+            set<int> SFinTrans;
+            for (auto tr : this->getFinTrans()){
+                if (tr.symbol == symbol and state.S.find(tr.from) != state.S.end()){
+                    SFinTrans.insert(tr.to);
+                }
+            }
+
+            allFins.clear();
+            std::set_union(this->getFinals().begin(), this->getFinals().end(), SFinTrans.begin(), SFinTrans.end(), std::inserter(allFins, allFins.begin()));
+
             std::set<int> F_in_S;
-            std::set_intersection(newState.S.begin(), newState.S.end(), this->getFinals().begin(), this->getFinals().end(), std::inserter(F_in_S, F_in_S.begin()));
+            std::set_intersection(newState.S.begin(), newState.S.end(), allFins.begin(), allFins.end(), std::inserter(F_in_S, F_in_S.begin()));
             if (F_in_S.size() > 0)
                 continue;
 
