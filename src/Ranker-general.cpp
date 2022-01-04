@@ -166,13 +166,13 @@ BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, Comp
     //std::cerr << tmp.toGraphwiz() << std::endl;
   }
 
-  if(opt.tba && !elev.isInherentlyWeakBA())
+  if(opt.tba)
   {
     auto tba = orig.toTBA();
     auto renTba = tba.renameAut();
     ElevatorAutomaton el(renTba);
 
-    if(/*tba.getStates().size() < orig.getStates().size() &&*/ (tba.isSemiDeterministic() || el.isInherentlyWeakBA()))
+    if(tba.getStates().size() < orig.getStates().size() && (tba.isSemiDeterministic() || el.isInherentlyWeakBA()))
     {
       orig = tba;
     }
@@ -373,7 +373,7 @@ void complementSDWrap(SemiDeterministicCompl& sp, BuchiAutomaton<int, int>* ren,
 
   if(opt.ncsbLazy)
   {
-    if(renComplOrig.getStates().size() <= renComplLazy.getStates().size())
+    if(renComplOrig.getStates().size() <= renComplLazy.getStates().size() + 10)
     {
       *complRes = renComplOrig;
       stats->generatedStates = compOrig.getStates().size();

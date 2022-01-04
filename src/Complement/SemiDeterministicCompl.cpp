@@ -87,18 +87,18 @@ std::vector<StateSD> SemiDeterministicCompl::getSuccessorsMaxRank(StateSD& state
     succ1.C.insert(NtoDet.begin(), NtoDet.end());
 
     auto SsuccSet = this->succSet(state.S, symbol);
-    
+
     set<int> finReachS;
     for (auto tr : this->getFinTrans())
     {
         if (tr.symbol == symbol and state.S.find(tr.from) != state.S.end() and SsuccSet.find(tr.to) != SsuccSet.end())
         {
             finReachS.insert(tr.to);
-        } 
+        }
     }
     set<int> allFins;
     std::set_union(fin.begin(), fin.end(), finReachS.begin(), finReachS.end(), std::inserter(allFins, allFins.begin()));
-    
+
     set<int> FinS;
     std::set_intersection(SsuccSet.begin(), SsuccSet.end(), allFins.begin(), allFins.end(), std::inserter(FinS, FinS.begin()));
     if(FinS.size() > 0)
@@ -131,8 +131,14 @@ std::vector<StateSD> SemiDeterministicCompl::getSuccessorsMaxRank(StateSD& state
     std::set_difference(succ2.C.begin(), succ2.C.end(), rem.begin(), rem.end(), std::inserter(aux, aux.begin()));
     succ2.C = aux;
 
+    aux = set<int>();
+    std::set_intersection(succ1.B.begin(), succ1.B.end(), fin.begin(), fin.end(), std::inserter(aux, aux.begin()));
+    if(aux.size() == 0)
+    {
+      successors.push_back(succ2);
+    }
+
     successors.push_back(succ1);
-    successors.push_back(succ2);
 
     return successors;
 }
@@ -200,7 +206,7 @@ std::vector<StateSD> SemiDeterministicCompl::getSuccessorsOriginal(StateSD& stat
 
         allFins.clear();
         std::set_union(this->getFinals().begin(), this->getFinals().end(), SFinTrans.begin(), SFinTrans.end(), std::inserter(allFins, allFins.begin()));
-        
+
         std::set<int> F_in_S;
         std::set_intersection(newState.S.begin(), newState.S.end(), allFins.begin(), allFins.end(), std::inserter(F_in_S, F_in_S.begin()));
         if (F_in_S.size() > 0)
@@ -290,7 +296,7 @@ std::vector<StateSD> SemiDeterministicCompl::getSuccessorsLazy(StateSD& state, i
 
         set<int> allFins;
         std::set_union(this->getFinals().begin(), this->getFinals().end(), BFinTrans.begin(), BFinTrans.end(), std::inserter(allFins, allFins.begin()));
-        
+
         std::set<int> B_not_acc;
         if (state.B.size() > 0){
             std::set_difference(state.B.begin(), state.B.end(), allFins.begin(), allFins.end(), std::inserter(B_not_acc, B_not_acc.begin()));
