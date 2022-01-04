@@ -55,12 +55,12 @@ BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, Comp
     orig = tmp.renameAlphabet(intap);
   }
 
+
+  BuchiAutomaton<int, int> tmp = orig.renameAlphabet(apint);
+  ElevatorAutomaton elev(tmp);
+
   if(opt.preprocess != NONE)
   {
-
-    BuchiAutomaton<int, int> tmp = orig.renameAlphabet(apint);
-    ElevatorAutomaton elev(tmp);
-
     set<int> fins = tmp.getFinals();
     VecTrans<int, int> finsTrans = tmp.getFinTrans();
 
@@ -166,7 +166,7 @@ BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, Comp
     //std::cerr << tmp.toGraphwiz() << std::endl;
   }
 
-  if(opt.tba)
+  if(opt.tba && !elev.isInherentlyWeakBA())
   {
     auto tba = orig.toTBA();
     auto renTba = tba.renameAut();
