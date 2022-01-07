@@ -29,7 +29,7 @@ bool ElevatorAutomaton::isNonDeterministic(std::set<int>& scc){
 }
 
 
-bool ElevatorAutomaton::isInherentlyWeak(std::set<int>& scc, map<int, set<int> >& predSyms){
+bool ElevatorAutomaton::isInherentlyWeak(const std::set<int>& scc, map<int, set<int> >& predSyms){
   SetStates st;
   SetStates fin = this->getFinals();
   SetStates empty;
@@ -38,7 +38,7 @@ bool ElevatorAutomaton::isInherentlyWeak(std::set<int>& scc, map<int, set<int> >
   VecTransG finTrans = this->getFinTrans();
 
   // states without accepting states
-  for (auto state : scc){
+  for (const auto& state : scc){
     if (fin.find(state) == fin.end()){
       st.insert(state);
       if (ini.find(state) != ini.end())
@@ -64,7 +64,7 @@ bool ElevatorAutomaton::isInherentlyWeak(std::set<int>& scc, map<int, set<int> >
   ElevatorAutomaton tmpSpec(tmp);
 
   auto newSccs = tmpSpec.getAutGraphSCCs();
-  for (auto scc : newSccs){
+  for (const auto& scc : newSccs){
     if (scc.size() > 1)
       return false;
     else if (scc.size() == 1){
@@ -132,7 +132,7 @@ BuchiAutomaton<int, int> ElevatorAutomaton::copyPreprocessing(const std::functio
   map<int, set<int> > predSyms = this->getPredSymbolMap();
   std::vector<std::set<int>> sccs = this->topologicalSort(predSyms);
   std::vector<SccClassif> sccClass;
-  for (auto scc : sccs){
+  for (const auto& scc : sccs){
     SccClassif tmp = {.states = scc, .det = false, .inhWeak = false, .nonDet = false};
     sccClass.push_back(tmp);
   }
@@ -188,7 +188,7 @@ bool ElevatorAutomaton::isElevator(){
   map<int, set<int> > predSyms = this->getPredSymbolMap();
   std::vector<std::set<int>> sccs = this->topologicalSort(predSyms);
   std::vector<SccClassif> sccClass;
-  for (auto scc : sccs){
+  for (const auto& scc : sccs){
     SccClassif tmp = {.states = scc, .det = false, .inhWeak = false, .nonDet = false};
     sccClass.push_back(tmp);
   }
@@ -310,7 +310,7 @@ unsigned ElevatorAutomaton::elevatorStates(){
 
   // determine scc type (deterministic, nondeterministic, bad, both)
   std::map<std::set<int>, sccType> typeMap;
-  for (auto scc : sortedComponents){
+  for (const auto& scc : sortedComponents){
     // is scc deterministic?
     bool det = true;
     for (auto state : scc){
@@ -366,7 +366,7 @@ unsigned ElevatorAutomaton::elevatorStates(){
   }
 
   unsigned elevatorStates = 0;
-  for (auto scc : sortedComponents){
+  for (const auto& scc : sortedComponents){
     if (typeMap[scc] != BAD)
       elevatorStates += scc.size();
   }
@@ -384,7 +384,7 @@ std::map<int, int> ElevatorAutomaton::elevatorRank(bool detBeginning){
   // get all sorted sccs
   std::vector<std::set<int>> sccs = this->topologicalSort(predSyms);
   std::vector<SccClassif> sccClass;
-  for (auto& scc : sccs){
+  for (const auto& scc : sccs){
     SccClassif tmp = {.states = scc, .det = false, .inhWeak = false, .nonDet = false};
     sccClass.push_back(tmp);
   }
@@ -427,7 +427,7 @@ std::map<int, int> ElevatorAutomaton::elevatorRank(bool detBeginning){
         for (auto state : it->states){
           if (skip)
             break;
-          for (auto state2 : this->getAllSuccessors(state, predSyms)){
+          for (const auto& state2 : this->getAllSuccessors(state, predSyms)){
             if (it2->states.find(state2) != it2->states.end()){
               succ.push_back(*it2);
               skip = true;
@@ -469,7 +469,7 @@ std::map<int, int> ElevatorAutomaton::elevatorRank(bool detBeginning){
 
       // rule #3: N
       if (it->nonDet){
-        for (auto scc : succ){
+        for (const auto& scc : succ){
           if (scc.nonDet and scc.rank > rank){
             // accepting transition between components
             if (std::any_of(this->getFinTrans().begin(), this->getFinTrans().end(), [scc, it](auto trans){return it->states.find(trans.from) != it->states.end() and scc.states.find(trans.to) != scc.states.end();}))
@@ -493,7 +493,7 @@ std::map<int, int> ElevatorAutomaton::elevatorRank(bool detBeginning){
       // rule #4 : IW
       rank = -1;
       if (it->inhWeak){
-        for (auto scc : succ){
+        for (const auto& scc : succ){
           if ((scc.det or scc.inhWeak) and scc.rank > rank)
             rank = scc.rank;
           else if (scc.nonDet and scc.rank+1 > rank)
@@ -516,7 +516,7 @@ std::map<int, int> ElevatorAutomaton::elevatorRank(bool detBeginning){
       // rule #5: D
       rank = -1;
       if (it->det){
-        for (auto scc : succ){
+        for (const auto& scc : succ){
           if (scc.nonDet and scc.rank+1 > rank){
             rank = scc.rank + 1;
           }
@@ -566,7 +566,7 @@ std::map<int, int> ElevatorAutomaton::elevatorRank(bool detBeginning){
       // non-elevator scc
       if (not (it->det or it->inhWeak or it->nonDet)){
         int mx = -1;
-        for (auto scc : succ){
+        for (const auto& scc : succ){
           if (mx == -1)
             mx = scc.rank;
           else if (mx < scc.rank)
@@ -610,8 +610,8 @@ std::map<int, int> ElevatorAutomaton::elevatorRank(bool detBeginning){
   }
 
   std::map<int, int> ranks;
-  for (auto scc : sccClass){
-    for (auto state : scc.states){
+  for (const auto& scc : sccClass){
+    for (const auto& state : scc.states){
       if (scc.detBeginning){
         if (this->getFinals().find(state) != this->getFinals().end())
           ranks.insert({state, 0});
@@ -635,9 +635,9 @@ bool ElevatorAutomaton::isInherentlyWeakBA()
   auto sccs = this->getAutGraphSCCs();
   auto finals = this->getFinals();
   auto finTrans = this->getFinTrans();
-  for (auto scc : sccs) {
-    if (not isInherentlyWeak(scc, predSyms) and 
-        (std::any_of(scc.begin(), scc.end(), [finals](int state){return finals.find(state) != finals.end();}) or 
+  for (const auto& scc : sccs) {
+    if (not isInherentlyWeak(scc, predSyms) and
+        (std::any_of(scc.begin(), scc.end(), [finals](int state){return finals.find(state) != finals.end();}) or
         std::any_of(finTrans.begin(), finTrans.end(), [scc](auto tr){
             return scc.find(tr.from) != scc.end() and scc.find(tr.to) != scc.end();
         })))

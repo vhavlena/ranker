@@ -233,7 +233,7 @@ public:
 
     this->invRenameMap = std::vector<State>(this->states.size() + start);
 
-    for(auto st : this->states)
+    for(const auto& st : this->states)
     {
       auto it = mpstate.find(st);
       this->invRenameMap[stcnt] = st;
@@ -251,7 +251,7 @@ public:
     rstate = Aux::mapSet(mpstate, this->states);
     rini = Aux::mapSet(mpstate, this->initials);
     rfin = Aux::mapSet(mpstate, this->finals);
-    for(auto p : this->trans)
+    for(auto& p : this->trans)
     {
       auto it = mpsymbol.find(p.first.second);
       int val;
@@ -280,11 +280,11 @@ public:
     this->renameSymbolMap = mpsymbol;
 
     std::set<std::pair<int, int> > rdirSim, roddSim;
-    for(auto item : this->directSim)
+    for(auto& item : this->directSim)
     {
       rdirSim.insert({mpstate[item.first], mpstate[item.second]});
     }
-    for(auto item : this->oddRankSim)
+    for(auto& item : this->oddRankSim)
     {
       roddSim.insert({mpstate[item.first], mpstate[item.second]});
     }

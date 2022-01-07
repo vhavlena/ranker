@@ -23,7 +23,7 @@ BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAutDict(map<Symbol
   VecTrans<int, int> ftrans;
   this->invRenameMap = std::vector<State>(this->states.size() + start);
 
-  for(auto st : this->states)
+  for(const auto& st : this->states)
   {
     auto it = mpstate.find(st);
     this->invRenameMap[stcnt] = st;
@@ -40,7 +40,7 @@ BuchiAutomaton<int, int> BuchiAutomaton<State, Symbol>::renameAutDict(map<Symbol
   rstate = Aux::mapSet(mpstate, this->states);
   rini = Aux::mapSet(mpstate, this->initials);
   rfin = Aux::mapSet(mpstate, this->finals);
-  for(auto p : this->trans)
+  for(auto& p : this->trans)
   {
     int val = mpsymbol[p.first.second];
     std::set<int> to = Aux::mapSet(mpstate, p.second);
@@ -516,6 +516,21 @@ std::string BuchiAutomaton<pair<StateGcoBA, int>, APSymbol>::toGraphwiz()
 
 
 /*
+ * Function converting the automaton <StateGcoBA, int>> to graphwiz format.
+ * @return Graphwiz representation of the automaton
+ */
+template <>
+std::string BuchiAutomaton<StateGcoBA, int>::toGraphwiz()
+{
+  std::function<std::string(StateGcoBA)> f1 = [&] (StateGcoBA x)
+  {
+    return x.toString();
+  };
+  std::function<std::string(int)> f2 = [=] (int x) {return std::to_string(x);};
+  return toGraphwizWith(f1, f2);
+}
+
+/*
  * Function converting the automaton <string, string> to graphwiz format.
  * @return Graphwiz representation of the automaton
  */
@@ -740,7 +755,7 @@ void BuchiAutomaton<State, Symbol>::restriction(set<State>& st)
   set<State> newfin;
   set<State> newini;
   VecTrans<State, Symbol> ftrans;
-  for(auto tr : this->trans)
+  for(const auto& tr : this->trans)
   {
     if(st.find(tr.first.first) == st.end())
       continue;
@@ -989,11 +1004,11 @@ void BuchiAutomaton<State, Symbol>::transitiveClosure(
   do
   {
     s = rel.size();
-    for(auto p1 : rel)
+    for(const auto& p1 : rel)
     {
       if(cl.find(p1.first) == cl.end() || cl.find(p1.second) == cl.end())
         continue;
-      for(auto p2 : rel)
+      for(const auto& p2 : rel)
       {
         if(cl.find(p2.first) == cl.end() || cl.find(p2.second) == cl.end())
           continue;
@@ -1464,7 +1479,7 @@ BuchiAutomaton<StateSch, int> BuchiAutomaton<int, int>::getComplStructure(std::m
   rstate = Aux::mapSet(mpst, this->states);
   rini = Aux::mapSet(mpst, this->initials);
   rfin = Aux::mapSet(mpst, this->finals);
-  for(auto p : this->trans)
+  for(auto& p : this->trans)
   {
     std::set<StateSch> to = Aux::mapSet(mpst, p.second);
     rtrans.insert({std::make_pair(mpst[p.first.first], p.first.second), to});

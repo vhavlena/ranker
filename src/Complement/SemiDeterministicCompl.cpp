@@ -132,7 +132,7 @@ std::vector<StateSD> SemiDeterministicCompl::getSuccessorsMaxRank(StateSD& state
     succ2.C = aux;
 
     aux = set<int>();
-    std::set_intersection(succ1.B.begin(), succ1.B.end(), fin.begin(), fin.end(), std::inserter(aux, aux.begin()));
+    std::set_intersection(succ1.B.begin(), succ1.B.end(), allFins.begin(), allFins.end(), std::inserter(aux, aux.begin()));
     if(aux.size() == 0)
     {
       successors.push_back(succ2);
@@ -157,7 +157,7 @@ std::vector<StateSD> SemiDeterministicCompl::getSuccessorsOriginal(StateSD& stat
 
     std::set<int> C_not_acc;
     set<int> CFinTrans;
-    for (auto tr : this->getFinTrans()){
+    for (const auto& tr : this->getFinTrans()){
         if (tr.symbol == symbol and state.C.find(tr.from) != state.C.end()){
             CFinTrans.insert(tr.from);
         }
@@ -198,7 +198,7 @@ std::vector<StateSD> SemiDeterministicCompl::getSuccessorsOriginal(StateSD& stat
         std::set_union(S_prime_base.begin(), S_prime_base.end(), subsetComplement.begin(), subsetComplement.end(), std::inserter(newState.S, newState.S.begin()));
 
         set<int> SFinTrans;
-        for (auto tr : this->getFinTrans()){
+        for (const auto& tr : this->getFinTrans()){
             if (tr.symbol == symbol and state.S.find(tr.from) != state.S.end()){
                 SFinTrans.insert(tr.to);
             }
@@ -266,7 +266,7 @@ std::vector<StateSD> SemiDeterministicCompl::getSuccessorsLazy(StateSD& state, i
             std::set_union(S_prime_base.begin(), S_prime_base.end(), subsetComplement.begin(), subsetComplement.end(), std::inserter(newState.S, newState.S.begin()));
 
             set<int> SFinTrans;
-            for (auto tr : this->getFinTrans()){
+            for (const auto& tr : this->getFinTrans()){
                 if (tr.symbol == symbol and state.S.find(tr.from) != state.S.end()){
                     SFinTrans.insert(tr.to);
                 }
@@ -288,7 +288,7 @@ std::vector<StateSD> SemiDeterministicCompl::getSuccessorsLazy(StateSD& state, i
 
     else {
         set<int> BFinTrans;
-        for (auto tr : this->getFinTrans()){
+        for (const auto& tr : this->getFinTrans()){
             if (tr.symbol == symbol and state.B.find(tr.from) != state.B.end()){
                 BFinTrans.insert(tr.from);
             }
