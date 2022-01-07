@@ -49,24 +49,23 @@ int main(int argc, char *argv[])
   args::Flag elevatorTestFlag(parser, "elevator test", "Test if INPUT is an elevator automaton", {"elevator-test"});
   args::Flag debugFlag(parser, "debug", "Print debug statistics", {"debug"});
   args::Flag lightFlag(parser, "light", "Use lightweight optimizations", {"light"});
-  args::ValueFlag<std::string> preprocessFlag(parser, "preprocess", "Preprocessing [copyiwa/copydet/copyall/copytrivial/copyheur]", {"preprocess"});
-  args::Flag accPropagationFlag(parser, "acc-propagation", "Propagate accepting states in each SCC", {"acc-propagation"});
+  args::ValueFlagList<std::string> preprocessFlag(parser, "value", "Preprocessing [copyiwa/copydet/copyall/copytrivial/copyheur/accsat]", {"preprocess"});
   args::Flag sdFlag(parser, "sd", "Use semideterminization", {"sd"});
   args::Flag iwSimFlag(parser, "iw-sim", "Use direct simulation", {"iw-sim"});
   args::Flag iwSatFlag(parser, "iw-sat", "Macrostates saturation", {"iw-sat"});
   args::Flag backoffFlag(parser, "backoff", "Use backoff", {"backoff"});
   args::Flag versionFlag(parser, "version", "Git commit version", {"version"});
   args::Flag sdVersionFlag(parser, "ncsb-lazy", "Use NCSB-lazy for SD complementation", {"ncsb-lazy"});
-  args::Flag tbaFlag(parser, "tba", "Use TBA preprocessing", {"tba"});
+  args::Flag tbaFlag(parser, "notba", "Do NOT use TBA preprocessing", {"notba"});
 
   ComplOptions opt = { .cutPoint = true, .succEmptyCheck = false, .ROMinState = 8,
       .ROMinRank = 6, .CacheMaxState = 6, .CacheMaxRank = 8, .semidetOpt = false,
       .dataFlow = INNER, .delay = false, .delayVersion = oldVersion, .delayW = 0.5,
       .debug = false, .elevator = { .elevatorRank = true, .detBeginning = false },
-      .dirsim = true, .ranksim = true, .sl = true, .reach = true, .flowDirSim = false, .preprocess = NONE, .accPropagation = false,
+      .dirsim = true, .ranksim = true, .sl = true, .reach = true, .flowDirSim = false, .preprocess = CPHEUR, .accPropagation = false,
       .semideterminize = false, .backoff = false, .BOBound = { {11,15}, {11,13} },
       .semideterministic = false, .complete = false, .lowrankopt = false,
-      .iwSim = true, .iwSat = false, .ncsbLazy = false, .tba = false};
+      .iwSim = true, .iwSat = false, .ncsbLazy = false, .tba = true};
 
   try
   {
@@ -124,19 +123,24 @@ int main(int argc, char *argv[])
 
   if(preprocessFlag)
   {
-    if(args::get(preprocessFlag) == "copyiwa")
-      opt.preprocess = CPIWA;
-    else if(args::get(preprocessFlag) == "copydet")
-      opt.preprocess = CPDET;
-    else if(args::get(preprocessFlag) == "copyall")
-      opt.preprocess = CPALL;
-    else if(args::get(preprocessFlag) == "copytrivial")
-      opt.preprocess = CPTRIVIAL;
-    else if(args::get(preprocessFlag) == "copyheur")
-      opt.preprocess = CPHEUR;
-    else {
-      std::cerr << "Wrong copy attribute" << std::endl;
-      return 1;
+    for(const auto& fl : args::get(preprocessFlag))
+    {
+      if(fl == "copyiwa")
+        opt.preprocess = CPIWA;
+      else if(fl == "copydet")
+        opt.preprocess = CPDET;
+      else if(fl == "copyall")
+        opt.preprocess = CPALL;
+      else if(fl == "copytrivial")
+        opt.preprocess = CPTRIVIAL;
+      else if(fl == "copyheur")
+        opt.preprocess = CPHEUR;
+      else if(fl == "accsat")
+        opt.accPropagation = true;
+      else {
+        std::cerr << "Wrong copy attribute" << std::endl;
+        return 1;
+      }
     }
   }
 
@@ -160,7 +164,7 @@ int main(int argc, char *argv[])
 
   if(tbaFlag)
   {
-    opt.tba = true;
+    opt.tba = false;
   }
 
   // delay version
@@ -186,11 +190,6 @@ int main(int argc, char *argv[])
   if(debugFlag)
   {
     opt.debug = true;
-  }
-
-  if (accPropagationFlag)
-  {
-    opt.accPropagation = true;
   }
 
   // weight parameters for delay
