@@ -49,23 +49,24 @@ int main(int argc, char *argv[])
   args::Flag elevatorTestFlag(parser, "elevator test", "Test if INPUT is an elevator automaton", {"elevator-test"});
   args::Flag debugFlag(parser, "debug", "Print debug statistics", {"debug"});
   args::Flag lightFlag(parser, "light", "Use lightweight optimizations", {"light"});
-  args::ValueFlagList<std::string> preprocessFlag(parser, "value", "Preprocessing [copyiwa/copydet/copyall/copytrivial/copyheur/accsat]", {"preprocess"});
+  args::ValueFlagList<std::string> preprocessFlag(parser, "value", "Preprocessing [copyiwa/copydet/copyall/copytrivial/copyheur/accsat/no-red]", {"preprocess"});
   args::Flag sdFlag(parser, "sd", "Use semideterminization", {"sd"});
   args::Flag iwSimFlag(parser, "iw-sim", "Use direct simulation", {"iw-sim"});
   args::Flag iwSatFlag(parser, "iw-sat", "Macrostates saturation", {"iw-sat"});
-  args::Flag backoffFlag(parser, "backoff", "Use backoff", {"backoff"});
+  args::Flag nobackoffFlag(parser, "no-backoff", "Do NOT use backoff", {"no-backoff"});
   args::Flag versionFlag(parser, "version", "Git commit version", {"version"});
   args::Flag sdVersionFlag(parser, "ncsb-lazy", "Use NCSB-lazy for SD complementation", {"ncsb-lazy"});
   args::Flag tbaFlag(parser, "notba", "Do NOT use TBA preprocessing", {"notba"});
+  args::Flag bestFlag(parser, "best", "Use the settings leading to smallest possible automata", {"best"});
 
   ComplOptions opt = { .cutPoint = true, .succEmptyCheck = false, .ROMinState = 8,
       .ROMinRank = 6, .CacheMaxState = 6, .CacheMaxRank = 8, .semidetOpt = false,
       .dataFlow = INNER, .delay = false, .delayVersion = oldVersion, .delayW = 0.5,
       .debug = false, .elevator = { .elevatorRank = true, .detBeginning = false },
       .dirsim = true, .ranksim = true, .sl = true, .reach = true, .flowDirSim = false, .preprocess = CPHEUR, .accPropagation = false,
-      .semideterminize = false, .backoff = false, .BOBound = { {11,15}, {11,13} },
+      .semideterminize = false, .backoff = true, .BOBound = { {11,15}, {11,13} },
       .semideterministic = false, .complete = false, .lowrankopt = false,
-      .iwSim = true, .iwSat = false, .ncsbLazy = false, .tba = true};
+      .iwSim = true, .iwSat = false, .ncsbLazy = false, .tba = true, .light = false, .prered = true, .postred = false};
 
   try
   {
@@ -116,9 +117,9 @@ int main(int argc, char *argv[])
     opt.dataFlow = LIGHT;
   }
 
-  if(backoffFlag)
+  if(nobackoffFlag)
   {
-    opt.backoff = true;
+    opt.backoff = false;
   }
 
   if(preprocessFlag)
@@ -137,6 +138,8 @@ int main(int argc, char *argv[])
         opt.preprocess = CPHEUR;
       else if(fl == "accsat")
         opt.accPropagation = true;
+      else if(fl == "no-red")
+        opt.prered = false;
       else {
         std::cerr << "Wrong copy attribute" << std::endl;
         return 1;
@@ -228,20 +231,13 @@ int main(int argc, char *argv[])
     opt.ranksim = false;
     opt.sl = false;
     opt.reach = false;
-    opt.succEmptyCheck = false;
     opt.elevator.elevatorRank = true;
     opt.dataFlow = LIGHT;
   }
 
   if(lightFlag)
   {
-    opt.dirsim = false;
-    opt.ranksim = false;
-    opt.sl = false;
-    opt.reach = false;
-    opt.succEmptyCheck = false;
-    opt.elevator.elevatorRank = true;
-    //opt.dataFlow = LIGHT;
+    opt.light = true;
   }
 
 
@@ -451,13 +447,21 @@ int main(int argc, char *argv[])
             SemiDeterministicCompl sd(&renBuchi);
             BuchiAutomaton<int, int> renComplSD;
             complementSDWrap(sd, &renBuchi, &renComplSD, &stats, opt);
-            Stat s1 = stats;
 
-            complementAutWrap(sp, &renBuchi, &compBA, &renCompl, &stats, !opt.backoff);
-
-            if(renComplSD.getStates().size() <= renCompl.getStates().size())
+            if(!opt.light)
             {
-              stats = s1;
+              Stat s1 = stats;
+
+              complementAutWrap(sp, &renBuchi, &compBA, &renCompl, &stats, !opt.backoff);
+
+              if(renComplSD.getStates().size() <= renCompl.getStates().size())
+              {
+                stats = s1;
+                renCompl = renComplSD;
+              }
+            }
+            else
+            {
               renCompl = renComplSD;
             }
           }
@@ -519,10 +523,13 @@ int main(int argc, char *argv[])
         return 0;
       }
 
-      // Simulations sim;
-      // auto ranksim = sim.directSimulation<int, int>(renCompl, -1);
-      // renCompl.setDirectSim(ranksim);
-      // renCompl = renCompl.reduce();
+      if(opt.postred)
+      {
+        Simulations sim;
+        auto dirsim = sim.directSimulation<int, int>(renCompl, -1);
+        renCompl.setDirectSim(dirsim);
+        renCompl = renCompl.reduce();
+      }
 
       BuchiAutomaton<int, APSymbol> outOrig = renCompl.renameAlphabet<APSymbol>(symDict);
       outOrig.completeAPComplement();

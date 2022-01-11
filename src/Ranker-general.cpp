@@ -28,6 +28,14 @@ BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, Comp
   //BuchiAutomataParser parser(os);
   BuchiAutomaton<int, APSymbol> orig = parser.parseHoaBA();
 
+  if(opt.prered)
+  {
+    Simulations sim;
+    auto dirsim = sim.directSimulation<int, APSymbol>(orig, -1);
+    orig.setDirectSim(dirsim);
+    orig = orig.reduce();
+  }
+
   map<APSymbol, int> apint;
   map<int, APSymbol> intap;
   int i = 0;
@@ -273,16 +281,24 @@ void complementCoBAWrap(CoBuchiAutomatonCompl *ren, BuchiAutomaton<StateGcoBA, i
   renSim.removeUseless();
   renSim = renSim.renameAutDict(id);
 
-  BuchiAutomaton<int, int> renPure = pure.renameAutDict(id);
-  renPure.removeUseless();
-  renPure = renPure.renameAutDict(id);
-
-  //cout << renSim.getStates().size() << " : " << renPure.getStates().size() << endl;
-
-  if(renSim.getStates().size() > renPure.getStates().size())
+  if(!opt.light)
   {
-    *complOrig = pure;
-    *complRes = renPure;
+    BuchiAutomaton<int, int> renPure = pure.renameAutDict(id);
+    renPure.removeUseless();
+    renPure = renPure.renameAutDict(id);
+
+    //cout << renSim.getStates().size() << " : " << renPure.getStates().size() << endl;
+
+    if(renSim.getStates().size() > renPure.getStates().size())
+    {
+      *complOrig = pure;
+      *complRes = renPure;
+    }
+    else
+    {
+      *complOrig = complSim;
+      *complRes = renSim;
+    }
   }
   else
   {

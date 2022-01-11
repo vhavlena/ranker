@@ -71,6 +71,11 @@ struct ComplOptions
   bool ncsbLazy = false;
 
   bool tba = false;
+
+  bool light = false;
+
+  bool prered = true;
+  bool postred = false;
 };
 
 #endif
