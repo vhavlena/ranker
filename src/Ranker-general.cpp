@@ -23,10 +23,23 @@ GeneralizedCoBuchiAutomaton<int, APSymbol> parseRenameHOAGCOBA(BuchiAutomataPars
   return hoa;
 }
 
-BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, ComplOptions opt)
+BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, ComplOptions opt, InFormat fmt)
 {
   //BuchiAutomataParser parser(os);
-  BuchiAutomaton<int, APSymbol> orig = parser.parseHoaBA();
+
+  BuchiAutomaton<int, APSymbol> orig;
+
+  if(fmt == HOA)
+  {
+    orig = parser.parseHoaBA();
+  }
+  else
+  {
+    BuchiAutomaton<string, string> ba = parser.parseBaFormat();
+    BuchiAutomaton<int, int> renBA = ba.renameAut();
+    map<int, string> symDict = Aux::reverseMap(ba.getRenameSymbolMap());
+    orig = renBA.toAPBA(symDict);
+  }
 
   if(opt.prered)
   {
@@ -189,21 +202,6 @@ BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, Comp
   return orig;
 }
 
-
-BuchiAutomaton<int, int> parseRenameBA(ifstream& os, BuchiAutomaton<string, string>* orig)
-{
-  BuchiAutomataParser parser(os);
-  *orig = BuchiAutomaton<string, string>(parser.parseBaFormat(os));
-  Simulations sim;
-
-  auto ranksim = sim.directSimulation<string, string>(*orig, "-1");
-  orig->setDirectSim(ranksim);
-  auto cl = set<std::string>();
-
-  orig->computeRankSim(cl);
-  return orig->renameAut();
-}
-
 void complementAutWrap(BuchiAutomatonSpec& sp, BuchiAutomaton<int, int>* ren,
     BuchiAutomaton<StateSch, int>* complOrig, BuchiAutomaton<int, int>* complRes,
     Stat* stats, bool boundUpdate)
@@ -314,37 +312,6 @@ void complementCoBAWrap(CoBuchiAutomatonCompl *ren, BuchiAutomaton<StateGcoBA, i
   stats->engine = "Ranker";
   stats->transitionsToTight = -1;
   stats->originalStates = ren->getStates().size();
-}
-
-void complementScheweAutWrap(BuchiAutomaton<int, int>* ren, BuchiAutomaton<int, int>* complRes, Stat* stats, bool delay, double w)
-{
-    BuchiAutomatonSpec sp(ren);
-    ElevatorAutomaton elev(*ren);
-
-    ComplOptions opt = { .cutPoint = true, .CacheMaxState = 6, .CacheMaxRank = 8,
-        .semidetOpt = false };
-    sp.setComplOptions(opt);
-    BuchiAutomaton<StateSch, int> comp;
-    comp = sp.complementSchOpt(delay, ren->getFinals(), w, stats);
-    BuchiAutomatonDelay<int> compDelay(comp);
-
-    stats->generatedStates = comp.getStates().size();
-    stats->generatedTrans = comp.getTransCount();
-    stats->generatedTransitionsToTight = compDelay.getTransitionsToTight();
-
-    map<int, int> id;
-    for(auto al : comp.getAlphabet())
-      id[al] = al;
-    BuchiAutomaton<int, int> renCompl = comp.renameAutDict(id);
-    renCompl.removeUseless();
-
-    stats->reachStates = renCompl.getStates().size();
-    stats->reachTrans = renCompl.getTransCount();
-    stats->engine = "Ranker";
-    stats->elevator = elev.isElevator(); // original automaton before complementation
-    stats->elevatorStates = elev.elevatorStates();
-    stats->originalStates = sp.getStates().size();
-    *complRes = renCompl;
 }
 
 void complementSDWrap(SemiDeterministicCompl& sp, BuchiAutomaton<int, int>* ren, BuchiAutomaton<int, int>* complRes, Stat* stats, ComplOptions opt)
@@ -482,34 +449,3 @@ void printStat(Stat& st)
     cerr << "Rest: " << rest << " " << (rest*100.0)/duration << "%" << endl;
   }
 }
-
-std::string getHelpMsg(const std::string& progName)
-{
-	std::string helpMsg;
-	helpMsg += "Usage: \n";
-  helpMsg += "1) Complementation:\n";
-  helpMsg += "  " + progName + " [--stats] [--delay VERSION [-w WEIGHT]] [--elevator-rank] [--eta4] INPUT\n";
-	helpMsg += "\n";
-	helpMsg += "Complements a (state-based acceptance condition) Buchi automaton.\n";
-	helpMsg += "\n";
-	helpMsg += "INPUT is the name of a file in the HOA (Hanoi Omega Automata) format\n";
-	helpMsg += "(see https://adl.github.io/hoaf/ ) with the following restrictions:\n";
-	helpMsg += "  * only state-based acceptance is supported\n";
-	helpMsg += "  * transitions need to have the form of a single conjunction with exactly\n";
-	helpMsg += "    one positive atomic proposition\n";
-	helpMsg += "  * no aliases or any other fancy features of HOA are supported\n";
-	helpMsg += "\n";
-	helpMsg += "Flags:\n";
-	helpMsg += "  --stats             Print summary statistics\n";
-  helpMsg += "  --delay             Use delay optimization\n";
-  helpMsg += "  VERSION             --old / --new / --random / --subset / --stirling\n";
-  helpMsg += "  WEIGHT              Weight parameter - in <0,1>\n";
-  helpMsg += "  --elevator-rank     Update rank upper bound of each macrostate based on elevator automaton structure";
-  helpMsg += "  --eta4              Max rank optimization - eta 4 only when going from some accepting state";
-  helpMsg += "  --check=<word>      Product of the complementary automaton with the word\n";
-  helpMsg += "\n\n";
-  helpMsg += "2) Tests if INPUT is an elevator automaton\n";
-  helpMsg += "  " + progName + " --elevator-test INPUT\n";
-
-	return helpMsg;
-} // getHelpMsg

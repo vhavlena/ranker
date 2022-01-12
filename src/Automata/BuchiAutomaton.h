@@ -540,6 +540,8 @@ public:
 
   BuchiAutomaton<int, Symbol> reduce();
   BuchiAutomaton<int, Symbol> toTBA();
+
+  BuchiAutomaton<int, APSymbol> toAPBA(map<int, string>& symName);
 };
 
 #endif

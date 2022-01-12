@@ -250,300 +250,261 @@ int main(int argc, char *argv[])
     Stat stats;
     stats.beginning = std::chrono::high_resolution_clock::now();
 
+    BuchiAutomaton<int, int> renCompl;
+    BuchiAutomaton<StateSch, int> compBA;
+    BuchiAutomaton<StateGcoBA, int> compGcoBA;
 
+    BuchiAutomaton<int, int> renBuchi;
+    GeneralizedCoBuchiAutomaton<int, int> renGcoBA;
 
-    if(fmt == BA)
+    BuchiAutomataParser parser(os);
+
+    AutomatonType autType = AUTBA;
+    if(fmt == HOA)
+      autType = parser.parseAutomatonType();
+
+    map<int, APSymbol> symDict;
+
+    try
     {
-      BuchiAutomaton<string, string> ba;
-      BuchiAutomaton<int, int> renBA = parseRenameBA(os, &ba);
-
-      BuchiAutomaton<int, int> renCompl;
-      BuchiAutomaton<StateSch, int> comp;
-
-      renBA = renBA.removeUselessRename();
-      BuchiAutomatonSpec sp(&renBA);
-      sp.setComplOptions(opt);
-
-      // elevator test
-      if (elevatorTest){
-        ElevatorAutomaton el(renBA);
-        std::cout << "Elevator automaton: " << (el.isElevator() ? "Yes" : "No") << std::endl;
-        os.close();
-        return 0;
-      }
-
-      try
+      if(autType == AUTBA)
       {
-        complementAutWrap(sp, &renBA, &comp, &renCompl, &stats, true);
-      }
-      catch (const std::bad_alloc&)
-      {
-        os.close();
-        cerr << "Memory error" << endl;
-        return 2;
-      }
-      map<int, string> symDict = Aux::reverseMap(ba.getRenameSymbolMap());
-      BuchiAutomaton<int, string> outOrig = renCompl.renameAlphabet<string>(symDict);
+        BuchiAutomaton<int, APSymbol> orig = parseRenameHOABA(parser, opt, fmt);
 
-      stats.end = std::chrono::high_resolution_clock::now();
-      stats.duration = std::chrono::duration_cast<std::chrono::milliseconds>(stats.end - stats.beginning).count();
-
-      if(params.stats)
-        printStat(stats);
-      cout << outOrig.toHOA() << endl;
-    }
-
-    else if(fmt == HOA)
-    {
-      BuchiAutomaton<int, int> renCompl;
-      BuchiAutomaton<StateSch, int> compBA;
-      BuchiAutomaton<StateGcoBA, int> compGcoBA;
-
-      BuchiAutomaton<int, int> renBuchi;
-      GeneralizedCoBuchiAutomaton<int, int> renGcoBA;
-
-      BuchiAutomataParser parser(os);
-      AutomatonType autType = parser.parseAutomatonType();
-
-      map<int, APSymbol> symDict;
-
-      try
-      {
-        if(autType == AUTBA)
+        if(orig.isTBA())
         {
-          BuchiAutomaton<int, APSymbol> orig = parseRenameHOABA(parser, opt);
+          opt.ranksim = false;
+        }
 
-          if(orig.isTBA())
-          {
-            opt.ranksim = false;
-          }
+        if(orig.getStates().size() >= 20)
+        {
+          opt.reach = false;
+          opt.dirsim = false;
+          opt.ranksim = false;
+          opt.sl = false;
+        }
 
-          if(orig.getStates().size() >= 20)
-          {
-            opt.reach = false;
-            opt.dirsim = false;
-            opt.ranksim = false;
-            opt.sl = false;
-          }
+        Simulations sim;
+        if(!opt.dirsim)
+        {
+          auto ranksim = sim.identity(orig);
+          orig.setDirectSim(ranksim);
+          orig.setOddRankSim(ranksim);
+        }
+        else
+        {
+          auto ranksim = sim.directSimulation<int, APSymbol>(orig, -1);
+          orig.setDirectSim(ranksim);
 
-          Simulations sim;
-          if(!opt.dirsim)
+          if(!opt.ranksim)
           {
             auto ranksim = sim.identity(orig);
-            orig.setDirectSim(ranksim);
             orig.setOddRankSim(ranksim);
           }
           else
           {
-            auto ranksim = sim.directSimulation<int, APSymbol>(orig, -1);
-            orig.setDirectSim(ranksim);
-
-            if(!opt.ranksim)
-            {
-              auto ranksim = sim.identity(orig);
-              orig.setOddRankSim(ranksim);
-            }
-            else
-            {
-              auto cl = set<int>();
-              orig.computeRankSim(cl);
-            }
+            auto cl = set<int>();
+            orig.computeRankSim(cl);
           }
+        }
 
-          renBuchi = orig.renameAut();
+        renBuchi = orig.renameAut();
 
-          ElevatorAutomaton el(renBuchi);
-          if (elevatorTest){
-            cout << "Elevator automaton: " << (el.isElevator() ? "Yes" : "No") << endl;
-            cout << "Elevator states: " << el.elevatorStates() << endl;
+        ElevatorAutomaton el(renBuchi);
+        if (elevatorTest){
+          cout << "Elevator automaton: " << (el.isElevator() ? "Yes" : "No") << endl;
+          cout << "Elevator states: " << el.elevatorStates() << endl;
+          os.close();
+          return 0;
+        }
+
+        map<int,int> ranks = el.elevatorRank(false);
+        int m = Aux::maxValue(ranks);
+
+        if(renBuchi.isDeterministic())
+        {
+          opt.reach = false;
+          opt.sl = false;
+        }
+        else if(m <= 2)
+        {
+          opt.sl = false;
+        }
+        else if(m <= 4)
+        {
+          opt.lowrankopt = true;
+          opt.cutPoint = false;
+          opt.sl = false;
+        }
+
+        if(renBuchi.isComplete())
+        {
+          opt.complete = true;
+        }
+
+        BuchiAutomatonSpec sp(&renBuchi);
+        sp.setComplOptions(opt);
+
+        if(opt.backoff && !el.isInherentlyWeakBA())
+        {
+          BuchiAutomaton<StateSch, int> comp = sp.complementSchNFA(sp.getInitials());
+          sp.computeRankBound(comp, &stats);
+
+          if(sp.meetsBackOff())
+          {
             os.close();
+            const char* env = std::getenv("SPOTEXE");
+            if(env == NULL)
+            {
+              cerr << "Error: $SPOTEXE not found" << endl;
+              return 1;
+            }
+            const string spotpath_cstr = string(env);
+            string cmd = spotpath_cstr + " --complement --ba " + filename;
+            string ret = "";
+
+            try
+            {
+              ret = Simulations::execCmd(cmd);
+            }
+            catch(const char* c)
+            {
+              cerr << "Error occurred: " << c << endl;
+              if(ret.size() > 0)
+                cerr << ret << endl;
+              return 1;
+            }
+
+            stringstream strm(ret);
+            BuchiAutomataParser spotpar(strm);
+            BuchiAutomaton<int, APSymbol> spotaut = spotpar.parseHoaBA();
+
+            stats.engine = "SPOT";
+            stats.duration = 0;
+            stats.generatedStates = 0;
+            stats.generatedTrans = 0;
+            stats.reachStates = spotaut.getStates().size();
+            stats.reachTrans = spotaut.getTransCount();
+            if(params.stats)
+              printStat(stats);
+
+            cout << spotaut.toHOA() << endl;
             return 0;
           }
+        }
 
-          map<int,int> ranks = el.elevatorRank(false);
-          int m = Aux::maxValue(ranks);
+        sp.setComplOptions(opt);
 
-          if(renBuchi.isDeterministic())
+        if(el.isInherentlyWeakBA())
+        {
+          CoBuchiAutomatonCompl iw(el);
+          complementCoBAWrap(&iw, &compGcoBA, &renCompl, &stats, opt);
+        }
+        else if (el.isSemiDeterministic())
+        {
+          SemiDeterministicCompl sd(&renBuchi);
+          BuchiAutomaton<int, int> renComplSD;
+          complementSDWrap(sd, &renBuchi, &renComplSD, &stats, opt);
+
+          if(!opt.light)
           {
-            opt.reach = false;
-            opt.sl = false;
-          }
-          else if(m <= 2)
-          {
-            opt.sl = false;
-          }
-          else if(m <= 4)
-          {
-            opt.lowrankopt = true;
-            opt.cutPoint = false;
-            opt.sl = false;
-          }
+            Stat s1 = stats;
 
-          if(renBuchi.isComplete())
-          {
-            opt.complete = true;
-          }
+            complementAutWrap(sp, &renBuchi, &compBA, &renCompl, &stats, !opt.backoff);
 
-          BuchiAutomatonSpec sp(&renBuchi);
-          sp.setComplOptions(opt);
-
-          if(opt.backoff && !el.isInherentlyWeakBA())
-          {
-            BuchiAutomaton<StateSch, int> comp = sp.complementSchNFA(sp.getInitials());
-            sp.computeRankBound(comp, &stats);
-
-            if(sp.meetsBackOff())
+            if(renComplSD.getStates().size() <= renCompl.getStates().size())
             {
-              os.close();
-              const char* env = std::getenv("SPOTEXE");
-              if(env == NULL)
-              {
-                cerr << "Error: $SPOTEXE not found" << endl;
-                return 1;
-              }
-              const string spotpath_cstr = string(env);
-              string cmd = spotpath_cstr + " --complement --ba " + filename;
-              string ret = "";
-
-              try
-              {
-                ret = Simulations::execCmd(cmd);
-              }
-              catch(const char* c)
-              {
-                cerr << "Error occurred: " << c << endl;
-                if(ret.size() > 0)
-                  cerr << ret << endl;
-                return 1;
-              }
-
-              stringstream strm(ret);
-              BuchiAutomataParser spotpar(strm);
-              BuchiAutomaton<int, APSymbol> spotaut = spotpar.parseHoaBA();
-
-              stats.engine = "SPOT";
-              stats.duration = 0;
-              stats.generatedStates = 0;
-              stats.generatedTrans = 0;
-              stats.reachStates = spotaut.getStates().size();
-              stats.reachTrans = spotaut.getTransCount();
-              if(params.stats)
-                printStat(stats);
-
-              cout << spotaut.toHOA() << endl;
-              return 0;
-            }
-          }
-
-          sp.setComplOptions(opt);
-
-          if(el.isInherentlyWeakBA())
-          {
-            CoBuchiAutomatonCompl iw(el);
-            complementCoBAWrap(&iw, &compGcoBA, &renCompl, &stats, opt);
-          }
-          else if (el.isSemiDeterministic())
-          {
-            SemiDeterministicCompl sd(&renBuchi);
-            BuchiAutomaton<int, int> renComplSD;
-            complementSDWrap(sd, &renBuchi, &renComplSD, &stats, opt);
-
-            if(!opt.light)
-            {
-              Stat s1 = stats;
-
-              complementAutWrap(sp, &renBuchi, &compBA, &renCompl, &stats, !opt.backoff);
-
-              if(renComplSD.getStates().size() <= renCompl.getStates().size())
-              {
-                stats = s1;
-                renCompl = renComplSD;
-              }
-            }
-            else
-            {
+              stats = s1;
               renCompl = renComplSD;
             }
           }
           else
           {
-            complementAutWrap(sp, &renBuchi, &compBA, &renCompl, &stats, !opt.backoff);
-            // cout << compBA.toGraphwiz() << endl;
+            renCompl = renComplSD;
           }
-
-          symDict = Aux::reverseMap(orig.getRenameSymbolMap());
         }
-        if(autType == AUTGCOBA)
+        else
         {
-          GeneralizedCoBuchiAutomaton<int, APSymbol> orig = parseRenameHOAGCOBA(parser);
-          renGcoBA = orig.renameAut();
-          complementGcoBAWrap(&renGcoBA, &compGcoBA, &renCompl, &stats);
-          symDict = Aux::reverseMap(orig.getRenameSymbolMap());
-        }
-      }
-      catch(const ParserException& e)
-      {
-        os.close();
-        cerr << "Parser error:" << endl;
-        cerr << "line " << e.getLine() << ": " << e.what() << endl;
-        return 2;
-      }
-      catch (const std::bad_alloc&)
-      {
-        os.close();
-        cerr << "Memory error" << endl;
-        return 2;
-      }
-
-      //Product with a word
-      if(params.checkWord.size() > 0)
-      {
-        cout << "Product in Graphwiz:" << endl;
-        auto appattern = renBuchi.getAPPattern();
-        pair<APWord, APWord> inf = BuchiAutomataParser::parseHoaInfWord(params.checkWord, appattern);
-        auto prefv = inf.first.getVector();
-        auto loopv = inf.second.getVector();
-
-        if(compBA.getStates().size() > 0)
-        {
-          auto debugRename = compBA.renameAlphabet<APSymbol>(symDict);
-          BuchiAutomatonDebug<StateSch, APSymbol> compDebug(debugRename);
-          auto ret = compDebug.getSubAutomatonWord(prefv, loopv);
-          cout << ret.toGraphwiz() << endl;
-        }
-        if(compGcoBA.getStates().size() > 0)
-        {
-          auto debugRename = compGcoBA.renameAlphabet<APSymbol>(symDict);
-          BuchiAutomatonDebug<StateGcoBA, APSymbol> compDebug(debugRename);
-          auto ret = compDebug.getSubAutomatonWord(prefv, loopv);
-          cout << ret.toGraphwiz() << endl;
+          complementAutWrap(sp, &renBuchi, &compBA, &renCompl, &stats, !opt.backoff);
+          // cout << compBA.toGraphwiz() << endl;
         }
 
-        os.close();
-        return 0;
+        symDict = Aux::reverseMap(orig.getRenameSymbolMap());
       }
-
-      if(opt.postred)
+      if(autType == AUTGCOBA)
       {
-        Simulations sim;
-        auto dirsim = sim.directSimulation<int, int>(renCompl, -1);
-        renCompl.setDirectSim(dirsim);
-        renCompl = renCompl.reduce();
+        GeneralizedCoBuchiAutomaton<int, APSymbol> orig = parseRenameHOAGCOBA(parser);
+        renGcoBA = orig.renameAut();
+        complementGcoBAWrap(&renGcoBA, &compGcoBA, &renCompl, &stats);
+        symDict = Aux::reverseMap(orig.getRenameSymbolMap());
       }
-
-      BuchiAutomaton<int, APSymbol> outOrig = renCompl.renameAlphabet<APSymbol>(symDict);
-      outOrig.completeAPComplement();
-      stats.reachStates = outOrig.getStates().size();
-      stats.reachTrans = outOrig.getTransCount();
-
-      stats.end = std::chrono::high_resolution_clock::now();
-      stats.duration = std::chrono::duration_cast<std::chrono::milliseconds>(stats.end - stats.beginning).count();
-
-      if(params.stats)
-        printStat(stats);
-      cout << outOrig.toHOA() << endl;
-      //cerr << endl << renCompl.toGraphwiz() << endl;
     }
+    catch(const ParserException& e)
+    {
+      os.close();
+      cerr << "Parser error:" << endl;
+      cerr << "line " << e.getLine() << ": " << e.what() << endl;
+      return 2;
+    }
+    catch (const std::bad_alloc&)
+    {
+      os.close();
+      cerr << "Memory error" << endl;
+      return 2;
+    }
+
+    //Product with a word
+    if(params.checkWord.size() > 0)
+    {
+      cout << "Product in Graphwiz:" << endl;
+      auto appattern = renBuchi.getAPPattern();
+      pair<APWord, APWord> inf = BuchiAutomataParser::parseHoaInfWord(params.checkWord, appattern);
+      auto prefv = inf.first.getVector();
+      auto loopv = inf.second.getVector();
+
+      if(compBA.getStates().size() > 0)
+      {
+        auto debugRename = compBA.renameAlphabet<APSymbol>(symDict);
+        BuchiAutomatonDebug<StateSch, APSymbol> compDebug(debugRename);
+        auto ret = compDebug.getSubAutomatonWord(prefv, loopv);
+        cout << ret.toGraphwiz() << endl;
+      }
+      if(compGcoBA.getStates().size() > 0)
+      {
+        auto debugRename = compGcoBA.renameAlphabet<APSymbol>(symDict);
+        BuchiAutomatonDebug<StateGcoBA, APSymbol> compDebug(debugRename);
+        auto ret = compDebug.getSubAutomatonWord(prefv, loopv);
+        cout << ret.toGraphwiz() << endl;
+      }
+
+      os.close();
+      return 0;
+    }
+
+    if(opt.postred)
+    {
+      Simulations sim;
+      auto dirsim = sim.directSimulation<int, int>(renCompl, -1);
+      renCompl.setDirectSim(dirsim);
+      renCompl = renCompl.reduce();
+    }
+
+    BuchiAutomaton<int, APSymbol> outOrig = renCompl.renameAlphabet<APSymbol>(symDict);
+
+    if(fmt == HOA)
+    {
+      outOrig.completeAPComplement();
+    }
+    stats.reachStates = outOrig.getStates().size();
+    stats.reachTrans = outOrig.getTransCount();
+
+    stats.end = std::chrono::high_resolution_clock::now();
+    stats.duration = std::chrono::duration_cast<std::chrono::milliseconds>(stats.end - stats.beginning).count();
+
+    if(params.stats)
+      printStat(stats);
+    cout << outOrig.toHOA() << endl;
+    //cerr << endl << renCompl.toGraphwiz() << endl;
   }
   else
   { // file cannot be opened

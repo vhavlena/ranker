@@ -43,9 +43,7 @@ struct Params
 
 InFormat parseRenamedAutomaton(ifstream& os);
 AutomatonStruct<int, APSymbol>* parseRenameHOA(ifstream& os);
-BuchiAutomaton<int, int> parseRenameBA(ifstream& os, BuchiAutomaton<string, string>* orig);
 
-void complementScheweAutWrap(BuchiAutomaton<int, int>* ren, BuchiAutomaton<int, int>* complRes, Stat* stats, bool delay, double w);
 void complementAutWrap(BuchiAutomatonSpec& sp, BuchiAutomaton<int, int>* ren,
     BuchiAutomaton<StateSch, int>* complOrig, BuchiAutomaton<int, int>* complRes,
     Stat* stats, bool updateBounds = false);
@@ -60,15 +58,7 @@ void complementSDWrap(SemiDeterministicCompl& sp ,BuchiAutomaton<int, int>* ren,
     Stat* stats, ComplOptions opt);
 
 GeneralizedCoBuchiAutomaton<int, APSymbol> parseRenameHOAGCOBA(BuchiAutomataParser& parser);
-BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, ComplOptions opt);
+BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, ComplOptions opt, InFormat fmt);
 
-/**
- * @brief  Retrieves the help message
- *
- * @param[in]  progName  The name of the executable
- *
- * @returns  The help message
- */
-std::string getHelpMsg(const std::string& progName);
 
 #endif

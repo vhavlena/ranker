@@ -53,7 +53,7 @@ private:
 public:
   BuchiAutomataParser(istream & sos) : os(sos) { };
 
-  BuchiAutomaton<string, string> parseBaFormat(ifstream & os);
+  BuchiAutomaton<string, string> parseBaFormat();
   BuchiAutomaton<string, string> parseGffFormat(string& str);
   BuchiAutomaton<string, string> parseGffFormat(ifstream& is);
 

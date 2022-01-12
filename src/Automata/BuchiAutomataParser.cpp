@@ -3,10 +3,9 @@
 
 /*
  * Parse automaton in BA format
- * @param os Input stream
  * @return BA <string, string>
  */
-BuchiAutomaton<string, string> BuchiAutomataParser::parseBaFormat(ifstream & os)
+BuchiAutomaton<string, string> BuchiAutomataParser::parseBaFormat()
 {
   set<string> states;
   set<string> ini;
@@ -16,7 +15,7 @@ BuchiAutomaton<string, string> BuchiAutomataParser::parseBaFormat(ifstream & os)
 
   string line;
   int state = 0;
-  while(getline (os, line))
+  while(getline (this->os, line))
   {
     boost::trim_right(line);
     if (line.length() == 0)

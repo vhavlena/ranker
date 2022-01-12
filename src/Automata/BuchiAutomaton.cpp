@@ -1823,6 +1823,32 @@ BuchiAutomaton<int, Symbol> BuchiAutomaton<State,Symbol>::toTBA()
 }
 
 
+template<>
+BuchiAutomaton<int, APSymbol> BuchiAutomaton<int,int>::toAPBA(map<int, string>& symName)
+{
+  map<int, APSymbol> symToPos;
+  set<APSymbol> newAlph;
+  vector<string> apPat;
+
+  int cnt = 0;
+  int num = this->getAlphabet().size();
+  for(int sym : this->getAlphabet())
+  {
+    APSymbol ap(num);
+    ap.ap[cnt] = 1;
+    symToPos[sym] = ap;
+    newAlph.insert(ap);
+    apPat.push_back(symName[sym]);
+    cnt++;
+  }
+
+  auto ret = renameAlphabet(symToPos);
+  ret.setAPPattern(apPat);
+
+  return ret;
+}
+
+
 
 
 template class BuchiAutomaton<int, int>;
