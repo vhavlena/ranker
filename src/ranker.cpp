@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
   args::ArgumentParser parser("Program complementing a (state-based acceptance condition) Buchi automaton.\n", "");
   args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
 
-  args::Positional<std::string> inputFile(parser, "INPUT", "The name of a file in the HOA (Hanoi Omega Automata) format with the following restrictions:\n* only state-based acceptance is supported\n* transitions need to have the form of a single conjunction with exactly one positive atomic proposition\n* no aliases or any other fancy features of HOA are supported\n");
+  args::Positional<std::string> inputFile(parser, "INPUT", "The name of a file in the HOA (Hanoi Omega Automata) or the BA format\n");
   args::Flag statsFlag(parser, "", "Print summary statistics", {"stats"});
   args::ValueFlag<std::string> delayFlag(parser, "version", "Use delay optimization, versions: old, new, random, subset, stirling", {"delay"});
   args::ValueFlag<std::string> checkFlag(parser, "word", "Product of the result with a given word", {"check"});
@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
   args::Flag nobackoffFlag(parser, "no-backoff", "Do NOT use backoff", {"no-backoff"});
   args::Flag versionFlag(parser, "version", "Git commit version", {"version"});
   args::Flag sdVersionFlag(parser, "ncsb-lazy", "Use NCSB-lazy for SD complementation", {"ncsb-lazy"});
-  args::Flag tbaFlag(parser, "notba", "Do NOT use TBA preprocessing", {"notba"});
+  args::Flag tbaFlag(parser, "no-tba", "Do NOT use TBA preprocessing", {"no-tba"});
   args::Flag bestFlag(parser, "best", "Use the settings leading to smallest possible automata", {"best"});
 
   ComplOptions opt = { .cutPoint = true, .succEmptyCheck = false, .ROMinState = 8,

@@ -1,7 +1,9 @@
 # Ranker: A Tool for Buchi Automata Complementation
 
-The repository contains the _Ranker_ tool, rank-based-inspired complementation
-of Buchi automata. Currently supported types of omega-automata:
+The repository contains _Ranker_, a tool tool for complementation of Buchi
+automata. _Ranker_ implements several optimized constructions tailored for
+certain automata types (e.g., inherently weak, semi-deterministic, or general
+nondeterministic). Currently supported types of omega-automata:
 - Buchi automata with mixed transition-based/state-based acceptance condition
 - Generalized co-Buchi automata
 
@@ -13,54 +15,61 @@ Prerequisites:
 - boost library
 ```
 
-Install using `make ranker` in `src` folder. You also need to specify a correct
-path to `autfilt` (used for the `--backoff` option) via
+Install using `make ranker` in `src` folder. Another option is to use `cmake`
+in `src` folder as follows:
+```sh
+mkdir build && cd build
+cmake ..
+make
 ```
+You also need to specify a correct
+path to `autfilt` (not necessary if the `--no-backoff` option is set) via
+```sh
 export SPOTEXE=<path to autfilt>
 ```
 
 ### Input Automata Format
 
-The tool accepts automata in *HOA* format (Hanoi Omega Automata) as well as automata in *BA* format.
-Moreover the tool assumes HOA with the following restrictions
-- no aliases or any other fancy features of HOA are supported
+The tool accepts automata in the *HOA* format (Hanoi Omega Automata) as well as automata in the *BA* format.
+Moreover, the tool does not support aliases or any other fancy features of HOA.
 
 ### Running
 
 To run _Ranker_ use the following command:
-```
+```sh
 ./ranker [INPUT] {OPTIONS}
 ```
 where `OPTIONS` are from the following:
 ```
-    -h, --help                        Display this help menu
-    --stats                           Print summary statistics
-    --delay=[version]                 Use delay optimization, versions: old,
-                                      new, random, subset, stirling
-    --check=[word]                    Product of the result with a given word
-    --flow=[dataflow]                 Data flow analysis [light/inner]
-    -w[value], --weight=[value]       Weight parameter for delay - value in
-                                      <0,1>
-    --no-elevator-rank                Don't update rank upper bound of each
-                                      macrostate based on elevator automaton
-                                      structure
-    --det-beg                         Rank 0/1 to all states in the D/IW
-                                      component in the beginning
-    --eta4                            Max rank optimization - eta 4 only when
-                                      going from some accepting state
-    --elevator-test                   Test if INPUT is an elevator automaton
-    --debug                           Print debug statistics
-    --light                           Use lightweight optimizations
-    --preprocess=[preprocess]         Preprocessing
-                                      [copyiwa/copydet/copyall/copytrivial/copyheur]
-    --acc-propagation                 Propagate accepting states in each SCC
-    --sd                              Use semideterminization
-    --backoff                         Use backoff with SPOT
-```
-
-If you wish to use the `--backoff` option, you need to set a correct path to SPOT's `autfilt`:
-```
-export SPOTEXE=<path_to_autfilt>/autfilt
+  -h, --help                        Display this help menu
+  --stats                           Print summary statistics
+  --delay=[version]                 Use delay optimization, versions: old,
+                                    new, random, subset, stirling
+  --check=[word]                    Product of the result with a given word
+  --flow=[dataflow]                 Data flow analysis [light/inner]
+  -w[value], --weight=[value]       Weight parameter for delay - value in
+                                    <0,1>
+  --no-elevator-rank                Don't update rank upper bound of each
+                                    macrostate based on elevator automaton
+                                    structure
+  --det-beg                         Rank 0/1 to all states in the D/IW
+                                    component in the beginning
+  --eta4                            Max rank optimization - eta 4 only when
+                                    going from some accepting state
+  --elevator-test                   Test if INPUT is an elevator automaton
+  --debug                           Print debug statistics
+  --light                           Use lightweight optimizations
+  --preprocess=[value...]           Preprocessing
+                                    [copyiwa/copydet/copyall/copytrivial/copyheur/accsat/no-red]
+  --sd                              Use semideterminization
+  --iw-sim                          Use direct simulation
+  --iw-sat                          Macrostates saturation
+  --no-backoff                      Do NOT use backoff
+  --version                         Git commit version
+  --ncsb-lazy                       Use NCSB-lazy for SD complementation
+  --no-tba                          Do NOT use TBA preprocessing
+  --best                            Use the settings leading to smallest
+                                    possible automata
 ```
 
 ### Citing
