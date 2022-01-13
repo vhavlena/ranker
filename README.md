@@ -72,6 +72,10 @@ where `OPTIONS` are from the following:
                                     possible automata
 ```
 
+### Evaluation and Benchmarks
+
+Benchmarks and automated evaluation scripts can be found in the [Benchmark evaluation environment](https://github.com/VeriFIT/ba-compl-eval). Follow the README file to install other tools and run the evaluation scripts.
+
 ### Citing
 
 If you use _Ranker_ for academic purposes, please use the following citation
