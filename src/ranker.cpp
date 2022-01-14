@@ -59,6 +59,12 @@ int main(int argc, char *argv[])
   args::Flag tbaFlag(parser, "no-tba", "Do NOT use TBA preprocessing", {"no-tba"});
   args::Flag bestFlag(parser, "best", "Use the settings leading to smallest possible automata", {"best"});
 
+  args::Flag iwOrigOnlyFlag(parser, "iw-orig-only", "Use original IW procedure only", {"iw-orig-only"});
+  args::Flag iwPruneOnlyFlag(parser, "iw-prune-only", "Use pruning optimization in IW complementation", {"iw-prune-only"});
+
+  args::Flag sdLazyOnlyFlag(parser, "sd-ncsb-lazy-only", "Use NCSB-Lazy procedure only", {"sd-ncsb-lazy-only"});
+  args::Flag sdMaxrankOnlyFlag(parser, "sd-ncsb-maxrank-only", "Use NCSB-MaxRank procedure only", {"sd-ncsb-maxrank-only"});
+
   ComplOptions opt = { .cutPoint = true, .succEmptyCheck = false, .ROMinState = 8,
       .ROMinRank = 6, .CacheMaxState = 6, .CacheMaxRank = 8, .semidetOpt = false,
       .dataFlow = INNER, .delay = false, .delayVersion = oldVersion, .delayW = 0.5,
@@ -66,7 +72,9 @@ int main(int argc, char *argv[])
       .dirsim = true, .ranksim = true, .sl = true, .reach = true, .flowDirSim = false, .preprocess = CPHEUR, .accPropagation = false,
       .semideterminize = false, .backoff = true, .BOBound = { {11,15}, {11,13} },
       .semideterministic = false, .complete = false, .lowrankopt = false,
-      .iwSim = true, .iwSat = false, .ncsbLazy = false, .tba = true, .light = false, .prered = true, .postred = false};
+      .iwSim = true, .iwSat = false, .ncsbLazy = false, .tba = true, .light = false,
+      .prered = true, .postred = false, .iwOrigOnly = false, .iwPruneOnly = false,
+      .sdLazyOnly = false, .sdMaxrankOnly = false};
 
   try
   {
@@ -168,6 +176,23 @@ int main(int argc, char *argv[])
   if(tbaFlag)
   {
     opt.tba = false;
+  }
+
+  if(iwOrigOnlyFlag)
+  {
+    opt.iwOrigOnly = true;
+  }
+  if(iwPruneOnlyFlag)
+  {
+    opt.iwPruneOnly = true;
+  }
+  if(sdMaxrankOnlyFlag)
+  {
+    opt.sdMaxrankOnly = true;
+  }
+  if(sdLazyOnlyFlag)
+  {
+    opt.sdLazyOnly = true;
   }
 
   // delay version
@@ -406,7 +431,7 @@ int main(int argc, char *argv[])
           BuchiAutomaton<int, int> renComplSD;
           complementSDWrap(sd, &renBuchi, &renComplSD, &stats, opt);
 
-          if(!opt.light)
+          if(!opt.light && !opt.sdLazyOnly && !opt.sdMaxrankOnly)
           {
             Stat s1 = stats;
 

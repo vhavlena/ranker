@@ -76,6 +76,11 @@ struct ComplOptions
 
   bool prered = true;
   bool postred = false;
+
+  bool iwOrigOnly = false;
+  bool iwPruneOnly = false;
+  bool sdLazyOnly = false;
+  bool sdMaxrankOnly = false;
 };
 
 #endif

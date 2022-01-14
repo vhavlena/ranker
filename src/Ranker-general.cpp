@@ -279,29 +279,43 @@ void complementCoBAWrap(CoBuchiAutomatonCompl *ren, BuchiAutomaton<StateGcoBA, i
   renSim.removeUseless();
   renSim = renSim.renameAutDict(id);
 
-  if(!opt.light)
+  if(opt.iwOrigOnly)
   {
     BuchiAutomaton<int, int> renPure = pure.renameAutDict(id);
     renPure.removeUseless();
     renPure = renPure.renameAutDict(id);
-
-    //cout << renSim.getStates().size() << " : " << renPure.getStates().size() << endl;
-
-    if(renSim.getStates().size() > renPure.getStates().size())
+    *complOrig = pure;
+    *complRes = renPure;
+  }
+  else if(opt.iwPruneOnly)
+  {
+    *complOrig = complSim;
+    *complRes = renSim;
+  }
+  else
+  {
+    if(!opt.light)
     {
-      *complOrig = pure;
-      *complRes = renPure;
+      BuchiAutomaton<int, int> renPure = pure.renameAutDict(id);
+      renPure.removeUseless();
+      renPure = renPure.renameAutDict(id);
+
+      if(renSim.getStates().size() > renPure.getStates().size())
+      {
+        *complOrig = pure;
+        *complRes = renPure;
+      }
+      else
+      {
+        *complOrig = complSim;
+        *complRes = renSim;
+      }
     }
     else
     {
       *complOrig = complSim;
       *complRes = renSim;
     }
-  }
-  else
-  {
-    *complOrig = complSim;
-    *complRes = renSim;
   }
 
   stats->generatedStates = complOrig->getStates().size();
@@ -332,48 +346,53 @@ void complementSDWrap(SemiDeterministicCompl& sp, BuchiAutomaton<int, int>* ren,
   //Simulations sim;
   BuchiAutomaton<int, int> renComplOrig = compOrig.renameAutDict(id);
   renComplOrig = renComplOrig.removeUselessRename();
-  // auto ranksim = sim.directSimulation<int, int>(renComplOrig, -1);
-  // renComplOrig.setDirectSim(ranksim);
-  // renComplOrig = renComplOrig.reduce();
 
   BuchiAutomaton<int, int> renComplLazy;
-  if(opt.ncsbLazy)
+  if(opt.ncsbLazy || opt.sdLazyOnly)
   {
-    //opt.ncsbLazy = true;
+    opt.ncsbLazy = true;
     compLazy = sp.complementSD(opt);
     renComplLazy = compLazy.renameAutDict(id);
     renComplLazy = renComplLazy.removeUselessRename();
   }
-  // ranksim = sim.directSimulation<int, int>(renComplLazy, -1);
-  // renComplLazy.setDirectSim(ranksim);
-  // renComplLazy = renComplLazy.reduce();
-
-  //cout << compOrig.toGraphwiz() << endl;
-
-  //cout << "(" << renComplOrig.getStates().size() << ", " << compOrig.getStates().size() << ") : (" << renComplLazy.getStates().size() << ", " << compLazy.getStates().size() << ")" << endl;
 
   stats->generatedTransitionsToTight = 0;
 
-  if(opt.ncsbLazy)
+  if(opt.sdLazyOnly)
   {
-    if(renComplOrig.getStates().size() <= renComplLazy.getStates().size() + 10)
+    *complRes = renComplLazy;
+    stats->generatedStates = compLazy.getStates().size();
+    stats->generatedTrans = compLazy.getTransCount();
+  }
+  else if(opt.sdMaxrankOnly)
+  {
+    *complRes = renComplOrig;
+    stats->generatedStates = compOrig.getStates().size();
+    stats->generatedTrans = compOrig.getTransCount();
+  }
+  else
+  {
+    if(opt.ncsbLazy)
+    {
+      if(renComplOrig.getStates().size() <= renComplLazy.getStates().size() + 10)
+      {
+        *complRes = renComplOrig;
+        stats->generatedStates = compOrig.getStates().size();
+        stats->generatedTrans = compOrig.getTransCount();
+      }
+      else
+      {
+        *complRes = renComplLazy;
+        stats->generatedStates = compLazy.getStates().size();
+        stats->generatedTrans = compLazy.getTransCount();
+      }
+    }
+    else
     {
       *complRes = renComplOrig;
       stats->generatedStates = compOrig.getStates().size();
       stats->generatedTrans = compOrig.getTransCount();
     }
-    else
-    {
-      *complRes = renComplLazy;
-      stats->generatedStates = compLazy.getStates().size();
-      stats->generatedTrans = compLazy.getTransCount();
-    }
-  }
-  else
-  {
-    *complRes = renComplOrig;
-    stats->generatedStates = compOrig.getStates().size();
-    stats->generatedTrans = compOrig.getTransCount();
   }
 
 
