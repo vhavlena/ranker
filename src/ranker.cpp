@@ -424,7 +424,6 @@ int main(int argc, char *argv[])
         if(el.isInherentlyWeakBA())
         {
           CoBuchiAutomatonCompl iw(el);
-          std::cerr << "HERE" << std::endl;
           complementCoBAWrap(&iw, &compGcoBA, &renCompl, &stats, opt);
         }
         else if (el.isSemiDeterministic())
