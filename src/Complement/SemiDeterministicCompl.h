@@ -16,6 +16,7 @@
 #include "../Automata/BuchiAutomaton.h"
 #include "StateSD.h"
 #include "Options.h"
+#include "../Algorithms/Simulations.h"
 
 using std::vector;
 using std::set;
@@ -29,6 +30,8 @@ class SemiDeterministicCompl : public BuchiAutomaton<int, int>
 private:
     std::set<int> det;
     std::set<int> nondet;
+    Relation<int> dirSim;
+    Relation<int> reachDirSim;
 
 protected:
 
@@ -44,6 +47,23 @@ public:
             this->nondet.insert(scc.begin(), scc.end());
         }
     }
+
+    // direct sim
+    this->dirSim = this->getDirectSim();
+    // reachability
+    Relation<int> rel;
+    SCCs reachabilityVector = this->reachableVector();
+    for (auto pr : this->dirSim){
+      // check reachability
+      set<int> intersect;
+      std::set_intersection(reachabilityVector[pr.first].begin(), reachabilityVector[pr.first].end(), reachabilityVector[pr.second].begin(), reachabilityVector[pr.second].end(), std::inserter(intersect, intersect.begin()));
+      if(intersect.size() == 0)
+        rel.insert(pr);
+
+      if (reachabilityVector[pr.first].find(pr.second) != reachabilityVector[pr.first].end() and reachabilityVector[pr.second].find(pr.first) == reachabilityVector[pr.second].end())
+        rel.insert(pr);
+    }
+    this->reachDirSim = rel;
   }
 
   BuchiAutomaton<StateSD, int> complementSD(ComplOptions opt);
@@ -70,6 +90,11 @@ public:
 
   void ncsbTransform();
 
+  set<int> getDirectSet(set<int>& states, Relation<int>& dirSim);
+
+  Relation<int>& getWeakDirSim(){
+    return this->reachDirSim;
+  }
 };
 
 #endif

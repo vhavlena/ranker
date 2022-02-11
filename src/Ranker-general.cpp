@@ -187,9 +187,15 @@ BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, Comp
     //std::cerr << tmp.toGraphwiz() << std::endl;
   }
 
+  //std::cerr << orig.getFinTrans().size() << std::endl;
+
   if(opt.tba)
   {
     auto tba = orig.toTBA();
+    ///
+    if (orig.isTBA())
+      tba = orig;
+    ///
     auto renTba = tba.renameAut();
     ElevatorAutomaton el(renTba);
 
@@ -199,6 +205,7 @@ BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, Comp
     }
   }
 
+  //std::cerr << orig.getFinTrans().size() << std::endl;
   return orig;
 }
 

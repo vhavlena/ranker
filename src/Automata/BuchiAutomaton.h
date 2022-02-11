@@ -517,6 +517,10 @@ public:
     this->finals = finals;
   }
 
+  void setFinTrans(VecTransG accTrans){
+    this->accTrans = accTrans;
+  }
+
   BuchiAutomaton<tuple<State, int, bool>, Symbol> productBA(BuchiAutomaton<int, Symbol>& other);
   BuchiAutomaton<pair<State, int>, Symbol> cartProductBA(BuchiAutomaton<int, Symbol>& other);
   BuchiAutomaton<State, Symbol> unionBA(BuchiAutomaton<State, Symbol>& other);

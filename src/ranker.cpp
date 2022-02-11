@@ -295,6 +295,7 @@ int main(int argc, char *argv[])
       if(autType == AUTBA)
       {
         BuchiAutomaton<int, APSymbol> orig = parseRenameHOABA(parser, opt, fmt);
+        //std::cerr << orig.getFinTrans().size() << std::endl;
 
         if(orig.isTBA())
         {
@@ -423,6 +424,7 @@ int main(int argc, char *argv[])
         if(el.isInherentlyWeakBA())
         {
           CoBuchiAutomatonCompl iw(el);
+          std::cerr << "HERE" << std::endl;
           complementCoBAWrap(&iw, &compGcoBA, &renCompl, &stats, opt);
         }
         else if (el.isSemiDeterministic())
@@ -518,7 +520,7 @@ int main(int argc, char *argv[])
 
     if(fmt == HOA)
     {
-      outOrig.completeAPComplement();
+      outOrig.completeAPComplement(); 
     }
     stats.reachStates = outOrig.getStates().size();
     stats.reachTrans = outOrig.getTransCount();
