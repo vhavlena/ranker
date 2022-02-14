@@ -295,6 +295,7 @@ int main(int argc, char *argv[])
       if(autType == AUTBA)
       {
         BuchiAutomaton<int, APSymbol> orig = parseRenameHOABA(parser, opt, fmt);
+        //std::cerr << orig.getFinTrans().size() << std::endl;
 
         if(orig.isTBA())
         {
@@ -518,7 +519,7 @@ int main(int argc, char *argv[])
 
     if(fmt == HOA)
     {
-      outOrig.completeAPComplement();
+      outOrig.completeAPComplement(); 
     }
     stats.reachStates = outOrig.getStates().size();
     stats.reachTrans = outOrig.getTransCount();

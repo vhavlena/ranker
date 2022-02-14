@@ -1703,7 +1703,7 @@ BuchiAutomaton<int, int> BuchiAutomaton<int, int>::removeUselessRename()
 template<typename State, typename Symbol>
 BuchiAutomaton<int, Symbol> BuchiAutomaton<State,Symbol>::reduce()
 {
-  assert(!this->isTBA() && "Reduce not supported for TBAs");
+  //assert(!this->isTBA() && "Reduce not supported for TBAs");
   assert(this->directSim.size() > 0 && "Simulation is not computed");
 
   map<State, int> stmap;
@@ -1733,14 +1733,21 @@ BuchiAutomaton<int, Symbol> BuchiAutomaton<State,Symbol>::reduce()
     ntr[{ stmap[p.first.first], val} ].insert(to.begin(), to.end());
   }
 
-  return BuchiAutomaton<int, Symbol>(nst, nfin, nini, ntr, this->getAlphabet(), this->getAPPattern());
+  BuchiAutomaton<int, Symbol> ret(nst, nfin, nini, ntr, this->getAlphabet(), this->getAPPattern());
+  VecTrans<int, Symbol> newTrans;
+  for (auto tr : this->getFinTrans()){
+    Transition<int, Symbol> tmp = {.from = stmap[tr.from], .to = stmap[tr.to], .symbol = tr.symbol};
+    newTrans.push_back(tmp);
+  }
+  ret.setFinTrans(newTrans);
+  return ret;
 }
 
 
 template<typename State, typename Symbol>
 BuchiAutomaton<int, Symbol> BuchiAutomaton<State,Symbol>::toTBA()
 {
-  assert(!this->isTBA() && "Reduce not supported for TBAs");
+  //assert(!this->isTBA() && "Reduce not supported for TBAs");
 
   map<State, int> stmap;
   map<State, set<Symbol>> predSyms = this->getPredSymbolMap();

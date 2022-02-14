@@ -60,6 +60,8 @@ bool ElevatorAutomaton::isInherentlyWeak(const std::set<int>& scc, map<int, set<
     }
   }
 
+  //std::cerr << newTrans.size() << std::endl;
+
   BuchiAutomaton<int, int> tmp(st, empty, newIni, newTrans, this->getAlphabet(), this->getAPPattern());
   ElevatorAutomaton tmpSpec(tmp);
 
@@ -636,14 +638,17 @@ bool ElevatorAutomaton::isInherentlyWeakBA()
   auto finals = this->getFinals();
   auto finTrans = this->getFinTrans();
   for (const auto& scc : sccs) {
-    if (not isInherentlyWeak(scc, predSyms) and
+    if ((not isInherentlyWeak(scc, predSyms)) and
         (std::any_of(scc.begin(), scc.end(), [finals](int state){return finals.find(state) != finals.end();}) or
         std::any_of(finTrans.begin(), finTrans.end(), [scc](auto tr){
             return scc.find(tr.from) != scc.end() and scc.find(tr.to) != scc.end();
-        })))
+        }))){
+      //std::cerr << "NOT IW" << std::endl;
       return false;
+    }
   }
 
+  //std::cerr << "IW" << std::endl;
   return true;
 }
 
@@ -804,5 +809,6 @@ BuchiAutomaton<int, int> ElevatorAutomaton::nondetInitDeterminize()
   set<int> fn(this->getFinals().begin(), this->getFinals().end());
   set<int> ini = {stInt[init]};
   BuchiAutomaton<int, int> tmp(states, fn, ini, mp, alph, this->getAPPattern());
+  tmp.setFinTrans(this->getFinTrans());
   return tmp.renameStates();
 }

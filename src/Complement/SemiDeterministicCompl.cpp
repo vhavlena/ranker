@@ -65,6 +65,7 @@ BuchiAutomaton<StateSD, int> SemiDeterministicCompl::complementSD(ComplOptions o
     }
 
     auto ret = BuchiAutomaton<StateSD, int>(states, finals, initials, transitions, alphabet, getAPPattern());
+    //std::cerr << "States: " << states.size() << std::endl;
     //std::cerr << ret.toString() << std::endl;
     return ret;
 }
@@ -78,6 +79,7 @@ std::vector<StateSD> SemiDeterministicCompl::getSuccessorsMaxRank(StateSD& state
     StateSD succ1;
 
     auto NsuccSet = this->succSet(state.N, symbol);
+
     std::set_intersection(NsuccSet.begin(), NsuccSet.end(), this->getNonDet().begin(), this->getNonDet().end(), std::inserter(succ1.N, succ1.N.begin()));
 
     std::vector<int> NtoDet;
@@ -402,4 +404,16 @@ void SemiDeterministicCompl::ncsbTransform() {
             }
         }
     }
+}
+
+set<int> SemiDeterministicCompl::getDirectSet(set<int>& states, Relation<int>& dirSim)
+{
+  // remove smaller states w.r.t. simulation
+  std::set<int> retStates;
+  for (const auto& state : states){
+    if (not std::any_of(dirSim.begin(), dirSim.end(), [state, states](std::pair<int, int> pr){ return state == pr.first and state != pr.second and states.find(pr.second) != states.end(); }))
+      retStates.insert(state);
+  }
+
+  return retStates;
 }
