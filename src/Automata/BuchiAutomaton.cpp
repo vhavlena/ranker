@@ -840,7 +840,7 @@ void BuchiAutomaton<int, APSymbol>::completeAPComplement()
   this->complete(this->getStates().size(), false);
   set<APSymbol> allsyms;
 
-  APSymbol tmp;
+  APSymbol tmp(this->getAPPattern().size());
   bool first = true;
   set<int> diff;
   for(const APSymbol& s : this->getAlphabet())
@@ -862,7 +862,7 @@ void BuchiAutomaton<int, APSymbol>::completeAPComplement()
       }
     }
   }
-
+  
   for(unsigned i = 0; i < this->getAPPattern().size(); i++)
   {
     if(tmp.ap[i] != 2)
@@ -873,7 +873,7 @@ void BuchiAutomaton<int, APSymbol>::completeAPComplement()
     }
   }
 
-  if(this->getAlphabet().size() == 1)
+  if(this->getAlphabet().size() <= 1)
   {
     allsyms.insert(tmp);
   }

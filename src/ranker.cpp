@@ -295,7 +295,6 @@ int main(int argc, char *argv[])
       if(autType == AUTBA)
       {
         BuchiAutomaton<int, APSymbol> orig = parseRenameHOABA(parser, opt, fmt);
-        //std::cerr << orig.getFinTrans().size() << std::endl;
 
         if(orig.isTBA())
         {
