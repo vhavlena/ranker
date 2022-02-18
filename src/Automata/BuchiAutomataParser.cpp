@@ -408,16 +408,16 @@ Delta<int, APSymbol> BuchiAutomataParser::parseHoaBodyBA(int apNum, istream & os
     else if(line.rfind("State:", 0) == 0)
     {
       string linecp(line.begin()+7, line.end());
-      boost::regex baRegex("([0-9]+)\\s*(\\{\\s*0\\s*\\})?");
+      boost::regex baRegex("([0-9]+)\\s*(\"[\\s\\S]*\")?\\s*(\\{\\s*0\\s*\\})?");
       boost::smatch what;
 
       // BA
       if(boost::regex_match(linecp, what, baRegex))
       {
         src = std::stoi(what[1]);
-        if(what.size() == 3)
+        if(what.size() == 4) 
         {
-          string v = what[2];
+          string v = what[3]; 
           if(v.size() > 0)
           {
             finsBA.insert(src);
