@@ -205,7 +205,7 @@ BuchiAutomaton<int, APSymbol> parseRenameHOABA(BuchiAutomataParser& parser, Comp
     }
   }
 
-  //getfinstd::cerr << orig.getFinTrans().size() << std::endl;
+  //std::cerr << orig.getFinTrans().size() << std::endl;
   return orig;
 }
 
