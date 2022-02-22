@@ -233,13 +233,20 @@ std::string BuchiAutomaton<int, string>::toHOA()
       // construct the string for the symbol first (composed of atomic propositions)
       std::string symb_str;
       symb_str += "[";
-      bool first = true;
-      for (size_t i = 0; i < alph_size; ++i) {
-        if (first) first = false;
-        else symb_str += " & ";
+      if (this->apsPattern.size() == 0)
+      {
+        symb_str += "t";
+      }
+      else 
+      {
+        bool first = true;
+        for (size_t i = 0; i < alph_size; ++i) {
+          if (first) first = false;
+          else symb_str += " & ";
 
-        if (symb_to_pos[symb] != i) symb_str += "!";
-        symb_str += std::to_string(i);
+          if (symb_to_pos[symb] != i) symb_str += "!";
+          symb_str += std::to_string(i);
+        }
       }
       symb_str += "]";
 
@@ -310,9 +317,9 @@ std::string BuchiAutomaton<int, APSymbol>::toHOA()
       for (auto dst : it->second) {
         Transition<int, APSymbol> tr = { .from = st, .to = dst, .symbol = symb};
         if(std::find(this->accTrans.begin(), this->accTrans.end(), tr) != this->accTrans.end())
-          res += "[" + symb.toString() + "] " + std::to_string(state_to_seq[dst]) + " {0} \n";
+          res += "[" + (this->apsPattern.size() > 0 ? symb.toString() : "t") + "] " + std::to_string(state_to_seq[dst]) + " {0} \n";
         else
-          res += "[" + symb.toString() + "] " + std::to_string(state_to_seq[dst]) + "\n";
+          res += "[" + (this->apsPattern.size() > 0 ? symb.toString() : "t") + "] " + std::to_string(state_to_seq[dst]) + "\n";
       }
     }
   }
@@ -385,13 +392,19 @@ std::string BuchiAutomaton<int, int>::toHOA(std::map<int, int> sccs)
       // construct the string for the symbol first (composed of atomic propositions)
       std::string symb_str;
       symb_str += "[";
-      bool first = true;
-      for (size_t i = 0; i < alph_size; ++i) {
-        if (first) first = false;
-        else symb_str += " & ";
-
-        if (symb_to_pos[std::to_string(symb)] != i) symb_str += "!";
-        symb_str += std::to_string(i);
+      if (this->apsPattern.size() == 0)
+      {
+        symb_str += "t";
+      }
+      else {
+        bool first = true;
+        for (size_t i = 0; i < alph_size; ++i) {
+          if (first) first = false;
+          else symb_str += " & ";
+  
+          if (symb_to_pos[std::to_string(symb)] != i) symb_str += "!";
+          symb_str += std::to_string(i);
+        }
       }
       symb_str += "]";
 
