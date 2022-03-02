@@ -463,6 +463,10 @@ int main(int argc, char *argv[])
         complementGcoBAWrap(&renGcoBA, &compGcoBA, &renCompl, &stats);
         symDict = Aux::reverseMap(orig.getRenameSymbolMap());
       }
+      if (autType != AUTBA and autType != AUTGCOBA){
+        std::cerr << "Error: Unsupported automaton type" << std::endl;
+        return 2;
+      }
     }
     catch(const ParserException& e)
     {
