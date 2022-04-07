@@ -76,13 +76,15 @@ where `OPTIONS` are from the following:
 
 Benchmarks and automated evaluation scripts can be found in the [Benchmark evaluation environment](https://github.com/VeriFIT/ba-compl-eval). Follow the README file to install other tools and run the evaluation scripts.
 
-### Citing
+### Publications
 
-If you use _Ranker_ for academic purposes, please use the following citation
+_Ranker_ is based on the following papers:
 
-**Reducing (to) the Ranks: Efficient Rank-based Büchi Automata Complementation**. Vojtěch Havlena and Ondřej Lengál. In
-*Proceedings of CONCUR'21*. ISSN 1868-8969. 2021
-([url](https://drops.dagstuhl.de/opus/volltexte/2021/14379/))
+- **Sky Is Not the Limit: Tighter Rank Bounds for Elevator Automata in Büchi Automata Complementation**. Vojtěch Havlena, Ondřej Lengál, and Barbora Šmahlíková. In *Proceedings of TACAS'22*. 2022. ([url](https://link.springer.com/chapter/10.1007/978-3-030-99527-0_7))
+- **Reducing (to) the Ranks: Efficient Rank-based Büchi Automata Complementation**. Vojtěch Havlena and Ondřej Lengál. In
+  *Proceedings of CONCUR'21*. ISSN 1868-8969. 2021.
+  ([url](https://drops.dagstuhl.de/opus/volltexte/2021/14379/))
+- **Simulations in rank-based Büchi automata complementation**. Yu-Fang Chen, Vojtěch Havlena, and Ondřej Lengál. In *Proceedings of APLAS'19*. 2019. ([url](https://link.springer.com/chapter/10.1007/978-3-030-34175-6_23))
 
 ### Authors
 
