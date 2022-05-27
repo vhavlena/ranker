@@ -23,6 +23,11 @@ BuchiAutomaton<string, string> BuchiAutomataParser::parseBaFormat()
     if(line.find(',') != string::npos)
     {
       Transition<string, string> tr = parseBATransition(line);
+
+      if(ini.size() == 0)
+      {
+        ini.insert(tr.from);
+      }
       state = 1;
       states.insert(tr.from);
       states.insert(tr.to);
@@ -415,9 +420,9 @@ Delta<int, APSymbol> BuchiAutomataParser::parseHoaBodyBA(int apNum, istream & os
       if(boost::regex_match(linecp, what, baRegex))
       {
         src = std::stoi(what[1]);
-        if(what.size() == 4) 
+        if(what.size() == 4)
         {
-          string v = what[3]; 
+          string v = what[3];
           if(v.size() > 0)
           {
             finsBA.insert(src);

@@ -58,6 +58,7 @@ int main(int argc, char *argv[])
   args::Flag sdVersionFlag(parser, "ncsb-lazy", "Use NCSB-lazy for SD complementation", {"ncsb-lazy"});
   args::Flag tbaFlag(parser, "no-tba", "Do NOT use TBA preprocessing", {"no-tba"});
   args::Flag bestFlag(parser, "best", "Use the settings leading to smallest possible automata", {"best"});
+  args::Flag slFlag(parser, "sl", "Use self-loop waiting optimization", {"sl"});
 
   args::Flag iwOrigOnlyFlag(parser, "iw-orig-only", "Use original IW procedure only", {"iw-orig-only"});
   args::Flag iwPruneOnlyFlag(parser, "iw-prune-only", "Use pruning optimization in IW complementation", {"iw-prune-only"});
@@ -309,6 +310,11 @@ int main(int argc, char *argv[])
           opt.sl = false;
         }
 
+        if(slFlag || fmt == BA)
+        {
+          opt.sl = true;
+        }
+
         Simulations sim;
         if(!opt.dirsim)
         {
@@ -522,7 +528,7 @@ int main(int argc, char *argv[])
 
     if(fmt == HOA)
     {
-      outOrig.completeAPComplement(); 
+      outOrig.completeAPComplement();
     }
     stats.reachStates = outOrig.getStates().size();
     stats.reachTrans = outOrig.getTransCount();
