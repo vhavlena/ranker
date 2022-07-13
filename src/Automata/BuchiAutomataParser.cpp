@@ -115,7 +115,7 @@ BuchiAutomaton<string, string> BuchiAutomataParser::parseGffFormat(string& str)
  * @param os Input stream
  * @return BA <string, string>
  */
-BuchiAutomaton<string, string> BuchiAutomataParser::parseGffFormat(ifstream& is)
+BuchiAutomaton<string, string> BuchiAutomataParser::parseGffFormat(istream& is)
 {
   std::string str((std::istreambuf_iterator<char>(is)),
                  std::istreambuf_iterator<char>());

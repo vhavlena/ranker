@@ -37,11 +37,12 @@ struct Params
 {
   string output;
   string input;
+  bool tmpFile;
   bool stats;
   string checkWord;
 };
 
-InFormat parseRenamedAutomaton(ifstream& os);
+InFormat parseRenamedAutomaton(istream& os);
 AutomatonStruct<int, APSymbol>* parseRenameHOA(ifstream& os);
 
 void complementAutWrap(BuchiAutomatonSpec& sp, BuchiAutomaton<int, int>* ren,

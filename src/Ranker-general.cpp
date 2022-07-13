@@ -1,7 +1,7 @@
 
 #include "Ranker-general.h"
 
-InFormat parseRenamedAutomaton(ifstream& os)
+InFormat parseRenamedAutomaton(istream& os)
 {
   string fline;
   getline(os, fline);

@@ -55,7 +55,7 @@ public:
 
   BuchiAutomaton<string, string> parseBaFormat();
   BuchiAutomaton<string, string> parseGffFormat(string& str);
-  BuchiAutomaton<string, string> parseGffFormat(ifstream& is);
+  BuchiAutomaton<string, string> parseGffFormat(istream& is);
 
   BuchiAutomaton<int, APSymbol> parseHoaBA();
   GeneralizedCoBuchiAutomaton<int, APSymbol> parseHoaGCOBA();

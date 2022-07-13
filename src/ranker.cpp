@@ -6,6 +6,7 @@
 #include <fstream>
 #include <chrono>
 #include <iomanip>
+#include <stdio.h>
 #include "External/args.hxx" // argument parsing
 
 #include "Ranker-general.h"
@@ -23,12 +24,13 @@
 
 extern const char *gitversion;
 extern const char *gitdescribe;
+const string tmpFile = "__tmp__ranker_639652108";
 
 using namespace std;
 
 int main(int argc, char *argv[])
 {
-  Params params = { .output = "", .input = "", .stats = false, .checkWord = ""};
+  Params params = { .output = "", .input = "", .tmpFile = false, .stats = false, .checkWord = ""};
   ifstream os;
   //bool error = false;
   bool elevatorTest = false;
@@ -100,8 +102,28 @@ int main(int argc, char *argv[])
   }
 
   // input file
-  if (inputFile){
+  if (inputFile && args::get(inputFile) != ""){
     params.input = args::get(inputFile);
+  }
+  else
+  {
+    ofstream tmpStream;
+    tmpStream.open(tmpFile, ofstream::out);
+
+    if(!tmpStream)
+    {
+      std::cerr << "Error during creating a temporal file" << endl;
+      return 1;
+    }
+
+    string line;
+    while (getline(cin, line))
+    {
+       tmpStream << line << endl;
+    }
+    tmpStream.close();
+    params.input = tmpFile;
+    params.tmpFile = true;
   }
 
   if(versionFlag)
@@ -269,6 +291,7 @@ int main(int argc, char *argv[])
 
   string filename(params.input);
   os.open(filename);
+
   if(os)
   { // file opened correctly
     InFormat fmt = parseRenamedAutomaton(os);
@@ -346,6 +369,7 @@ int main(int argc, char *argv[])
           cout << "Elevator automaton: " << (el.isElevator() ? "Yes" : "No") << endl;
           cout << "Elevator states: " << el.elevatorStates() << endl;
           os.close();
+          if (params.tmpFile) std::remove(params.input.c_str());
           return 0;
         }
 
@@ -381,9 +405,9 @@ int main(int argc, char *argv[])
           BuchiAutomaton<StateSch, int> comp = sp.complementSchNFA(sp.getInitials());
           sp.computeRankBound(comp, &stats);
 
-          if(sp.meetsBackOff())
+          if(sp.meetsBackOff() && fmt == HOA)
           {
-            os.close();
+            if (params.input != "") os.close();
             const char* env = std::getenv("SPOTEXE");
             if(env == NULL)
             {
@@ -477,6 +501,7 @@ int main(int argc, char *argv[])
     catch(const ParserException& e)
     {
       os.close();
+      if (params.tmpFile) std::remove(params.input.c_str());
       cerr << "Parser error:" << endl;
       cerr << "line " << e.getLine() << ": " << e.what() << endl;
       return 2;
@@ -484,6 +509,7 @@ int main(int argc, char *argv[])
     catch (const std::bad_alloc&)
     {
       os.close();
+      if (params.tmpFile) std::remove(params.input.c_str());
       cerr << "Memory error" << endl;
       return 2;
     }
@@ -513,6 +539,7 @@ int main(int argc, char *argv[])
       }
 
       os.close();
+      if (params.tmpFile) std::remove(params.input.c_str());
       return 0;
     }
 
@@ -546,6 +573,8 @@ int main(int argc, char *argv[])
 		std::cerr << "Cannot open file \"" + filename + "\"\n";
 		return 1;
 	}
+
   os.close();
+  if (params.tmpFile) std::remove(params.input.c_str());
   return 0;
 }
