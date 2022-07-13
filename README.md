@@ -39,7 +39,8 @@ To run _Ranker_ use the following command:
 ```sh
 ./ranker [INPUT] {OPTIONS}
 ```
-where `OPTIONS` are from the following:
+where `INPUT` is an input automaton (if the
+file is not provided, the automaton is taken from the standard input) and `OPTIONS` are from the following:
 ```
   -h, --help                        Display this help menu
   --stats                           Print summary statistics

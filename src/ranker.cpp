@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
   args::ArgumentParser parser("Program complementing a (state-based acceptance condition) Buchi automaton.\n", "");
   args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
 
-  args::Positional<std::string> inputFile(parser, "INPUT", "The name of a file in the HOA (Hanoi Omega Automata) or the BA format\n");
+  args::Positional<std::string> inputFile(parser, "INPUT", "The name of a file in the HOA (Hanoi Omega Automata) or the BA format. If the file is not provided, the automaton is taken from the standard input.\n");
   args::Flag statsFlag(parser, "", "Print summary statistics", {"stats"});
   args::ValueFlag<std::string> delayFlag(parser, "version", "Use delay optimization, versions: old, new, random, subset, stirling", {"delay"});
   args::ValueFlag<std::string> checkFlag(parser, "word", "Product of the result with a given word", {"check"});
