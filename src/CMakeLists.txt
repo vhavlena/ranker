@@ -35,7 +35,7 @@ endif()
 
 # Flags
 set(cxx_compiler_flags
-  -pedantic-errors
+  # -pedantic-errors
   -Wextra
   -Wall
   -Wfloat-equal
