@@ -7,6 +7,8 @@ nondeterministic). Currently supported types of omega-automata:
 - Buchi automata with mixed transition-based/state-based acceptance condition
 - Generalized co-Buchi automata
 
+![plot](./img/img.png)
+
 ### Installation
 
 Prerequisites:
@@ -42,35 +44,45 @@ To run _Ranker_ use the following command:
 where `INPUT` is an input automaton (if the
 file is not provided, the automaton is taken from the standard input) and `OPTIONS` are from the following:
 ```
-  -h, --help                        Display this help menu
-  --stats                           Print summary statistics
-  --delay=[version]                 Use delay optimization, versions: old,
-                                    new, random, subset, stirling
-  --check=[word]                    Product of the result with a given word
-  --flow=[dataflow]                 Data flow analysis [light/inner]
-  -w[value], --weight=[value]       Weight parameter for delay - value in
-                                    <0,1>
-  --no-elevator-rank                Don't update rank upper bound of each
-                                    macrostate based on elevator automaton
-                                    structure
-  --det-beg                         Rank 0/1 to all states in the D/IW
-                                    component in the beginning
-  --eta4                            Max rank optimization - eta 4 only when
-                                    going from some accepting state
-  --elevator-test                   Test if INPUT is an elevator automaton
-  --debug                           Print debug statistics
-  --light                           Use lightweight optimizations
-  --preprocess=[value...]           Preprocessing
-                                    [copyiwa/copydet/copyall/copytrivial/copyheur/accsat/no-red]
-  --sd                              Use semideterminization
-  --iw-sim                          Use direct simulation
-  --iw-sat                          Macrostates saturation
-  --no-backoff                      Do NOT use backoff
-  --version                         Git commit version
-  --ncsb-lazy                       Use NCSB-lazy for SD complementation
-  --no-tba                          Do NOT use TBA preprocessing
-  --best                            Use the settings leading to smallest
-                                    possible automata
+      -h, --help                        Display this help menu
+      INPUT                             The name of a file in the HOA (Hanoi
+                                        Omega Automata) or the BA format. If the
+                                        file is not provided, the automaton is
+                                        taken from the standard input.
+      --stats                           Print summary statistics
+      --delay=[version]                 Use delay optimization, versions: old,
+                                        new, random, subset, stirling
+      --check=[word]                    Product of the result with a given word
+      --flow=[dataflow]                 Data flow analysis [light/inner]
+      -w[value], --weight=[value]       Weight parameter for delay - value in
+                                        <0,1>
+      --no-elevator-rank                Don't update rank upper bound of each
+                                        macrostate based on elevator automaton
+                                        structure
+      --det-beg                         Rank 0/1 to all states in the D/IW
+                                        component in the beginning
+      --eta4                            Max rank optimization - eta 4 only when
+                                        going from some accepting state
+      --elevator-test                   Test if INPUT is an elevator automaton
+      --debug                           Print debug statistics
+      --light                           Use lightweight optimizations
+      --preprocess=[value...]           Preprocessing
+                                        [copyiwa/copydet/copyall/copytrivial/copyheur/accsat/no-red]
+      --sd                              Use semideterminization
+      --iw-sim                          Use direct simulation
+      --iw-sat                          Macrostates saturation
+      --no-backoff                      Do NOT use backoff
+      --version                         Git commit version
+      --ncsb-lazy                       Use NCSB-lazy for SD complementation
+      --no-tba                          Do NOT use TBA preprocessing
+      --best                            Use the settings leading to smallest
+                                        possible automata
+      --sl                              Use self-loop waiting optimization
+      --iw-orig-only                    Use original IW procedure only
+      --iw-prune-only                   Use pruning optimization in IW
+                                        complementation
+      --sd-ncsb-lazy-only               Use NCSB-Lazy procedure only
+      --sd-ncsb-maxrank-only            Use NCSB-MaxRank procedure only
 ```
 
 ### Evaluation and Benchmarks
@@ -81,6 +93,7 @@ Benchmarks and automated evaluation scripts can be found in the [Benchmark evalu
 
 _Ranker_ is based on the following papers:
 
+- **Complementing Büchi Automata with Ranker**. Vojtěch Havlena, Ondřej Lengál, and Barbora Šmahlíková. In *Proceedings of CAV'22*. 2022. ([url](https://link.springer.com/content/pdf/10.1007/978-3-031-13188-2_10.pdf))
 - **Sky Is Not the Limit: Tighter Rank Bounds for Elevator Automata in Büchi Automata Complementation**. Vojtěch Havlena, Ondřej Lengál, and Barbora Šmahlíková. In *Proceedings of TACAS'22*. 2022. ([url](https://link.springer.com/chapter/10.1007/978-3-030-99527-0_7))
 - **Reducing (to) the Ranks: Efficient Rank-based Büchi Automata Complementation**. Vojtěch Havlena and Ondřej Lengál. In
   *Proceedings of CONCUR'21*. ISSN 1868-8969. 2021.
